@@ -1,10 +1,29 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
 build/
 dist/
+*.egg-info/
 wheels/
-*.egg-info
 
 # Virtual environments
-.venv
+.venv/
+venv/
+
+# Package managers
+.uv/
+uv.lock
+
+# IDEs
+.vscode/
+.idea/
+
+# Text editors
+*.swp
+*.swo
+*~
