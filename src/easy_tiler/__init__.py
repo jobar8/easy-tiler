@@ -1,2 +1,10 @@
+from .grid import Grid
+from .renderer import Renderer
+from .tiles import TileBase, RegularPolygonTile
+
+
 def main() -> None:
-    print("Hello from easy-tiler!")
+    print("easy-tiler: run examples/demo.py to generate sample images")
+
+
+__all__ = ["Grid", "Renderer", "TileBase", "RegularPolygonTile"]
