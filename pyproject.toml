@@ -12,6 +12,9 @@ dependencies = ["pycairo>=1.23.0", "pillow>=10.0.0", "numpy>=1.24.0"]
 [project.scripts]
 easy-tiler = "easy_tiler:main"
 
+[dependency-groups]
+dev = ["pytest>=7.0.0"]
+
 [build-system]
 requires = ["uv_build>=0.9.16,<0.10.0"]
 build-backend = "uv_build"
