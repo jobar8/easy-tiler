@@ -3,12 +3,9 @@
 Defines a TileBase abstract class and a simple RegularPolygonTile
 concrete implementation for testing and examples.
 """
-from __future__ import annotations
-
 import abc
 import math
 from dataclasses import dataclass
-from typing import Iterable
 
 import cairo
 
@@ -16,9 +13,10 @@ from .helpers import color
 
 
 @dataclass
-class G:
-    wh: int
-    bgfg: list | None = None
+class TileConfig:
+    width: int
+    bg_color: tuple | None = None
+    fg_color: tuple | None = None
 
 
 class TileBase(abc.ABC):
@@ -35,17 +33,17 @@ class TileBase(abc.ABC):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
 
-    def init_tile(self, ctx: cairo.Context, g: G, base_color=None):
+    def init_tile(self, ctx: cairo.Context, g: TileConfig):
         # default does nothing; subclasses may populate g or precompute paths
         return
 
     @abc.abstractmethod
-    def draw(self, ctx: cairo.Context, g: G):
+    def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int, bgfg=None, base_color=None):
-        g = G(wh, bgfg)
-        self.init_tile(ctx, g, base_color=base_color)
+    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None):
+        g = TileConfig(wh, bg_color, fg_color)
+        self.init_tile(ctx, g)
         self.draw(ctx, g)
 
 
@@ -63,14 +61,10 @@ class RegularPolygonTile(TileBase):
         self.sides = max(3, int(sides))
         self.inset = float(inset)
 
-    def draw(self, ctx: cairo.Context, g: G):
-        wh = g.wh
-        if g.bgfg and len(g.bgfg) >= 2:
-            bg = g.bgfg[0]
-            fg = g.bgfg[1]
-        else:
-            bg = color(1)
-            fg = color(0)
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        bg = g.bg_color if g.bg_color is not None else color(1)
+        fg = g.fg_color if g.fg_color is not None else color(0)
 
         # draw background
         ctx.save()

@@ -19,14 +19,14 @@ class Renderer:
         self.scale = int(scale)
 
     def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
-        wh = grid.cell_size
+        width = grid.cell_size
         for x, y in grid.iter_cells():
             tile = tile_getter(x, y)
             px, py = grid.cell_to_pixel(x, y)
             ctx.save()
             ctx.translate(px, py)
             # ensure each tile draws in a wh x wh square starting at 0,0
-            tile.draw_tile(ctx, wh, bgfg=None)
+            tile.draw_tile(ctx, width)
             ctx.restore()
 
     def render_png(self, path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
