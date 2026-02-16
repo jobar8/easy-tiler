@@ -29,7 +29,7 @@ class TileBase(abc.ABC):
     rotations = 4
     flip = False
 
-    def __init__(self, rot: int = 0, flipped: bool = False):
+    def __init__(self, rot: float | int = 0, flipped: bool = False):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
 
@@ -56,7 +56,7 @@ class RegularPolygonTile(TileBase):
     - fill_fg: whether to fill polygon with foreground colour
     """
 
-    def __init__(self, sides: int = 4, inset: float = 0.85, rot: int = 0, flipped: bool = False):
+    def __init__(self, sides: float | int = 4, inset: float = 0.85, rot: float | int = 0, flipped: bool = False):
         super().__init__(rot=rot, flipped=flipped)
         self.sides = max(3, int(sides))
         self.inset = float(inset)
@@ -70,7 +70,10 @@ class RegularPolygonTile(TileBase):
         ctx.save()
         ctx.set_source_rgba(*bg)
         ctx.rectangle(0, 0, wh, wh)
-        ctx.fill()
+        # ctx.fill()
+        ctx.fill_preserve()
+        ctx.set_source_rgba(*fg)
+        ctx.stroke()
 
         # polygon geometry
         cx = cy = wh / 2.0
@@ -79,7 +82,8 @@ class RegularPolygonTile(TileBase):
         angle_offset = (self.rot * (math.pi / 2.0))
         pts = []
         for i in range(self.sides):
-            theta = (2.0 * math.pi * i / self.sides) - math.pi / 2.0 + angle_offset
+            theta = (2.0 * math.pi * i / self.sides) + angle_offset# - math.pi / 2.0
+            # print(f"theta for side {i}: {theta:.2f} radians")
             x = cx + r * math.cos(theta)
             y = cy + r * math.sin(theta)
             pts.append((x, y))
