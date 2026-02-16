@@ -1,6 +1,7 @@
 """Renderer for composing tiles onto cairo surfaces."""
 
 from __future__ import annotations
+import math
 
 import cairo
 from typing import Callable
@@ -20,6 +21,10 @@ class Renderer:
 
     def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
         width = grid.cell_size
+        # T = math.tan((tile.rot * math.pi) / tile.rotations)
+        T=0.5
+        mtrx = cairo.Matrix(1,0,T,1,0,0)
+        ctx.transform(mtrx)
         for x, y in grid.iter_cells():
             tile = tile_getter(x, y)
             px, py = grid.cell_to_pixel(x, y)
