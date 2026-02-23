@@ -1,6 +1,5 @@
 """Renderer for composing tiles onto cairo surfaces."""
 
-from __future__ import annotations
 import math
 
 import cairo
@@ -16,15 +15,20 @@ class Renderer:
     The `tile_getter` is a callable tile_getter(x, y) -> TileBase
     """
 
-    def __init__(self, scale: int = 1):
-        self.scale = int(scale)
+    def __init__(self, scale: float = 1.0):
+        self.scale = scale
 
     def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
         width = grid.cell_size
-        # T = math.tan((tile.rot * math.pi) / tile.rotations)
-        T=0.5
-        mtrx = cairo.Matrix(1,0,T,1,0,0)
+
+        # Appply transform for skewing and scaling the grid
+        x_skew, y_skew = grid.skew_angles
+        tanx = math.tan(x_skew)
+        tany = math.tan(y_skew)
+        mtrx = cairo.Matrix(1,tany,tanx,1,0,0)
         ctx.transform(mtrx)
+        ctx.scale(self.scale, self.scale)
+
         for x, y in grid.iter_cells():
             tile = tile_getter(x, y)
             px, py = grid.cell_to_pixel(x, y)

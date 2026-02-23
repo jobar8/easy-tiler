@@ -12,6 +12,12 @@ class Grid:
     origin: Tuple[int, int] = (0, 0)
     x_shift: int = 0
     y_shift: int = 0
+    x_skew: float = 0
+    y_skew: float = 0
+
+    @property
+    def skew_angles(self) -> Tuple[float, float]:
+        return self.x_skew, self.y_skew
 
     @property
     def shift(self) -> Tuple[int, int]:
