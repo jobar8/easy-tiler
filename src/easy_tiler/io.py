@@ -9,11 +9,11 @@ from .tiles import TileBase
 from typing import Callable
 
 
-def save_png(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
-    r = Renderer()
+def save_png(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase], scale: float = 1.0):
+    r = Renderer(scale=scale)
     r.render_png(path, grid, tile_getter)
 
 
-def save_svg(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
-    r = Renderer()
+def save_svg(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase], scale: float = 1.0):
+    r = Renderer(scale=scale)
     r.render_svg(path, grid, tile_getter)
