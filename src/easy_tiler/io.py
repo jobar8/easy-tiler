@@ -1,7 +1,5 @@
 """IO helpers for saving surfaces and convenience exporters."""
 
-from __future__ import annotations
-
 import cairo
 from .grid import Grid
 from .renderer import Renderer

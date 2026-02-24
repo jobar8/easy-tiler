@@ -19,7 +19,7 @@ class Renderer:
         self.scale = scale
 
     def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
-        width = grid.cell_size
+        width = grid.x_size
 
         # Appply transform for skewing and scaling the grid
         x_skew, y_skew = grid.skew_angles
@@ -27,7 +27,7 @@ class Renderer:
         tany = math.tan(y_skew)
         mtrx = cairo.Matrix(1,tany,tanx,1,0,0)
         ctx.transform(mtrx)
-        ctx.scale(self.scale, self.scale)
+        ctx.scale(self.scale, self.scale * math.cos(x_skew))  # scale y by cos(x_skew) to preserve aspect ratio of tiles
 
         for x, y in grid.iter_cells():
             tile = tile_getter(x, y)
