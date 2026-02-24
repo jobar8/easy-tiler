@@ -1,8 +1,8 @@
 """Tile classes for easy_tiler.
 
-Defines a TileBase abstract class and a simple RegularPolygonTile
-concrete implementation for testing and examples.
+Defines a TileBase abstract class and other simple tile implementations.
 """
+
 import abc
 import math
 from dataclasses import dataclass
@@ -23,7 +23,7 @@ class TileBase(abc.ABC):
     """Base tile class.
 
     Subclasses should implement `draw(self, ctx, g)` which performs drawing
-    on the provided cairo `Context` using the small graphics state `g`.
+    on the provided cairo `Context` using the small graphics config `g`.
     """
 
     rotations = 4
@@ -70,7 +70,10 @@ class RegularPolygonTile(TileBase):
         ctx.save()
         ctx.set_source_rgba(*bg)
         ctx.rectangle(0, 0, wh, wh)
-        # ctx.fill()
+        ctx.fill()
+
+        # Draw outline of tile
+        # TODO: maybe this should be optional?
         ctx.fill_preserve()
         ctx.set_source_rgba(*fg)
         ctx.stroke()
@@ -79,11 +82,10 @@ class RegularPolygonTile(TileBase):
         cx = cy = wh / 2.0
         r = (wh / 2.0) * self.inset
         # rotation in radians: treat rot as quarter-turns for compatibility
-        angle_offset = (self.rot * (math.pi / 2.0))
+        angle_offset = self.rot * (math.pi / 2.0)
         pts = []
         for i in range(self.sides):
-            theta = (2.0 * math.pi * i / self.sides) + angle_offset# - math.pi / 2.0
-            # print(f"theta for side {i}: {theta:.2f} radians")
+            theta = (2.0 * math.pi * i / self.sides) + angle_offset
             x = cx + r * math.cos(theta)
             y = cy + r * math.sin(theta)
             pts.append((x, y))
@@ -100,4 +102,75 @@ class RegularPolygonTile(TileBase):
         # stroke with slightly darker foreground
         ctx.set_source_rgba(max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3])
         ctx.stroke()
+        ctx.restore()
+
+
+class PuckTile(TileBase):
+    """Draw a simple tile that looks like a hockey puck: a filled circle with an outline.
+
+    Parameters
+    - variant: 0 or 1 for two different orientations of the tile (which corners the quarter circles are in)
+    """
+
+    def __init__(self, variant: int = 0, rot: float | int = 0, flipped: bool = False):
+        super().__init__(rot=rot, flipped=flipped)
+        self.variant = variant % 2
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        bg = g.bg_color if g.bg_color is not None else color(1)
+        fg = g.fg_color if g.fg_color is not None else color(0)
+
+        # draw background
+        ctx.save()
+        ctx.set_source_rgba(*bg)
+        ctx.rectangle(0, 0, wh, wh)
+        ctx.fill()
+
+        # draw quarter circles based on variant
+        ctx.set_source_rgba(*fg)
+        r = wh / 2.0
+        if self.variant == 0:
+            # top-left and bottom-right corners
+            ctx.arc(r, r, r, math.pi, 1.5 * math.pi)  # top-left
+            ctx.arc(r, r, r, 0.0, 0.5 * math.pi)  # bottom-right
+        else:
+            # top-right and bottom-left corners
+            ctx.arc(r, r, r, 1.5 * math.pi, 2.0 * math.pi)  # top-right
+            ctx.arc(r, r, r, 0.5 * math.pi, math.pi)  # bottom-left
+        ctx.fill()
+        ctx.restore()
+
+
+class TruchetTile(TileBase):
+    """Draw a simple Truchet tile with one triangle in one corner."""
+
+    def __init__(self, variant: int = 0, rot: float | int = 0, flipped: bool = False, radius: float = 1.0):
+        super().__init__(rot=rot, flipped=flipped)
+        self.variant = variant % 4
+        self.radius = radius
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        self.radius = self.radius * wh
+        bg = g.bg_color if g.bg_color is not None else color(1)
+        fg = g.fg_color if g.fg_color is not None else color(0)
+
+        # draw background
+        ctx.save()
+        ctx.set_source_rgba(*bg)
+        ctx.rectangle(0, 0, wh, wh)
+        ctx.fill()
+
+        # draw corner and round side
+        ctx.set_source_rgba(*fg)
+        a = (-wh + math.sqrt(2 * self.radius * self.radius - wh * wh)) / 2
+        xc = yc = -a
+        angle1 = math.acos((wh + a) / self.radius)
+        angle2 = 0.5 * math.pi - angle1
+
+        ctx.arc(xc, yc, self.radius, angle1, angle2)  # top-left
+        ctx.line_to(0, 0)
+        ctx.line_to(wh, 0)
+        ctx.fill()
         ctx.restore()
