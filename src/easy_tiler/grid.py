@@ -8,7 +8,8 @@ from typing import Iterator, Tuple
 class Grid:
     width: int
     height: int
-    cell_size: int = 64
+    x_size: int = 64
+    y_size: int = 64
     origin: Tuple[int, int] = (0, 0)
     x_shift: int = 0
     y_shift: int = 0
@@ -29,10 +30,10 @@ class Grid:
 
     def cell_to_pixel(self, x: int, y: int) -> Tuple[int, int]:
         ox, oy = self.origin
-        return ox + x * self.cell_size + y * self.x_shift, oy + y * self.cell_size + x * self.y_shift
+        return ox + x * self.x_size + y * self.x_shift, oy + y * self.y_size + x * self.y_shift
 
     def pixel_size(self) -> Tuple[int, int]:
-        return self.width * self.cell_size, self.height * self.cell_size
+        return self.width * self.x_size, self.height * self.y_size
 
     def iter_cells(self) -> Iterator[Tuple[int, int]]:
         for y in range(self.height):
