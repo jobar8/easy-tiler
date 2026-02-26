@@ -12,11 +12,26 @@ import cairo
 from .helpers import color
 
 
+# precompute some constants for efficiency and readability
+PI = math.pi
+PI2 = math.pi / 2
+
+
 @dataclass
 class TileConfig:
     width: int
     bg_color: tuple | None = None
     fg_color: tuple | None = None
+
+    def __post_init__(self) -> None:
+        if self.bg_color is not None and len(self.bg_color) != 4:
+            raise ValueError("bg_color must be a tuple of 4 floats (r, g, b, a)")
+        if self.fg_color is not None and len(self.fg_color) != 4:
+            raise ValueError("fg_color must be a tuple of 4 floats (r, g, b, a)")
+        if self.bg_color is None and self.fg_color is None:
+            # default to white bg and black fg
+            self.bg_color = color(1)
+            self.fg_color = color(0)
 
 
 class TileBase(abc.ABC):
@@ -34,14 +49,37 @@ class TileBase(abc.ABC):
         self.flipped = bool(flipped)
 
     def init_tile(self, ctx: cairo.Context, g: TileConfig):
-        # default does nothing; subclasses may populate g or precompute paths
-        return
+        wh = g.width
+        wh2 = wh / 2.0
+        bg_color = g.bg_color if g.bg_color is not None else color(1)
+        fg_color = g.fg_color if g.fg_color is not None else color(0)
+
+        # draw background
+        ctx.save()
+        ctx.set_source_rgba(*bg_color)
+        ctx.rectangle(0, 0, wh, wh)
+        ctx.fill()
+
+        # Draw outline of tile
+        # TODO: maybe this should be optional?
+        ctx.fill_preserve()
+        ctx.set_source_rgba(*fg_color)
+        ctx.stroke()
+
+        # Apply rotation and flip transformations to the context before drawing the tile.
+        ctx.translate(wh2, wh2)
+        ctx.rotate(PI2 * self.rot)
+        ctx.translate(-wh2, -wh2)
+
+        if self.flipped:
+            ctx.translate(wh, 0)
+            ctx.scale(-1, 1)
 
     @abc.abstractmethod
     def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None):
+    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None) -> None:
         g = TileConfig(wh, bg_color, fg_color)
         self.init_tile(ctx, g)
         self.draw(ctx, g)
@@ -66,26 +104,12 @@ class RegularPolygonTile(TileBase):
         bg = g.bg_color if g.bg_color is not None else color(1)
         fg = g.fg_color if g.fg_color is not None else color(0)
 
-        # draw background
-        ctx.save()
-        ctx.set_source_rgba(*bg)
-        ctx.rectangle(0, 0, wh, wh)
-        ctx.fill()
-
-        # Draw outline of tile
-        # TODO: maybe this should be optional?
-        ctx.fill_preserve()
-        ctx.set_source_rgba(*fg)
-        ctx.stroke()
-
         # polygon geometry
         cx = cy = wh / 2.0
         r = (wh / 2.0) * self.inset
-        # rotation in radians: treat rot as quarter-turns for compatibility
-        angle_offset = self.rot * (math.pi / 2.0)
         pts = []
         for i in range(self.sides):
-            theta = (2.0 * math.pi * i / self.sides) + angle_offset
+            theta = 2.0 * PI * i / self.sides
             x = cx + r * math.cos(theta)
             y = cy + r * math.sin(theta)
             pts.append((x, y))
@@ -121,23 +145,17 @@ class PuckTile(TileBase):
         bg = g.bg_color if g.bg_color is not None else color(1)
         fg = g.fg_color if g.fg_color is not None else color(0)
 
-        # draw background
-        ctx.save()
-        ctx.set_source_rgba(*bg)
-        ctx.rectangle(0, 0, wh, wh)
-        ctx.fill()
-
         # draw quarter circles based on variant
         ctx.set_source_rgba(*fg)
         r = wh / 2.0
         if self.variant == 0:
             # top-left and bottom-right corners
-            ctx.arc(r, r, r, math.pi, 1.5 * math.pi)  # top-left
-            ctx.arc(r, r, r, 0.0, 0.5 * math.pi)  # bottom-right
+            ctx.arc(r, r, r, PI, 1.5 * PI)  # top-left
+            ctx.arc(r, r, r, 0.0, 0.5 * PI)  # bottom-right
         else:
             # top-right and bottom-left corners
-            ctx.arc(r, r, r, 1.5 * math.pi, 2.0 * math.pi)  # top-right
-            ctx.arc(r, r, r, 0.5 * math.pi, math.pi)  # bottom-left
+            ctx.arc(r, r, r, 1.5 * PI, 2.0 * PI)  # top-right
+            ctx.arc(r, r, r, 0.5 * PI, PI)  # bottom-left
         ctx.fill()
         ctx.restore()
 
@@ -153,21 +171,15 @@ class TruchetTile(TileBase):
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
         self.radius = self.radius * wh
-        bg = g.bg_color if g.bg_color is not None else color(1)
+        # bg = g.bg_color if g.bg_color is not None else color(1)
         fg = g.fg_color if g.fg_color is not None else color(0)
-
-        # draw background
-        ctx.save()
-        ctx.set_source_rgba(*bg)
-        ctx.rectangle(0, 0, wh, wh)
-        ctx.fill()
 
         # draw corner and round side
         ctx.set_source_rgba(*fg)
         a = (-wh + math.sqrt(2 * self.radius * self.radius - wh * wh)) / 2
         xc = yc = -a
         angle1 = math.acos((wh + a) / self.radius)
-        angle2 = 0.5 * math.pi - angle1
+        angle2 = 0.5 * PI - angle1
 
         ctx.arc(xc, yc, self.radius, angle1, angle2)  # top-left
         ctx.line_to(0, 0)
