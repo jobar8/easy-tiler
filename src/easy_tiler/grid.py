@@ -35,8 +35,7 @@ class Grid:
         return ox + x * self.x_size + y * self.x_shift, oy + y * self.y_size + x * self.y_shift
 
     def pixel_size(self) -> Tuple[int, int]:
-        """Calculate the total size of the grid in pixels, accounting for cell size, shifts, and skewing.
-        """
+        """Calculate the total size of the grid in pixels, accounting for cell size, shifts, and skewing."""
         width_px = self.width * self.x_size + self.x_shift * (self.height - 1)
         height_px = self.height * self.y_size + self.y_shift * (self.width - 1)
 

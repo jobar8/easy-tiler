@@ -4,7 +4,7 @@ from .tiles import TileBase, RegularPolygonTile, TruchetTile, PuckTile
 
 
 def main() -> None:
-    print("easy-tiler: run examples/demo.py to generate sample images")
+    print('easy-tiler: run examples/demo.py to generate sample images')
 
 
-__all__ = ["Grid", "Renderer", "TileBase", "RegularPolygonTile", "TruchetTile", "PuckTile"]
+__all__ = ['Grid', 'Renderer', 'TileBase', 'RegularPolygonTile', 'TruchetTile', 'PuckTile']

@@ -10,7 +10,7 @@ def range2d(nx, ny):
 
 
 def range2d_padded(nx, ny, pad=1):
-    return itertools.product(range(nx-pad), range(ny-pad))
+    return itertools.product(range(nx - pad), range(ny - pad))
 
 
 def array_slices_2d(arr, x0, y0, nx, dx=None, ny=None, dy=None):
@@ -57,9 +57,9 @@ def color(val: float | int | list | tuple | str) -> tuple[float, float, float, f
         if val[0] == '#':
             return (*hex_to_rgb(val), 1)
         else:
-            raise ValueError(f"Invalid color string format: {val}")
+            raise ValueError(f'Invalid color string format: {val}')
     else:
-        raise ValueError(f"Unsupported color value: {val}")
+        raise ValueError(f'Unsupported color value: {val}')
 
 
 def make_bgfg(hs, ls, ss):

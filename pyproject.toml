@@ -1,6 +1,6 @@
 [project]
 name = "easy-tiler"
-version = "0.1.0"
+version = "0.2.0"
 description = "Library for tiling"
 readme = "README.md"
 authors = [
@@ -16,6 +16,7 @@ easy-tiler = "easy_tiler:main"
 dev = [
     "ipykernel>=7.2.0",
     "pytest>=7.0.0",
+    "ruff>=0.15.4",
 ]
 
 [build-system]
@@ -24,3 +25,9 @@ build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
+target-version = "py313"
+preview = true
+
+[tool.ruff.format]
+# Prefer single quotes over double quotes.
+quote-style = "single"
