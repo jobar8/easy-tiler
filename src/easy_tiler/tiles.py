@@ -25,9 +25,9 @@ class TileConfig:
 
     def __post_init__(self) -> None:
         if self.bg_color is not None and len(self.bg_color) != 4:
-            raise ValueError("bg_color must be a tuple of 4 floats (r, g, b, a)")
+            raise ValueError('bg_color must be a tuple of 4 floats (r, g, b, a)')
         if self.fg_color is not None and len(self.fg_color) != 4:
-            raise ValueError("fg_color must be a tuple of 4 floats (r, g, b, a)")
+            raise ValueError('fg_color must be a tuple of 4 floats (r, g, b, a)')
         if self.bg_color is None and self.fg_color is None:
             # default to white bg and black fg
             self.bg_color = color(1)
@@ -44,9 +44,10 @@ class TileBase(abc.ABC):
     rotations = 4
     flip = False
 
-    def __init__(self, rot: float | int = 0, flipped: bool = False):
+    def __init__(self, rot: float | int = 0, flipped: bool = False, outline: bool = True):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
+        self.outline = bool(outline)
 
     def init_tile(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
@@ -58,13 +59,15 @@ class TileBase(abc.ABC):
         ctx.save()
         ctx.set_source_rgba(*bg_color)
         ctx.rectangle(0, 0, wh, wh)
-        ctx.fill()
 
         # Draw outline of tile
-        # TODO: maybe this should be optional?
-        ctx.fill_preserve()
-        ctx.set_source_rgba(*fg_color)
-        ctx.stroke()
+        if self.outline:
+            ctx.fill_preserve()
+            ctx.set_source_rgba(*fg_color)
+            ctx.set_line_width(max(1.0, wh * 0.01))
+            ctx.stroke()
+        else:
+            ctx.fill()
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
@@ -130,32 +133,21 @@ class RegularPolygonTile(TileBase):
 
 
 class PuckTile(TileBase):
-    """Draw a simple tile that looks like a hockey puck: a filled circle with an outline.
+    """Draw a simple tile that looks like a hockey puck: a filled circle with an outline."""
 
-    Parameters
-    - variant: 0 or 1 for two different orientations of the tile (which corners the quarter circles are in)
-    """
-
-    def __init__(self, variant: int = 0, rot: float | int = 0, flipped: bool = False):
-        super().__init__(rot=rot, flipped=flipped)
-        self.variant = variant % 2
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
-        bg = g.bg_color if g.bg_color is not None else color(1)
         fg = g.fg_color if g.fg_color is not None else color(0)
 
         # draw quarter circles based on variant
         ctx.set_source_rgba(*fg)
         r = wh / 2.0
-        if self.variant == 0:
-            # top-left and bottom-right corners
-            ctx.arc(r, r, r, PI, 1.5 * PI)  # top-left
-            ctx.arc(r, r, r, 0.0, 0.5 * PI)  # bottom-right
-        else:
-            # top-right and bottom-left corners
-            ctx.arc(r, r, r, 1.5 * PI, 2.0 * PI)  # top-right
-            ctx.arc(r, r, r, 0.5 * PI, PI)  # bottom-left
+        # top-left and bottom-right corners
+        ctx.arc(r, r, r, PI, 1.5 * PI)  # top-left
+        ctx.arc(r, r, r, 0.0, 0.5 * PI)  # bottom-right
         ctx.fill()
         ctx.restore()
 
