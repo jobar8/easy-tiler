@@ -16,12 +16,12 @@ def make_tile_factory(sides=4):
         # fg = (0.0, 0.0, 0.0, 1.0)
 
         bg = (1.0, 1.0, 1.0, 1.0)
-        # bg = (1.0, 1.0, 1.0, 0.0)
+        bg = (1.0, 1.0, 1.0, 0.0)
         inset = math.sqrt(2)
-        inset = 0.5
-        # tile = RegularPolygonTile(sides=sides, rot=rot, inset=inset, flipped=True)
-        tile = PuckTile(rot=rot, flipped=False, outline=False)
-        # tile = TruchetTile(rot=rot, flipped=False, variant=0, radius=3.0)
+        # inset = 0.5
+        tile = RegularPolygonTile(sides=sides, rot=rot, inset=inset, flipped=False, outline=False)
+        # tile = PuckTile(rot=rot, flipped=False, outline=False)
+        tile = TruchetTile(rot=rot, flipped=False, radius=3.0)
 
         # attach bg/fg via closure by monkeypatching draw_tile call
         def draw_tile_with_bg(ctx, wh, bg_color=None, fg_color=None):
@@ -38,7 +38,7 @@ def run_demo():
     grid = Grid(8, 6, x_size=80, y_size=80, x_shift=0)
     # grid = Grid(28, 26, x_size=80, y_size=80, x_shift=0, y_shift=0, x_skew=math.pi / 6, y_skew=0)
 
-    factory = make_tile_factory(sides=3)
+    factory = make_tile_factory(sides=4)
     save_png('demo.png', grid, factory, scale=1)
     save_svg('demo.svg', grid, factory)
     print('Wrote demo.png and demo.svg')

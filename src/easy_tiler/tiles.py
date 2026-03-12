@@ -97,14 +97,13 @@ class RegularPolygonTile(TileBase):
     - fill_fg: whether to fill polygon with foreground colour
     """
 
-    def __init__(self, sides: float | int = 4, inset: float = 0.85, rot: float | int = 0, flipped: bool = False):
-        super().__init__(rot=rot, flipped=flipped)
+    def __init__(self, sides: float | int = 4, inset: float = 0.85, **kwargs):
+        super().__init__(**kwargs)
         self.sides = max(3, int(sides))
         self.inset = float(inset)
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
-        bg = g.bg_color if g.bg_color is not None else color(1)
         fg = g.fg_color if g.fg_color is not None else color(0)
 
         # polygon geometry
@@ -124,9 +123,9 @@ class RegularPolygonTile(TileBase):
         for x, y in pts[1:]:
             ctx.line_to(x, y)
         ctx.close_path()
+        # stroke with slightly darker foreground
         ctx.fill_preserve()
         ctx.set_line_width(max(1.0, wh * 0.01))
-        # stroke with slightly darker foreground
         ctx.set_source_rgba(max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3])
         ctx.stroke()
         ctx.restore()
@@ -155,9 +154,8 @@ class PuckTile(TileBase):
 class TruchetTile(TileBase):
     """Draw a simple Truchet tile with one triangle in one corner."""
 
-    def __init__(self, variant: int = 0, rot: float | int = 0, flipped: bool = False, radius: float = 1.0):
-        super().__init__(rot=rot, flipped=flipped)
-        self.variant = variant % 4
+    def __init__(self, radius: float = 1.0, **kwargs):
+        super().__init__(**kwargs)
         self.radius = radius
 
     def draw(self, ctx: cairo.Context, g: TileConfig):

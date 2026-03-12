@@ -7,10 +7,10 @@ from typing import Iterator, Tuple
 
 @dataclass
 class Grid:
-    width: int
-    height: int
-    x_size: int = 64
-    y_size: int = 64
+    width: int  # number of cells in x direction
+    height: int  # number of cells in y direction
+    x_size: int = 64  # width of each cell in pixels
+    y_size: int = 64  # height of each cell in pixels
     origin: Tuple[int, int] = (0, 0)
     x_shift: int = 0
     y_shift: int = 0
