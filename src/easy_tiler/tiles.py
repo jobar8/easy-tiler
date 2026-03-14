@@ -154,6 +154,26 @@ class PuckTile(TileBase):
 class TruchetTile(TileBase):
     """Draw a simple Truchet tile with one triangle in one corner."""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        fg = g.fg_color if g.fg_color is not None else color(0)
+
+        # draw top-left corner
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(wh, 0)
+        ctx.line_to(0, wh)
+        ctx.line_to(0, 0)
+        ctx.line_to(wh, 0)
+        ctx.fill()
+        ctx.restore()
+
+
+class RileyTile(TileBase):
+    """Draw a Riley tile with one corner and one round side."""
+
     def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius

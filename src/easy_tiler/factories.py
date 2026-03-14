@@ -1,6 +1,6 @@
 """Simple demo to render a grid of regular polygon tiles."""
 
-from easy_tiler import RegularPolygonTile, TileBase, TruchetTile, PuckTile
+from easy_tiler import RegularPolygonTile, TileBase, TruchetTile, PuckTile, RileyTile
 from easy_tiler.helpers import color
 import random
 import math
@@ -17,7 +17,7 @@ def make_tile_factory(
     radius: float = 3.0,
     sides: int = 4,
 ):
-    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile:
+    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
         else:
@@ -45,7 +45,9 @@ def make_tile_factory(
         elif tile_type == 'puck':
             tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline)
         elif tile_type == 'truchet':
-            tile = TruchetTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius)
+            tile = TruchetTile(rot=actual_rot, flipped=flipped, outline=outline)
+        elif tile_type == 'riley':
+            tile = RileyTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
