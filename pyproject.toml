@@ -7,7 +7,12 @@ authors = [
     { name = "Joseph Barraud", email = "joseph.barraud@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = ["pycairo>=1.23.0", "pillow>=10.0.0", "numpy>=1.24.0"]
+dependencies = [
+    "pycairo>=1.23.0",
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "colorcet>=3.1.0",
+]
 
 [project.scripts]
 easy-tiler = "easy_tiler:main"

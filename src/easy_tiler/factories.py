@@ -4,6 +4,7 @@ from easy_tiler import RegularPolygonTile, TileBase, TruchetTile, PuckTile, Rile
 from easy_tiler.helpers import color
 import random
 import math
+import colorcet as cc
 
 
 def make_tile_factory(
@@ -16,7 +17,12 @@ def make_tile_factory(
     outline: bool = False,
     radius: float = 3.0,
     sides: int = 4,
+    palette: str | None = None,
 ):
+    
+    if palette:
+        colors = cc.palette[palette]
+
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
@@ -24,14 +30,20 @@ def make_tile_factory(
             actual_rot = rot
 
         if fg == 'random':
-            actual_fg = (random.random(), random.random(), random.random(), 1.0)
+            if palette:
+                actual_fg = color(random.choice(colors))
+            else:
+                actual_fg = (random.random(), random.random(), random.random(), 1.0)
         elif fg == 'black':
             actual_fg = color(0)
         else:
             actual_fg = fg
 
         if bg == 'random':
-            actual_bg = (random.random(), random.random(), random.random(), 1.0)
+            if palette:
+                actual_bg = color(random.choice(colors))
+            else:
+                actual_bg = (random.random(), random.random(), random.random(), 1.0)
         elif bg == 'white':
             actual_bg = color(1)
         else:
