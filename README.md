@@ -4,6 +4,30 @@
 
 Whether you're looking to generate geometric art, architectural patterns, or simple tiling textures, `easy-tiler` provides a flexible API and CLI to configure tile shapes, colors, and grid geometry.
 
+## Examples
+
+### Polygon Tiles
+
+```python
+from easy_tiler.io import save_png, save_svg
+from easy_tiler.factories import make_tile_factory
+from easy_tiler.grid import Grid
+
+# Define a 8x6 grid with 80x80px cells
+grid = Grid(8, 6, x_size=80, y_size=80)
+
+# Create a factory for polygon tiles (default is a square)
+factory = make_tile_factory(tile_type='polygon', bg='white', fg='random', sides=4, outline=False)
+
+# Save as PNG and SVG
+save_png('output.png', grid, factory)
+save_svg('output.svg', grid, factory)
+```
+
+This would produce an image of 8x6 squares with random colors, similar to the image below.
+
+![Polygon Tiles](examples/example_v1.png)
+
 ## Key Features
 
 - **Multiple Tile Types**: Support for regular polygons (triangles, squares, etc.), Truchet tiles, Riley tiles, and Puck (circle-based) tiles.
