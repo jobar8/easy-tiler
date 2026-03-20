@@ -1,10 +1,12 @@
 """Simple demo to render a grid of regular polygon tiles."""
 
-from easy_tiler import RegularPolygonTile, TileBase, TruchetTile, PuckTile, RileyTile
-from easy_tiler.helpers import color
-import random
 import math
+import random
+
 import colorcet as cc
+
+from easy_tiler import PuckTile, RegularPolygonTile, RileyTile, TileBase, TruchetTile
+from easy_tiler.helpers import color
 
 
 def make_tile_factory(
@@ -18,10 +20,13 @@ def make_tile_factory(
     radius: float = 3.0,
     sides: int = 4,
     palette: str | None = None,
+    num_colors: int | None = None,
 ):
-    
-    if palette:
+
+    if palette is not None:
         colors = cc.palette[palette]
+        if num_colors is not None:
+            colors = colors[:num_colors]
 
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         if rot == 'random':
@@ -30,7 +35,7 @@ def make_tile_factory(
             actual_rot = rot
 
         if fg == 'random':
-            if palette:
+            if palette is not None:
                 actual_fg = color(random.choice(colors))
             else:
                 actual_fg = (random.random(), random.random(), random.random(), 1.0)
@@ -40,7 +45,7 @@ def make_tile_factory(
             actual_fg = fg
 
         if bg == 'random':
-            if palette:
+            if palette is not None:
                 actual_bg = color(random.choice(colors))
             else:
                 actual_bg = (random.random(), random.random(), random.random(), 1.0)
