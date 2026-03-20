@@ -56,6 +56,12 @@ def color(val: float | int | list | tuple | str) -> tuple[float, float, float, f
     elif isinstance(val, str):
         if val[0] == '#':
             return (*hex_to_rgb(val), 1)
+        elif val == 'black':
+            return (0, 0, 0, 1)
+        elif val == 'white':
+            return (1, 1, 1, 1)
+        elif val == 'random':
+            return (random.random(), random.random(), random.random(), 1)
         else:
             raise ValueError(f'Invalid color string format: {val}')
     else:

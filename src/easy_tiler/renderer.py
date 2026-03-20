@@ -1,12 +1,13 @@
 """Renderer for composing tiles onto cairo surfaces."""
 
 import math
-
-import cairo
 from typing import Callable
 
-from .grid import Grid
-from .tiles import TileBase
+import cairo
+
+from easy_tiler.grid import Grid
+from easy_tiler.helpers import color
+from easy_tiler.tiles import TileBase
 
 
 class Renderer:
@@ -15,8 +16,9 @@ class Renderer:
     The `tile_getter` is a callable tile_getter(x, y) -> TileBase
     """
 
-    def __init__(self, scale: float = 1.0):
+    def __init__(self, scale: float = 1.0, bg_color: str | None = None):
         self.scale = scale
+        self.bg_color = bg_color
 
     def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
         width = grid.x_size
@@ -38,10 +40,17 @@ class Renderer:
             tile.draw_tile(ctx, width)
             ctx.restore()
 
+    def _prepare_surface(self, ctx: cairo.Context):
+        """Fill background if bg_color is set."""
+        if self.bg_color is not None:
+            ctx.set_source_rgba(*color(self.bg_color))
+            ctx.paint()
+
     def render_png(self, path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
         w_px, h_px = grid.pixel_size()
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w_px, h_px)
         ctx = cairo.Context(surface)
+        self._prepare_surface(ctx)
         self._render_to_context(ctx, grid, tile_getter)
         surface.write_to_png(path)
 
@@ -49,5 +58,6 @@ class Renderer:
         w_px, h_px = grid.pixel_size()
         surface = cairo.SVGSurface(path, w_px, h_px)
         ctx = cairo.Context(surface)
+        self._prepare_surface(ctx)
         self._render_to_context(ctx, grid, tile_getter)
         ctx.show_page()
