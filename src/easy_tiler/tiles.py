@@ -9,8 +9,7 @@ from dataclasses import dataclass
 
 import cairo
 
-from .helpers import color
-
+from easy_tiler.helpers import color
 
 # precompute some constants for efficiency and readability
 PI = math.pi
