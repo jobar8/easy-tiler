@@ -2,9 +2,9 @@
 
 import math
 
-from easy_tiler.io import save_png, save_svg
 from easy_tiler.factories import make_tile_factory
 from easy_tiler.grid import Grid
+from easy_tiler.io import save_png, save_svg
 
 PI = math.pi
 

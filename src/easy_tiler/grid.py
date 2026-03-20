@@ -1,7 +1,7 @@
 """Grid utilities for easy_tiler."""
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from typing import Iterator, Tuple
 
 

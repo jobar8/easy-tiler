@@ -1,6 +1,6 @@
 from .grid import Grid
 from .renderer import Renderer
-from .tiles import TileBase, RegularPolygonTile, TruchetTile, PuckTile, RileyTile
+from .tiles import PuckTile, RegularPolygonTile, RileyTile, TileBase, TruchetTile
 
 
 def main() -> None:
