@@ -43,7 +43,7 @@ class TileBase(abc.ABC):
     rotations = 4
     flip = False
 
-    def __init__(self, rot: float | int = 0, flipped: bool = False, outline: bool = True):
+    def __init__(self, rot: float = 0, flipped: bool = False, outline: bool = True):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
         self.outline = bool(outline)
@@ -96,7 +96,7 @@ class RegularPolygonTile(TileBase):
     - fill_fg: whether to fill polygon with foreground colour
     """
 
-    def __init__(self, sides: float | int = 4, inset: float = 0.85, **kwargs):
+    def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs):
         super().__init__(**kwargs)
         self.sides = max(3, int(sides))
         self.inset = float(inset)

@@ -1,6 +1,6 @@
 """IO helpers for saving surfaces and convenience exporters."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from easy_tiler.grid import Grid
 from easy_tiler.renderer import Renderer
