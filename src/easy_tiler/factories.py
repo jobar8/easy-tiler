@@ -103,13 +103,15 @@ def make_sequence_factory(
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
+        rotation = tile_sequence[offset]
 
         # Use (sequence_idx, y) to seed randomness for this specific sequence
         rng = random.Random(f'{sequence_idx}-{y}')
 
         if fg == 'random':
             if palette is not None:
-                actual_fg = color(rng.choice(colors))
+                sequence_colors = rng.choices(colors, k=sequence_length)
+                actual_fg = color(sequence_colors[offset])
             else:
                 actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
@@ -119,7 +121,8 @@ def make_sequence_factory(
 
         if bg == 'random':
             if palette is not None:
-                actual_bg = color(rng.choice(colors))
+                sequence_colors = rng.choices(colors, k=sequence_length)
+                actual_bg = color(sequence_colors[offset])
             else:
                 actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
@@ -130,21 +133,17 @@ def make_sequence_factory(
         if tile_type == 'polygon':
             tile = RegularPolygonTile(
                 sides=kwargs.get('sides', 4),
-                rot=tile_sequence[offset],
+                rot=rotation,
                 inset=kwargs.get('inset', 0.85),
                 flipped=kwargs.get('flipped', False),
                 outline=kwargs.get('outline', False),
             )
         elif tile_type == 'puck':
-            tile = PuckTile(
-                rot=tile_sequence[offset], flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False)
-            )
+            tile = PuckTile(rot=rotation, flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False))
         elif tile_type == 'truchet':
-            tile = TruchetTile(
-                rot=tile_sequence[offset], flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False)
-            )
+            tile = TruchetTile(rot=rotation, flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False))
         elif tile_type == 'riley':
-            tile = RileyTile(rot=tile_sequence[offset], flipped=False, outline=False, radius=1.0)
+            tile = RileyTile(rot=rotation, flipped=False, outline=False, radius=1.0)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
