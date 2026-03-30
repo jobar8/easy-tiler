@@ -44,7 +44,7 @@ def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
     return (r, g, b)
 
 
-def color(val: float | int | list | tuple | str) -> tuple[float, float, float, float]:
+def color(val: float | list | tuple | str) -> tuple[float, float, float, float]:
     """Create an RGBA color tuple from a variety of inputs."""
     if isinstance(val, (int, float)):
         return (val, val, val, 1)
@@ -65,7 +65,7 @@ def color(val: float | int | list | tuple | str) -> tuple[float, float, float, f
         else:
             raise ValueError(f'Invalid color string format: {val}')
     else:
-        raise ValueError(f'Unsupported color value: {val}')
+        raise TypeError(f'Unsupported color value: {val}')
 
 
 def make_bgfg(hs, ls, ss):

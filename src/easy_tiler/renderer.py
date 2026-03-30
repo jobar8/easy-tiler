@@ -1,7 +1,7 @@
 """Renderer for composing tiles onto cairo surfaces."""
 
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import cairo
 

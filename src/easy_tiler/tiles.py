@@ -43,7 +43,7 @@ class TileBase(abc.ABC):
     rotations = 4
     flip = False
 
-    def __init__(self, rot: float | int = 0, flipped: bool = False, outline: bool = True):
+    def __init__(self, rot: float = 0, flipped: bool = False, outline: bool = True):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
         self.outline = bool(outline)
@@ -96,7 +96,7 @@ class RegularPolygonTile(TileBase):
     - fill_fg: whether to fill polygon with foreground colour
     """
 
-    def __init__(self, sides: float | int = 4, inset: float = 0.85, **kwargs):
+    def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs):
         super().__init__(**kwargs)
         self.sides = max(3, int(sides))
         self.inset = float(inset)
@@ -160,12 +160,12 @@ class TruchetTile(TileBase):
         wh = g.width
         fg = g.fg_color if g.fg_color is not None else color(0)
 
-        # draw top-left corner
+        # draw bottom-left corner
         ctx.set_source_rgba(*fg)
-        ctx.move_to(wh, 0)
+        ctx.move_to(0, 0)
+        ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.line_to(wh, 0)
         ctx.fill()
         ctx.restore()
 
