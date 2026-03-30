@@ -160,12 +160,12 @@ class TruchetTile(TileBase):
         wh = g.width
         fg = g.fg_color if g.fg_color is not None else color(0)
 
-        # draw top-left corner
+        # draw bottom-left corner
         ctx.set_source_rgba(*fg)
-        ctx.move_to(wh, 0)
+        ctx.move_to(0, 0)
+        ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.line_to(wh, 0)
         ctx.fill()
         ctx.restore()
 
