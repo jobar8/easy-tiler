@@ -176,6 +176,7 @@ class RileyTile(TileBase):
     def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
