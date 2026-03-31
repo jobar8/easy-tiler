@@ -100,6 +100,13 @@ def make_sequence_factory(
     else:
         sequence_length = len(tile_sequence)
 
+    # Get other keyword args
+    inset = kwargs.get('inset', 0.85)
+    flipped = kwargs.get('flipped', False)
+    outline = kwargs.get('outline', False)
+    radius = kwargs.get('radius', 1.0)
+    sides = kwargs.get('sides', 4)
+
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
@@ -131,19 +138,13 @@ def make_sequence_factory(
             actual_bg = bg
 
         if tile_type == 'polygon':
-            tile = RegularPolygonTile(
-                sides=kwargs.get('sides', 4),
-                rot=rotation,
-                inset=kwargs.get('inset', 0.85),
-                flipped=kwargs.get('flipped', False),
-                outline=kwargs.get('outline', False),
-            )
+            tile = RegularPolygonTile(sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline)
         elif tile_type == 'puck':
-            tile = PuckTile(rot=rotation, flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False))
+            tile = PuckTile(rot=rotation, flipped=flipped, outline=outline)
         elif tile_type == 'truchet':
-            tile = TruchetTile(rot=rotation, flipped=kwargs.get('flipped', False), outline=kwargs.get('outline', False))
+            tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline)
         elif tile_type == 'riley':
-            tile = RileyTile(rot=rotation, flipped=False, outline=False, radius=1.0)
+            tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
