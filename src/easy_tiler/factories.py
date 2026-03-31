@@ -4,6 +4,7 @@ import math
 import random
 
 import colorcet as cc
+import numpy as np
 
 from easy_tiler import PuckTile, RegularPolygonTile, RileyTile, TileBase, TruchetTile
 from easy_tiler.helpers import color
@@ -85,15 +86,14 @@ def make_sequence_factory(
     tile_sequence: list[int] | None = None,
     fg: tuple[float, float, float, float] | str = 'random',
     bg: tuple[float, float, float, float] | str = 'random',
-    palette: str | None = None,
+    palette: str = 'glasbey_dark',
     num_colors: int | None = None,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
-    if palette is not None:
-        colors = cc.palette[palette]
-        if num_colors is not None:
-            colors = colors[:num_colors]
+    colors = cc.palette[palette]
+    if num_colors is not None:
+        colors = colors[:num_colors]
 
     if tile_sequence is None:
         tile_sequence = [0] * sequence_length
@@ -107,31 +107,31 @@ def make_sequence_factory(
     radius = kwargs.get('radius', 1.0)
     sides = kwargs.get('sides', 4)
 
+    # Use parameters to seed randomness for this specific sequence
+    rng = random.Random(f'{tile_type}-{tile_sequence}')
+    fg_sequence_colors = rng.choices(colors, k=sequence_length)
+    bg_sequence_colors = rng.choices(colors, k=sequence_length)
+
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
         rotation = tile_sequence[offset]
 
-        # Use (sequence_idx, y) to seed randomness for this specific sequence
-        rng = random.Random(f'{sequence_idx}-{y}')
-
-        if fg == 'random':
-            if palette is not None:
-                sequence_colors = rng.choices(colors, k=sequence_length)
-                actual_fg = color(sequence_colors[offset])
-            else:
-                actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
+        if fg == 'roll':
+            sequence_colors = np.roll(fg_sequence_colors, sequence_idx)
+            actual_fg = color(sequence_colors[offset])
+        elif fg == 'random':
+            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
             actual_fg = color(0)
         else:
             actual_fg = fg
 
-        if bg == 'random':
-            if palette is not None:
-                sequence_colors = rng.choices(colors, k=sequence_length)
-                actual_bg = color(sequence_colors[offset])
-            else:
-                actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
+        if bg == 'roll':
+            sequence_colors = np.roll(bg_sequence_colors, sequence_idx)
+            actual_bg = color(sequence_colors[offset])
+        elif bg == 'random':
+            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
             actual_bg = color(1)
         else:

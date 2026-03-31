@@ -11,15 +11,16 @@ def run_sequence_demo():
 
     # Factory with sequence length of 4, random colors from a palette
     factory = make_sequence_factory(
-        tile_type='truchet',
+        tile_type='puck',
         # tile_sequence=[1,0,2,3],
         # tile_sequence=[0,1,2,3],
         # tile_sequence=[1, 2, 0, 3],
-        tile_sequence=[1, 2],
-        # sequence_length=4,
-        fg='random',
-        bg='white',
-        palette='glasbey_dark',
+        # tile_sequence=[1, 2],
+        sequence_length=4,
+        fg='roll',
+        bg='roll',
+        # palette='glasbey_dark',
+        palette='glasbey',
         num_colors=12,
         outline=False,
     )
