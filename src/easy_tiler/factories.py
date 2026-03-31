@@ -156,3 +156,80 @@ def make_sequence_factory(
         return tile
 
     return factory
+
+
+def make_node_factory(
+    tile_type: str = 'polygon',
+    node_sequence: np.ndarray | None = None,
+    fg: tuple[float, float, float, float] | str = 'random',
+    bg: tuple[float, float, float, float] | str = 'random',
+    palette: str = 'glasbey_dark',
+    num_colors: int | None = None,
+    **kwargs,
+):
+    """Factory for creating nodes, i.e. a grid of tiles."""
+    if node_sequence is None:
+        node_sequence = np.random.randint(0, 4, size=(4, 4))
+    colors = cc.palette[palette]
+    if num_colors is not None:
+        colors = colors[:num_colors]
+
+    # Get other keyword args
+    inset = kwargs.get('inset', 0.85)
+    flipped = kwargs.get('flipped', False)
+    outline = kwargs.get('outline', False)
+    radius = kwargs.get('radius', 1.0)
+    sides = kwargs.get('sides', 4)
+
+    # Use parameters to seed randomness for this specific sequence
+    rng = random.Random(f'{tile_type}-{node_sequence}')
+    nr, nc = node_sequence.shape
+    fg_sequence_colors = rng.choices(colors, k=nr * nc)
+    bg_sequence_colors = rng.choices(colors, k=nr * nc)
+
+    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
+        node_idx = x // nc
+        x_offset = x % nc
+        y_offset = y % nr
+        offset = x_offset + y_offset * nc
+        rotation = node_sequence[y_offset, x_offset]
+
+        if fg == 'roll':
+            sequence_colors = np.roll(fg_sequence_colors, node_idx)
+            actual_fg = color(sequence_colors[offset])
+        elif fg == 'random':
+            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
+        elif fg == 'black':
+            actual_fg = color(0)
+        else:
+            actual_fg = fg
+
+        if bg == 'roll':
+            sequence_colors = np.roll(bg_sequence_colors, node_idx)
+            actual_bg = color(sequence_colors[offset])
+        elif bg == 'random':
+            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
+        elif bg == 'white':
+            actual_bg = color(1)
+        else:
+            actual_bg = bg
+
+        if tile_type == 'polygon':
+            tile = RegularPolygonTile(sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline)
+        elif tile_type == 'puck':
+            tile = PuckTile(rot=rotation, flipped=flipped, outline=outline)
+        elif tile_type == 'truchet':
+            tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline)
+        elif tile_type == 'riley':
+            tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius)
+        else:
+            raise ValueError(f'Invalid tile_type: {tile_type}')
+
+        # monkeypatch draw_tile to use the calculated colors
+        def draw_tile_with_bg(ctx, wh, bg_color=None, fg_color=None):
+            return TileBase.draw_tile(tile, ctx, wh, bg_color=actual_bg, fg_color=actual_fg)
+
+        tile.draw_tile = draw_tile_with_bg  # type: ignore[assignment]
+        return tile
+
+    return factory
