@@ -67,18 +67,18 @@ class TileBase(abc.ABC):
         fg_color = g.fg_color if g.fg_color is not None else color(0)
 
         # draw background
-        # ctx.save()
         ctx.set_source_rgba(*bg_color)
-        ctx.rectangle(0, 0, wh, wh)
 
         # Draw outline of tile
         if self.outline:
+            ctx.rectangle(0, 0, wh, wh)
             ctx.fill_preserve()
             ctx.set_source_rgba(*fg_color)
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
-            ctx.fill()
+            # ctx.fill()
+            pass
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
@@ -219,7 +219,8 @@ class CairoTile(TileBase):
         super().__init__(**kwargs)
 
     @staticmethod
-    def draw_pentagon(ctx, side_length):
+    def draw_pentagon(ctx, side_length, fg):
+        ctx.set_source_rgba(*fg)
         ctx.rotate(-PI6)
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(PI3)
@@ -233,6 +234,13 @@ class CairoTile(TileBase):
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(2 * PI3)
         ctx.fill_preserve()
+        # stroke with slightly darker foreground
+        # ctx.set_line_width(max(1.0, wh * 0.01))
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
+        ctx.set_source_rgba(0, 0, 0, 1)
+        ctx.stroke_preserve()
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
@@ -248,7 +256,7 @@ class CairoTile(TileBase):
         ctx.move_to(0, 0)
         # ctx.rotate(PI6)
         # debug_print_ctx(ctx)
-        self.draw_pentagon(ctx, side_length)
+        self.draw_pentagon(ctx, side_length, fg)
         # debug_print_ctx(ctx)
         # ctx.stroke_preserve()
 
@@ -257,18 +265,18 @@ class CairoTile(TileBase):
         ctx.rel_move_to(polygon_width, polygon_width)
         ctx.rotate(PI)
         # debug_print_ctx(ctx)
-        self.draw_pentagon(ctx, side_length)
+        self.draw_pentagon(ctx, side_length, fg)
 
         # # 3rd polygon (right)
         ctx.rotate(PI2)
         # debug_print_ctx(ctx)
-        self.draw_pentagon(ctx, side_length)
+        self.draw_pentagon(ctx, side_length, fg)
         # debug_print_ctx(ctx)
 
         # # 4th polygon (left)
         ctx.rel_move_to(polygon_width, -polygon_width)
         ctx.rotate(PI)
-        self.draw_pentagon(ctx, side_length)
+        self.draw_pentagon(ctx, side_length, fg)
         # debug_print_ctx(ctx)
 
         # ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
