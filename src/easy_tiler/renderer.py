@@ -20,7 +20,9 @@ class Renderer:
         self.scale = scale
         self.bg_color = bg_color
 
-    def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
+    def _render_to_context(
+        self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]
+    ):
         width = grid.x_size
 
         # Appply transform to context to render skewing of the grid
@@ -38,7 +40,13 @@ class Renderer:
             ctx.translate(px, py)
             # ensure each tile draws in a wh x wh square starting at 0,0
             tile.draw_tile(ctx, width)
-            ctx.restore()
+
+            if grid.double:
+                ctx.save()
+                ctx.translate(px + grid.x_size / 2, py + grid.y_size / 2)
+                tile.draw_tile(
+                    ctx, width
+                )  # restore at the end brings it back to previous saved state
 
     def _prepare_surface(self, ctx: cairo.Context):
         """Fill background if bg_color is set."""
