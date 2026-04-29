@@ -25,7 +25,7 @@ def run_node_demo():
         outline=False,
     )
 
-    save_png('node_demo.png', grid, factory, scale=1)
+    save_png('node_demo.png', grid, factory, scale=1, background_col='white')
     save_svg('node_demo.svg', grid, factory)
     print('Wrote node_demo.png and node_demo.svg')
 

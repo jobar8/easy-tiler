@@ -18,16 +18,25 @@ def make_tile_factory(
     inset: float | None = None,
     flipped: bool = False,
     outline: bool = False,
+    outline_color: tuple[float, float, float, float] | str | None = None,
     radius: float = 3.0,
     sides: int = 4,
     palette: str | None = None,
     num_colors: int | None = None,
 ):
+    """
+    Make a factory for creating tiles of a specific type with a given configuration.
+    """
 
     if palette is not None:
         colors = cc.palette[palette]
         if num_colors is not None:
             colors = colors[:num_colors]
+
+    if outline_color is None:
+        actual_outline_color = None
+    else:
+        actual_outline_color = color(outline_color)
 
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         if rot == 'random':
@@ -59,7 +68,9 @@ def make_tile_factory(
             actual_inset = math.sqrt(2)
 
         if tile_type == 'polygon':
-            tile = RegularPolygonTile(sides=sides, rot=actual_rot, inset=actual_inset, flipped=flipped, outline=outline)
+            tile = RegularPolygonTile(
+                sides=sides, rot=actual_rot, inset=actual_inset, flipped=flipped, outline=outline
+            )
         elif tile_type == 'puck':
             tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline)
         elif tile_type == 'truchet':
@@ -72,9 +83,16 @@ def make_tile_factory(
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
         # attach bg/fg via closure by monkeypatching draw_tile call
-        def draw_tile_with_bg(ctx, wh, bg_color=None, fg_color=None):
+        def draw_tile_with_bg(ctx, wh, bg_color=None, fg_color=None, outline_color=None):
             # Call the base implementation to avoid recursive wrapper calls
-            return TileBase.draw_tile(tile, ctx, wh, bg_color=actual_bg, fg_color=actual_fg)
+            return TileBase.draw_tile(
+                tile,
+                ctx,
+                wh,
+                bg_color=actual_bg,
+                fg_color=actual_fg,
+                outline_color=actual_outline_color,
+            )
 
         tile.draw_tile = draw_tile_with_bg  # type: ignore[assignment]
         return tile
@@ -140,7 +158,9 @@ def make_sequence_factory(
             actual_bg = bg
 
         if tile_type == 'polygon':
-            tile = RegularPolygonTile(sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline)
+            tile = RegularPolygonTile(
+                sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline
+            )
         elif tile_type == 'puck':
             tile = PuckTile(rot=rotation, flipped=flipped, outline=outline)
         elif tile_type == 'truchet':
@@ -217,7 +237,9 @@ def make_node_factory(
             actual_bg = bg
 
         if tile_type == 'polygon':
-            tile = RegularPolygonTile(sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline)
+            tile = RegularPolygonTile(
+                sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline
+            )
         elif tile_type == 'puck':
             tile = PuckTile(rot=rotation, flipped=flipped, outline=outline)
         elif tile_type == 'truchet':

@@ -33,6 +33,7 @@ class TileConfig:
     width: int
     bg_color: tuple | None = None
     fg_color: tuple | None = None
+    outline_color: tuple | None = None
 
     def __post_init__(self) -> None:
         if self.bg_color is not None and len(self.bg_color) != 4:
@@ -63,8 +64,8 @@ class TileBase(abc.ABC):
     def init_tile(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
         wh2 = wh / 2.0
-        bg_color = g.bg_color if g.bg_color is not None else color(1)
-        fg_color = g.fg_color if g.fg_color is not None else color(0)
+        bg_color = g.bg_color
+        outline_color = g.outline_color if g.outline_color is not None else color(0)
 
         # draw background
         ctx.set_source_rgba(*bg_color)
@@ -93,8 +94,8 @@ class TileBase(abc.ABC):
     def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None) -> None:
-        g = TileConfig(wh, bg_color, fg_color)
+    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None, outline_color=None) -> None:
+        g = TileConfig(wh, bg_color, fg_color, outline_color)
         self.init_tile(ctx, g)
         self.draw(ctx, g)
 
