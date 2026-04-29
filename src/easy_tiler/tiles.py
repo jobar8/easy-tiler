@@ -40,10 +40,6 @@ class TileConfig:
             raise ValueError('bg_color must be a tuple of 4 floats (r, g, b, a)')
         if self.fg_color is not None and len(self.fg_color) != 4:
             raise ValueError('fg_color must be a tuple of 4 floats (r, g, b, a)')
-        if self.bg_color is None and self.fg_color is None:
-            # default to white bg and black fg
-            self.bg_color = color(1)
-            self.fg_color = color(0)
 
 
 class TileBase(abc.ABC):
@@ -68,18 +64,24 @@ class TileBase(abc.ABC):
         outline_color = g.outline_color if g.outline_color is not None else color(0)
 
         # draw background
-        ctx.set_source_rgba(*bg_color)
+        if bg_color is not None:
+            ctx.set_source_rgba(*bg_color)
+        else:
+            ctx.set_source_rgba(0, 0, 0, 0)
+        ctx.rectangle(0, 0, wh, wh)
 
         # Draw outline of tile
         if self.outline:
             ctx.rectangle(0, 0, wh, wh)
             ctx.fill_preserve()
-            ctx.set_source_rgba(*fg_color)
+            ctx.set_source_rgba(*outline_color)
+
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
-            # ctx.fill()
-            pass
+            if bg_color is not None:
+                ctx.fill()
+            # pass
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
@@ -94,7 +96,9 @@ class TileBase(abc.ABC):
     def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None, outline_color=None) -> None:
+    def draw_tile(
+        self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None, outline_color=None
+    ) -> None:
         g = TileConfig(wh, bg_color, fg_color, outline_color)
         self.init_tile(ctx, g)
         self.draw(ctx, g)
