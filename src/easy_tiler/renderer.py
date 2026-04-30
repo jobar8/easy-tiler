@@ -52,7 +52,6 @@ class Renderer:
         """Fill background if background_col is set."""
         if self.background_col is not None:
             ctx.set_source_rgba(*color(self.background_col))
-            print(*self.background_col)
             ctx.paint()
 
     def render_png(self, path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):

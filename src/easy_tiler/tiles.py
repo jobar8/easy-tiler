@@ -72,7 +72,7 @@ class TileBase(abc.ABC):
 
         # Draw outline of tile
         if self.outline:
-            ctx.rectangle(0, 0, wh, wh)
+            # ctx.rectangle(0, 0, wh, wh)
             ctx.fill_preserve()
             ctx.set_source_rgba(*outline_color)
 
