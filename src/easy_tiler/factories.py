@@ -47,38 +47,40 @@ def make_tile_factory(
     else:
         actual_outline_color = color(outline_color)
 
-    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
+    # Pre-calculate static values outside the closure to optimize performance
+    static_inset = math.sqrt(2) if inset is None else inset
+    
+    # Pre-resolve colors if they are not random
+    static_fg = color(fg) if fg != 'random' else None
+    static_bg = color(bg) if bg != 'random' else None
+
+    def factory(
+        x: int, y: int
+    ) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
         else:
             actual_rot = rot
 
-        if fg == 'random':
+        if static_fg is not None:
+            actual_fg = static_fg
+        else:
             if palette is not None:
                 actual_fg = color(random.choice(colors))
             else:
                 actual_fg = (random.random(), random.random(), random.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = color(0)
-        else:
-            actual_fg = fg
 
-        if bg == 'random':
+        if static_bg is not None:
+            actual_bg = static_bg
+        else:
             if palette is not None:
                 actual_bg = color(random.choice(colors))
             else:
                 actual_bg = (random.random(), random.random(), random.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = color(1)
-        else:
-            actual_bg = bg
-
-        if inset is None:
-            actual_inset = math.sqrt(2)
 
         if tile_type == 'polygon':
             tile = RegularPolygonTile(
-                sides=sides, rot=actual_rot, inset=actual_inset, flipped=flipped, outline=outline
+                sides=sides, rot=actual_rot, inset=static_inset, flipped=flipped, outline=outline
             )
         elif tile_type == 'puck':
             tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline)
