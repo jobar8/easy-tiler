@@ -61,7 +61,7 @@ class TileBase(abc.ABC):
         wh = g.width
         wh2 = wh / 2.0
         bg_color = g.bg_color
-        outline_color = g.outline_color if g.outline_color is not None else color(0)
+        outline_color = g.outline_color  # if g.outline_color is not None else color(0)
 
         # draw background
         if bg_color is not None:
@@ -110,7 +110,6 @@ class RegularPolygonTile(TileBase):
     Parameters
     - sides: number of sides (3 = triangle, 4 = square, ...)
     - inset: fraction of half-width to use as radius (0..1)
-    - fill_fg: whether to fill polygon with foreground colour
     """
 
     def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs):
@@ -220,17 +219,16 @@ class RileyTile(TileBase):
 class PentagonTile(TileBase):
     """Draw a pentagon tile that can be used in Cairo tiling."""
 
-    def __init__(self, side_coeff: float |None = None, **kwargs):
+    def __init__(self, side_length: float | None = None, **kwargs):
         super().__init__(**kwargs)
-        if side_coeff is None:
-            self.side_coeff = 1. / (4 * math.cos(PI6))
+        if side_length is None:
+            self.side_length = 1.0 / (4 * math.cos(PI6))
         else:
-            self.side_coeff = side_coeff
+            self.side_length = side_length
         self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
-        side_length = g.width * self.side_coeff
-        # bg = g.bg_color if g.bg_color is not None else color(1)
+        side_length = g.width * self.side_length
         fg = g.fg_color if g.fg_color is not None else color(0)
 
         ctx.set_source_rgba(*fg)

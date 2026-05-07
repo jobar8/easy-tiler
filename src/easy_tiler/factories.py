@@ -28,7 +28,7 @@ def make_tile_factory(
     outline: bool = False,
     outline_color: tuple[float, float, float, float] | str | None = None,
     radius: float = 3.0,
-    side_coeff: float | None = None,
+    side_length: float | None = None,
     sides: int = 4,
     palette: str | None = None,
     num_colors: int | None = None,
@@ -42,14 +42,11 @@ def make_tile_factory(
         if num_colors is not None:
             colors = colors[:num_colors]
 
-    if outline_color is None:
-        actual_outline_color = None
-    else:
-        actual_outline_color = color(outline_color)
+    actual_outline_color = color(outline_color)
 
     # Pre-calculate static values outside the closure to optimize performance
     static_inset = math.sqrt(2) if inset is None else inset
-    
+
     # Pre-resolve colors if they are not random
     static_fg = color(fg) if fg != 'random' else None
     static_bg = color(bg) if bg != 'random' else None
@@ -80,7 +77,7 @@ def make_tile_factory(
 
         if tile_type == 'polygon':
             tile = RegularPolygonTile(
-                sides=sides, rot=actual_rot, inset=static_inset, flipped=flipped, outline=outline
+                rot=actual_rot, flipped=flipped, outline=outline, sides=sides, inset=static_inset
             )
         elif tile_type == 'puck':
             tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline)
@@ -92,7 +89,7 @@ def make_tile_factory(
             tile = CairoTile(rot=actual_rot, flipped=flipped, outline=outline)
         elif tile_type == 'pentagon':
             tile = PentagonTile(
-                rot=actual_rot, flipped=flipped, outline=outline, side_coeff=side_coeff
+                rot=actual_rot, flipped=flipped, outline=outline, side_length=side_length
             )
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
