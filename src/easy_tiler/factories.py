@@ -6,7 +6,15 @@ import random
 import colorcet as cc
 import numpy as np
 
-from easy_tiler import CairoTile, PuckTile, RegularPolygonTile, RileyTile, TileBase, TruchetTile
+from easy_tiler import (
+    CairoTile,
+    PentagonTile,
+    PuckTile,
+    RegularPolygonTile,
+    RileyTile,
+    TileBase,
+    TruchetTile,
+)
 from easy_tiler.helpers import color
 
 
@@ -20,6 +28,7 @@ def make_tile_factory(
     outline: bool = False,
     outline_color: tuple[float, float, float, float] | str | None = None,
     radius: float = 3.0,
+    side_coeff: float | None = None,
     sides: int = 4,
     palette: str | None = None,
     num_colors: int | None = None,
@@ -79,6 +88,10 @@ def make_tile_factory(
             tile = RileyTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius)
         elif tile_type == 'cairo':
             tile = CairoTile(rot=actual_rot, flipped=flipped, outline=outline)
+        elif tile_type == 'pentagon':
+            tile = PentagonTile(
+                rot=actual_rot, flipped=flipped, outline=outline, side_coeff=side_coeff
+            )
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 

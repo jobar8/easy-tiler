@@ -217,6 +217,48 @@ class RileyTile(TileBase):
         ctx.restore()
 
 
+class PentagonTile(TileBase):
+    """Draw a pentagon tile that can be used in Cairo tiling."""
+
+    def __init__(self, side_coeff: float |None = None, **kwargs):
+        super().__init__(**kwargs)
+        if side_coeff is None:
+            self.side_coeff = 1. / (4 * math.cos(PI6))
+        else:
+            self.side_coeff = side_coeff
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        side_length = g.width * self.side_coeff
+        # bg = g.bg_color if g.bg_color is not None else color(1)
+        fg = g.fg_color if g.fg_color is not None else color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(0, 0)
+        ctx.rotate(-PI6)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI2)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        # bottom is shorter
+        ctx.rel_line_to((math.sqrt(3) - 1) * side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(2 * PI3)
+        ctx.fill_preserve()
+
+        # draw outline of the pentagon
+        # ctx.set_line_width(max(1.0, wh * 0.01))
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
+        ctx.set_source_rgba(*color(g.outline_color))
+        ctx.stroke()
+        ctx.restore()
+
+
 class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
