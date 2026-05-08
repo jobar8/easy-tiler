@@ -120,6 +120,7 @@ def make_sequence_factory(
     bg: tuple[float, float, float, float] | str = 'random',
     palette: str = 'glasbey_dark',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
@@ -131,7 +132,6 @@ def make_sequence_factory(
         tile_sequence = [0] * sequence_length
     else:
         sequence_length = len(tile_sequence)
-
     # Get other keyword args
     inset = kwargs.get('inset', 0.85)
     flipped = kwargs.get('flipped', False)
@@ -140,7 +140,10 @@ def make_sequence_factory(
     sides = kwargs.get('sides', 4)
 
     # Use parameters to seed randomness for this specific sequence
-    rng = random.Random(f'{tile_type}-{tile_sequence}')
+    if use_seed:
+        rng = random.Random(f'{tile_type}-{tile_sequence}')
+    else:
+        rng = random.Random()
     fg_sequence_colors = rng.choices(colors, k=sequence_length)
     bg_sequence_colors = rng.choices(colors, k=sequence_length)
 
@@ -149,7 +152,9 @@ def make_sequence_factory(
         offset = x % sequence_length
         rotation = tile_sequence[offset]
 
-        if fg == 'roll':
+        if fg == 'sequence':
+            actual_fg = color(fg_sequence_colors[offset])
+        elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, sequence_idx)
             actual_fg = color(sequence_colors[offset])
         elif fg == 'random':
@@ -159,7 +164,9 @@ def make_sequence_factory(
         else:
             actual_fg = fg
 
-        if bg == 'roll':
+        if bg == 'sequence':
+            actual_bg = color(bg_sequence_colors[offset])
+        elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, sequence_idx)
             actual_bg = color(sequence_colors[offset])
         elif bg == 'random':
