@@ -235,7 +235,9 @@ def make_node_factory(
         offset = x_offset + y_offset * nc
         rotation = node_sequence[y_offset, x_offset]
 
-        if fg == 'roll':
+        if fg == 'sequence':
+            actual_fg = color(fg_sequence_colors[offset])
+        elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, node_idx)
             actual_fg = color(sequence_colors[offset])
         elif fg == 'random':
@@ -245,7 +247,9 @@ def make_node_factory(
         else:
             actual_fg = fg
 
-        if bg == 'roll':
+        if bg == 'sequence':
+            actual_bg = color(bg_sequence_colors[offset])
+        elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, node_idx)
             actual_bg = color(sequence_colors[offset])
         elif bg == 'random':
