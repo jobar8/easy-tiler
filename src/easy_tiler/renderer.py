@@ -16,11 +16,13 @@ class Renderer:
     The `tile_getter` is a callable tile_getter(x, y) -> TileBase
     """
 
-    def __init__(self, scale: float = 1.0, bg_color: str | None = None):
+    def __init__(self, scale: float = 1.0, background_col: str | None = None):
         self.scale = scale
-        self.bg_color = bg_color
+        self.background_col = background_col
 
-    def _render_to_context(self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
+    def _render_to_context(
+        self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]
+    ):
         width = grid.x_size
 
         # Appply transform to context to render skewing of the grid
@@ -38,12 +40,18 @@ class Renderer:
             ctx.translate(px, py)
             # ensure each tile draws in a wh x wh square starting at 0,0
             tile.draw_tile(ctx, width)
-            ctx.restore()
+
+            if grid.double:
+                ctx.save()
+                ctx.translate(px + grid.x_size / 2, py + grid.y_size / 2)
+                tile.draw_tile(
+                    ctx, width
+                )  # restore at the end brings it back to previous saved state
 
     def _prepare_surface(self, ctx: cairo.Context):
-        """Fill background if bg_color is set."""
-        if self.bg_color is not None:
-            ctx.set_source_rgba(*color(self.bg_color))
+        """Fill background if background_col is set."""
+        if self.background_col is not None:
+            ctx.set_source_rgba(*color(self.background_col))
             ctx.paint()
 
     def render_png(self, path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):

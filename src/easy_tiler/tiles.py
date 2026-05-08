@@ -14,6 +14,18 @@ from easy_tiler.helpers import color
 # precompute some constants for efficiency and readability
 PI = math.pi
 PI2 = math.pi / 2
+PI3 = math.pi / 3
+PI6 = math.pi / 6
+
+
+def debug_print_ctx(ctx: cairo.Context) -> None:
+    """Print the current point and matrix of the Cairo context for debugging."""
+    x, y = ctx.get_current_point()
+    mtrx = ctx.get_matrix()
+    print(
+        f'x={x:.2f} y={y:.2f} xx={mtrx.xx:.2f} xy={mtrx.xy:.2f} yx={mtrx.yx:.2f}',
+        f'yy={mtrx.yy:.2f} x0={mtrx.x0:.2f} y0={mtrx.y0:.2f}',
+    )
 
 
 @dataclass
@@ -21,16 +33,19 @@ class TileConfig:
     width: int
     bg_color: tuple | None = None
     fg_color: tuple | None = None
+    outline_color: tuple | None = None
 
     def __post_init__(self) -> None:
+        self.outline_color = color(self.outline_color)
+        self.bg_color = color(self.bg_color)
+        self.fg_color = color(self.fg_color)
+
         if self.bg_color is not None and len(self.bg_color) != 4:
             raise ValueError('bg_color must be a tuple of 4 floats (r, g, b, a)')
         if self.fg_color is not None and len(self.fg_color) != 4:
             raise ValueError('fg_color must be a tuple of 4 floats (r, g, b, a)')
-        if self.bg_color is None and self.fg_color is None:
-            # default to white bg and black fg
-            self.bg_color = color(1)
-            self.fg_color = color(0)
+        if self.outline_color is not None and len(self.outline_color) != 4:
+            raise ValueError('outline_color must be a tuple of 4 floats (r, g, b, a)')
 
 
 class TileBase(abc.ABC):
@@ -51,18 +66,15 @@ class TileBase(abc.ABC):
     def init_tile(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
         wh2 = wh / 2.0
-        bg_color = g.bg_color if g.bg_color is not None else color(1)
-        fg_color = g.fg_color if g.fg_color is not None else color(0)
 
         # draw background
-        ctx.save()
-        ctx.set_source_rgba(*bg_color)
+        ctx.set_source_rgba(*g.bg_color)
         ctx.rectangle(0, 0, wh, wh)
 
         # Draw outline of tile
         if self.outline:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*fg_color)
+            ctx.set_source_rgba(*g.outline_color)
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
@@ -81,8 +93,10 @@ class TileBase(abc.ABC):
     def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None) -> None:
-        g = TileConfig(wh, bg_color, fg_color)
+    def draw_tile(
+        self, ctx: cairo.Context, wh: int, bg_color=None, fg_color=None, outline_color=None
+    ) -> None:
+        g = TileConfig(wh, bg_color, fg_color, outline_color)
         self.init_tile(ctx, g)
         self.draw(ctx, g)
 
@@ -93,7 +107,6 @@ class RegularPolygonTile(TileBase):
     Parameters
     - sides: number of sides (3 = triangle, 4 = square, ...)
     - inset: fraction of half-width to use as radius (0..1)
-    - fill_fg: whether to fill polygon with foreground colour
     """
 
     def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs):
@@ -125,7 +138,9 @@ class RegularPolygonTile(TileBase):
         # stroke with slightly darker foreground
         ctx.fill_preserve()
         ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3])
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
         ctx.stroke()
         ctx.restore()
 
@@ -176,6 +191,7 @@ class RileyTile(TileBase):
     def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
@@ -194,4 +210,119 @@ class RileyTile(TileBase):
         ctx.line_to(0, 0)
         ctx.line_to(wh, 0)
         ctx.fill()
+        ctx.restore()
+
+
+class PentagonTile(TileBase):
+    """Draw a pentagon tile that can be used in Cairo tiling."""
+
+    def __init__(self, side_length: float | None = None, **kwargs):
+        super().__init__(**kwargs)
+        if side_length is None:
+            self.side_length = 1.0 / (4 * math.cos(PI6))
+        else:
+            self.side_length = side_length
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        side_length = g.width * self.side_length
+        fg = g.fg_color if g.fg_color is not None else color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(0, 0)
+        ctx.rotate(-PI6)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI2)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        # bottom is shorter
+        ctx.rel_line_to((math.sqrt(3) - 1) * side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(2 * PI3)
+        ctx.fill_preserve()
+
+        # draw outline of the pentagon
+        # ctx.set_line_width(max(1.0, wh * 0.01))
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
+        ctx.set_source_rgba(*color(g.outline_color))
+        ctx.stroke()
+        ctx.restore()
+
+
+class CairoTile(TileBase):
+    """Draw a Cairo tile."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def draw_pentagon(ctx, side_length, fg):
+        ctx.set_source_rgba(*fg)
+        ctx.rotate(-PI6)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI2)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(PI3)
+        # bottom is shorter
+        ctx.rel_line_to((math.sqrt(3) - 1) * side_length, 0)
+        ctx.rotate(PI3)
+        ctx.rel_line_to(side_length, 0)
+        ctx.rotate(2 * PI3)
+        ctx.fill_preserve()
+        # stroke with slightly darker foreground
+        # ctx.set_line_width(max(1.0, wh * 0.01))
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
+        ctx.set_source_rgba(0, 0, 0, 1)
+        ctx.stroke_preserve()
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        side_length = wh / (4 * math.cos(PI6))
+        fg = g.fg_color if g.fg_color is not None else color(0)
+        polygon_width = 2 * side_length * math.cos(PI6)
+        ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+
+        # draw tile using Cairo code
+        ctx.set_source_rgba(*fg)
+
+        # 1st polygon (top)
+        ctx.move_to(0, 0)
+        # ctx.rotate(PI6)
+        # debug_print_ctx(ctx)
+        self.draw_pentagon(ctx, side_length, fg)
+        # debug_print_ctx(ctx)
+        # ctx.stroke_preserve()
+
+        # 2nd polygon (bottom)
+        # ctx.set_source_rgba(*[1, 0.1, 0.5, 1])
+        ctx.rel_move_to(polygon_width, polygon_width)
+        ctx.rotate(PI)
+        # debug_print_ctx(ctx)
+        self.draw_pentagon(ctx, side_length, fg)
+
+        # # 3rd polygon (right)
+        ctx.rotate(PI2)
+        # debug_print_ctx(ctx)
+        self.draw_pentagon(ctx, side_length, fg)
+        # debug_print_ctx(ctx)
+
+        # # 4th polygon (left)
+        ctx.rel_move_to(polygon_width, -polygon_width)
+        ctx.rotate(PI)
+        self.draw_pentagon(ctx, side_length, fg)
+        # debug_print_ctx(ctx)
+
+        # ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
+        # ctx.set_line_width(0.02)
+        # ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+        ctx.stroke()
         ctx.restore()
