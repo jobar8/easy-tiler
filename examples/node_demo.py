@@ -1,4 +1,4 @@
-"""Demo script for testing the sequence factory."""
+"""Demo script for testing the node factory."""
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from easy_tiler.io import save_png, save_svg
 def run_node_demo():
     grid = Grid(12, 10, x_size=60, y_size=60)
     factory = make_node_factory(
-        tile_type='truchet',
+        tile_type='puck',
         node_sequence=np.array([[1, 2, 1], [0, 0, 0], [1, 2, 3]]),
         fg='roll',
         bg='white',
