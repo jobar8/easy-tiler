@@ -32,6 +32,8 @@ def debug_print_ctx(ctx: cairo.Context) -> None:
 
 @dataclass
 class TileConfig:
+    """Configuration for a tile."""
+
     width: int = 0
     bg_color: str | tuple | None = None
     fg_color: str | tuple | list | None = None
@@ -55,6 +57,7 @@ class TileConfig:
         return colors
 
     def _resolve_color(self, val, index: int = 0) -> tuple:
+        """Resolve a color value to a tuple."""
         if val is None:
             return (0, 0, 0, 0)
 
@@ -68,11 +71,13 @@ class TileConfig:
 
         return color(val)
 
-    def get_bg_color(self) -> tuple:
-        return self._resolve_color(self.bg_color)
-
     def get_fg_color(self, index: int = 0) -> tuple:
+        """Get the foreground color."""
         return self._resolve_color(self.fg_color, index)
+
+    def get_bg_color(self) -> tuple:
+        """Get the background color."""
+        return self._resolve_color(self.bg_color)
 
 
 class TileBase(abc.ABC):
@@ -276,6 +281,8 @@ class PentagonTile(TileBase):
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(2 * PI3)
         ctx.fill_preserve()
+        # ctx.fill()
+        # ctx.restore()
 
         # draw outline of the pentagon
         # ctx.set_line_width(max(1.0, wh * 0.01))
@@ -308,50 +315,45 @@ class CairoTile(TileBase):
         ctx.rotate(PI3)
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(2 * PI3)
-        ctx.fill_preserve()
+        ctx.fill()
+
         # stroke with slightly darker foreground
         # ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(
-            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
-        )
-        ctx.set_source_rgba(0, 0, 0, 1)
-        ctx.stroke_preserve()
+        # ctx.set_source_rgba(
+        #     max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        # )
+        # ctx.set_source_rgba(0, 0, 0, 1)
+
+        # ctx.stroke_preserve()
+        # ctx.stroke()
+        ctx.move_to(0, 0)
+
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
         side_length = wh / (4 * math.cos(PI6))
         polygon_width = 2 * side_length * math.cos(PI6)
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+        ctx.set_line_width(1)
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
-        # ctx.rotate(PI6)
-        # debug_print_ctx(ctx)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(0))
-        # debug_print_ctx(ctx)
-        # ctx.stroke_preserve()
 
         # 2nd polygon (bottom)
-        # ctx.set_source_rgba(*[1, 0.1, 0.5, 1])
         ctx.rel_move_to(polygon_width, polygon_width)
         ctx.rotate(PI)
-        # debug_print_ctx(ctx)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(1))
 
         # # 3rd polygon (right)
         ctx.rotate(PI2)
-        # debug_print_ctx(ctx)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(2))
-        # debug_print_ctx(ctx)
 
         # # 4th polygon (left)
         ctx.rel_move_to(polygon_width, -polygon_width)
         ctx.rotate(PI)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(3))
-        # debug_print_ctx(ctx)
 
-        # ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
-        # ctx.set_line_width(0.02)
-        # ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+        ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
         ctx.stroke()
         ctx.restore()
