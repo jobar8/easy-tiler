@@ -20,8 +20,8 @@ from easy_tiler.tiles import TileConfig
 def make_tile_factory(
     tile_type: str = 'polygon',
     rot: str | int = 'random',
-    fg: tuple[float, float, float, float] | str = 'random',
-    bg: tuple[float, float, float, float] | str = 'random',
+    fg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
+    bg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
     inset: float | None = None,
     flipped: bool = False,
     outline: bool = False,
@@ -169,8 +169,8 @@ def make_sequence_factory(
 def make_node_factory(
     tile_type: str = 'polygon',
     node_sequence: np.ndarray | None = None,
-    fg: tuple[float, float, float, float] | str = 'random',
-    bg: tuple[float, float, float, float] | str = 'random',
+    fg: tuple[float, float, float, float] | list[str] | str = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'glasbey_dark',
     num_colors: int | None = None,
     **kwargs,
@@ -191,8 +191,15 @@ def make_node_factory(
     # Use parameters to seed randomness for this specific sequence
     rng = random.Random(f'{tile_type}-{node_sequence}')
     nr, nc = node_sequence.shape
-    fg_sequence_colors = rng.choices(colors, k=nr * nc)
-    bg_sequence_colors = rng.choices(colors, k=nr * nc)
+    if isinstance(fg, list):
+        fg_sequence_colors = [color(f) for f in fg] * (nr * nc // len(fg) + 1)
+    else:
+        fg_sequence_colors = rng.choices(colors, k=nr * nc)
+
+    if isinstance(bg, list):
+        bg_sequence_colors = [color(f) for f in bg] * (nr * nc // len(bg) + 1)
+    else:
+        bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
     def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
         node_idx = x // nc
@@ -201,7 +208,7 @@ def make_node_factory(
         offset = x_offset + y_offset * nc
         rotation = node_sequence[y_offset, x_offset]
 
-        if fg == 'sequence':
+        if fg == 'sequence' or isinstance(fg, list):
             actual_fg = color(fg_sequence_colors[offset])
         elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, node_idx)
@@ -213,7 +220,7 @@ def make_node_factory(
         else:
             actual_fg = fg
 
-        if bg == 'sequence':
+        if bg == 'sequence' or isinstance(bg, list):
             actual_bg = color(bg_sequence_colors[offset])
         elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, node_idx)
