@@ -1,4 +1,4 @@
-"""Demo script for testing the sequence factory."""
+"""Demo script for testing the node factory."""
 
 import numpy as np
 
@@ -13,7 +13,8 @@ def run_node_demo():
         tile_type='truchet',
         node_sequence=np.array([[1, 2, 1], [0, 0, 0], [1, 2, 3]]),
         fg='roll',
-        bg='white',
+        bg=['blue', 'white'],
+        # bg='white',
         palette='glasbey_light',
         num_colors=48,
         outline=False,

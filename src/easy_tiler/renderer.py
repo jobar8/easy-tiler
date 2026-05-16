@@ -23,9 +23,10 @@ class Renderer:
     def _render_to_context(
         self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]
     ):
+        """Render the grid to a Cairo context."""
         width = grid.x_size
 
-        # Appply transform to context to render skewing of the grid
+        # Apply transform to context to render skewing of the grid
         x_skew, y_skew = grid.skew_angles
         mtrx = cairo.Matrix(1, math.tan(y_skew), math.tan(x_skew), 1, 0, 0)
         ctx.transform(mtrx)
