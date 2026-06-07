@@ -18,7 +18,7 @@ class Renderer:
 
     def __init__(self, scale: float = 1.0, background_col: str | None = None):
         self.scale = scale
-        self.background_col = background_col
+        self.background_color = background_col
 
     def _render_to_context(
         self, ctx: cairo.Context, grid: Grid, tile_getter: Callable[[int, int], TileBase]
@@ -45,21 +45,29 @@ class Renderer:
             if grid.double:
                 ctx.save()
                 ctx.translate(px + grid.x_size / 2, py + grid.y_size / 2)
-                tile.draw_tile(
-                    ctx, width
-                )  # restore at the end brings it back to previous saved state
+                # restore at the end brings it back to previous saved state
+                tile.draw_tile(ctx, width)
+                ctx.save()
+                ctx.restore()
 
     def _prepare_surface(self, ctx: cairo.Context):
-        """Fill background if background_col is set."""
-        if self.background_col is not None:
-            ctx.set_source_rgba(*color(self.background_col))
+        """Fill background if background_color is set."""
+        if self.background_color is not None:
+            ctx.set_source_rgba(*color(self.background_color))
             ctx.paint()
 
+    def _set_context(self, ctx: cairo.Context):
+        ctx.set_line_cap(cairo.LINE_CAP_BUTT)
+        ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+        ctx.set_antialias(cairo.ANTIALIAS_BEST)
+        ctx.set_line_width(0.2)
+        
     def render_png(self, path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase]):
         w_px, h_px = grid.pixel_size()
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w_px, h_px)
         ctx = cairo.Context(surface)
         self._prepare_surface(ctx)
+        self._set_context(ctx)
         self._render_to_context(ctx, grid, tile_getter)
         surface.write_to_png(path)
 
@@ -68,5 +76,6 @@ class Renderer:
         surface = cairo.SVGSurface(path, w_px, h_px)
         ctx = cairo.Context(surface)
         self._prepare_surface(ctx)
+        self._set_context(ctx)
         self._render_to_context(ctx, grid, tile_getter)
         ctx.show_page()
