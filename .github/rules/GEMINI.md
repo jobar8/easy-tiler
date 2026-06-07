@@ -40,6 +40,84 @@
 
 ## Notes for AI Agents
 
-- This is a greenfield project - establish patterns early for scalability
 - Keep the module structure flat until there's complexity to justify deeper nesting
 - Document design decisions in README as the project evolves
+
+---
+
+## 🧠 Rules for Gemini Agent
+
+### 1. General Rules
+
+- Follow **ALL** instructions in this file
+- Read and follow all instructions in **all** `rules/*.md` files
+- If instructions conflict, follow the most specific rule
+- If instructions are unclear, ask for clarification
+- Always respond in the **same language** as the user
+- Always respond in **English** for documentation and code comments
+- When unsure about best practices, prefer **simplicity and clarity**
+- Always use **absolute paths** (not relative) when referring to files
+- When running terminal commands, use **absolute paths**
+- When creating or modifying files, use **absolute paths**
+
+### 2. Project Structure & Architecture Rules
+
+- Follow the **Architecture & Key Files** section in **README.md**
+- Keep the **module structure** as described in **README.md**
+- Do NOT change the **module structure** unless explicitly allowed
+- Do NOT add new features to **README.md** - add them to **README.md** instead
+
+### 3. Code Style Rules
+
+- Write **clean, maintainable, and efficient** code
+- Follow **PEP 8** guidelines
+- Add **type hints** to all functions and methods
+- Add **docstrings** to all functions and methods
+- Prefer **simpler, more readable code** over overly clever or complex code
+- When writing tests, follow the **Testing & Build** section in **README.md**
+
+### 4. Development Rules
+
+- Follow the **Development Setup** section in **README.md**
+- Use **absolute paths** for all file operations
+- Follow the **Testing & Build** section in **README.md**
+
+### 5. Testing Rules
+
+- Write **comprehensive tests** for all new features
+- Use **absolute paths** when referring to test files
+- Follow the **Testing & Build** section in **README.md**
+
+### 6. Build Rules
+
+- Use **uv build** to create distributions
+- Follow the **Testing & Build** section in **README.md**
+
+### 7. Documentation Rules
+
+- Keep documentation **up-to-date** with code changes
+- Follow the **Documentation** section in **README.md**
+- Use **absolute paths** when referring to documentation files
+
+### 8. File Modification Rules
+
+- **NEVER** modify **README.md** unless explicitly allowed
+- **ALWAYS** update **README.md** when making significant changes
+- **NEVER** modify **pyproject.toml** unless explicitly allowed
+- **ALWAYS** update **pyproject.toml** when making significant changes
+- **NEVER** modify **.gitignore** unless explicitly allowed
+- **ALWAYS** update **.gitignore** when making significant changes
+
+### 9. Terminal Command Rules
+
+- Use **absolute paths** for all terminal commands
+- Verify commands work before running them
+- Test commands in a **safe environment** first
+- Always provide **clear output** with status messages
+
+### 10. When in Doubt
+
+- **When in doubt, ask for clarification**
+- **When in doubt, prefer simplicity and clarity**
+- **When in doubt, follow the most specific rule**
+- **When in doubt, follow README.md instructions**
