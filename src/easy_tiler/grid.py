@@ -14,11 +14,11 @@ class Grid:
     origin: tuple[int, int] = (0, 0)
     x_shift: int = 0
     y_shift: int = 0
-    x_skew: float = (
-        0  # skew angle in radians, positive values skew right, negative values skew left
-    )
+    # skew angles in radians, positive values skew right, negative values skew left
+    x_skew: float = 0
     y_skew: float = 0
-    double: bool = False  # duplicate grid
+    # double the number of cells by duplicating the grid
+    double: bool = False
 
     @property
     def skew_angles(self) -> tuple[float, float]:

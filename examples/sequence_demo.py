@@ -9,15 +9,18 @@ def run_sequence_demo():
     grid = Grid(12, 10, x_size=60, y_size=60)
 
     factory = make_sequence_factory(
-        tile_type='truchet',
+        tile_type='riley',
         # tile_sequence=[1, 0, 2, 3],
-        # tile_sequence=[0, 1, 2],
+        # tile_sequence=[0, 1],
         tile_sequence=[1, 2, 0, 3],
         # tile_sequence=[1, 2],
-        sequence_length=4,
+        sequence_length=5,
         # fg='black',
-        fg='roll',
-        bg='sequence',
+        # fg='roll',
+        fg=['red', 'orange', 'orange', 'pink'],
+        # bg='sequence',
+        # bg='white',
+        bg=['yellow', 'green', 'pink', 'white'],
         palette='glasbey_light',
         num_colors=16,
         outline=False,

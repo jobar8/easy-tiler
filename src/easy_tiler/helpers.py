@@ -73,6 +73,12 @@ def color(val: float | list | tuple | str | None) -> tuple[float, float, float, 
             return (1, 0, 1, 1)
         if val == 'cyan':
             return (0, 1, 1, 1)
+        if val == 'purple':
+            return (0.7, 0.2, 0.5, 1)
+        if val == 'orange':
+            return (1, 0.75, 0.0, 1)
+        if val == 'pink':
+            return (1, 0.5, 0.8, 1)
         if val == 'random':
             return (random.random(), random.random(), random.random(), 1)
         raise ValueError(f'Invalid color string format: {val}')

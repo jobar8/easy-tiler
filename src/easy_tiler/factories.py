@@ -127,6 +127,8 @@ def make_sequence_factory(
             actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
             actual_fg = color(0)
+        elif isinstance(fg, list):
+            actual_fg = color(fg[x % len(fg)])
         else:
             actual_fg = fg
 
@@ -139,6 +141,10 @@ def make_sequence_factory(
             actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
             actual_bg = color(1)
+        elif bg == 'black':
+            actual_bg = color(0)
+        elif isinstance(bg, list):
+            actual_bg = color(bg[x % len(bg)])
         else:
             actual_bg = bg
 
