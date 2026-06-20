@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 import cairo
 import colorcet as cc
+from pypalettes import load_palette
 
 from easy_tiler.helpers import color
 
@@ -51,7 +52,11 @@ class TileConfig:
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
-        colors = cc.palette[palette]
+        try:
+            colors = cc.palette[palette]
+        except KeyError:
+            colors = load_palette(palette)
+
         if num_colors is not None:
             return colors[:num_colors]
         return colors
@@ -281,14 +286,8 @@ class PentagonTile(TileBase):
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(2 * PI3)
         ctx.fill_preserve()
-        # ctx.fill()
-        # ctx.restore()
 
         # draw outline of the pentagon
-        # ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(
-            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
-        )
         ctx.set_source_rgba(*color(g.outline_color))
         ctx.stroke()
         ctx.restore()
@@ -313,28 +312,25 @@ class CairoTile(TileBase):
         # bottom is shorter
         ctx.rel_line_to((math.sqrt(3) - 1) * side_length, 0)
         ctx.rotate(PI3)
-        ctx.rel_line_to(side_length, 0)
+        ctx.close_path()
+        # restore to initial orientation
         ctx.rotate(2 * PI3)
-        ctx.fill()
+        ctx.fill_preserve()
 
         # stroke with slightly darker foreground
         # ctx.set_line_width(max(1.0, wh * 0.01))
         # ctx.set_source_rgba(
         #     max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
         # )
-        # ctx.set_source_rgba(0, 0, 0, 1)
+        ctx.set_source_rgba(0, 0, 0, 1)
 
-        # ctx.stroke_preserve()
-        # ctx.stroke()
+        ctx.stroke()
         ctx.move_to(0, 0)
-
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
         side_length = wh / (4 * math.cos(PI6))
-        polygon_width = 2 * side_length * math.cos(PI6)
-        ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-        ctx.set_line_width(1)
+        polygon_width = wh / 2
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
@@ -345,15 +341,14 @@ class CairoTile(TileBase):
         ctx.rotate(PI)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(1))
 
-        # # 3rd polygon (right)
+        # 3rd polygon (right)
+        ctx.rel_move_to(-polygon_width, -polygon_width)
         ctx.rotate(PI2)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(2))
 
-        # # 4th polygon (left)
-        ctx.rel_move_to(polygon_width, -polygon_width)
+        # 4th polygon (left)
         ctx.rotate(PI)
         self.draw_pentagon(ctx, side_length, g.get_fg_color(3))
 
-        ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
         ctx.stroke()
         ctx.restore()
