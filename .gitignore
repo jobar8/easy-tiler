@@ -27,3 +27,6 @@ uv.lock
 *.swp
 *.swo
 *~
+
+# AI
+.agents
