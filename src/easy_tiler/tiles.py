@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 import cairo
 import colorcet as cc
+from pypalettes import load_palette
 
 from easy_tiler.helpers import color
 
@@ -51,7 +52,11 @@ class TileConfig:
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
-        colors = cc.palette[palette]
+        try:
+            colors = cc.palette[palette]
+        except KeyError:
+            colors = load_palette(palette)
+
         if num_colors is not None:
             return colors[:num_colors]
         return colors
@@ -321,7 +326,6 @@ class CairoTile(TileBase):
 
         ctx.stroke()
         ctx.move_to(0, 0)
-
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
