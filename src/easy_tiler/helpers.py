@@ -4,6 +4,8 @@ import colorsys
 import itertools
 import random
 
+from numpy import ndarray
+
 
 def range2d(nx, ny):
     return itertools.product(range(nx), range(ny))
@@ -44,7 +46,7 @@ def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
     return (r, g, b)
 
 
-def color(val: float | list | tuple | str | None) -> tuple[float, float, float, float]:
+def color(val: float | list | tuple | ndarray | str | None) -> tuple[float, float, float, float]:
     """Create an RGBA color tuple from a variety of inputs."""
     if val is None:
         return (0, 0, 0, 0)  # transparent

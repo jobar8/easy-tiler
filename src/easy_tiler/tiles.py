@@ -36,7 +36,7 @@ class TileConfig:
     """Configuration for a tile."""
 
     width: int = 0
-    bg_color: str | tuple | None = None
+    bg_color: str | tuple | list | None = None
     fg_color: str | tuple | list | None = None
     outline_color: str | tuple | None = None
     palette: str | None = None
@@ -120,7 +120,7 @@ class TileBase(abc.ABC):
         # Draw outline of tile
         if self.outline:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*g.outline_color)
+            ctx.set_source_rgba(*g.outline_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
