@@ -6,6 +6,8 @@ import random
 
 from numpy import ndarray
 
+from easy_tiler.colors import CUSTOM_PALETTES
+
 
 def range2d(nx, ny):
     return itertools.product(range(nx), range(ny))
@@ -46,7 +48,10 @@ def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
     return (r, g, b)
 
 
-def color(val: float | list | tuple | ndarray | str | None) -> tuple[float, float, float, float]:
+def color(
+    val: float | list | tuple | ndarray | str | None,
+    palette: str | None = None,
+) -> tuple[float, float, float, float]:
     """Create an RGBA color tuple from a variety of inputs."""
     if val is None:
         return (0, 0, 0, 0)  # transparent
@@ -57,8 +62,12 @@ def color(val: float | list | tuple | ndarray | str | None) -> tuple[float, floa
             return (*val, 1)
         return tuple(val)
     if isinstance(val, str):
-        if val[0] == '#':
+        if val.startswith('#'):
             return (*hex_to_rgb(val), 1)
+        if palette is not None:
+            custom_palette = CUSTOM_PALETTES.get(palette)
+            if custom_palette is not None and val in custom_palette:
+                return (*hex_to_rgb(custom_palette[val]), 1)
         if val == 'black':
             return (0, 0, 0, 1)
         if val == 'white':
