@@ -80,6 +80,12 @@ def color(
             return (0, 0, 1, 1)
         if val == 'yellow':
             return (1, 1, 0, 1)
+        if val == 'gray' or val == 'grey':
+            return (0.5, 0.5, 0.5, 1)
+        if val == 'brown':
+            return (0.6, 0.4, 0.2, 1)
+        if val == 'beige':
+            return (0.96, 0.96, 0.86, 1)
         if val == 'magenta':
             return (1, 0, 1, 1)
         if val == 'cyan':

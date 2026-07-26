@@ -11,12 +11,13 @@ def run_node_demo():
     grid = Grid(12, 10, x_size=60, y_size=60)
     factory = make_node_factory(
         tile_type='truchet',
-        node_sequence=np.array([[1, 2, 2], [0, 0, 0], [1, 2, 3]]),
+        node_sequence=np.array([[1, 1, 2], [0, 0, 0], [1, 2, 3]]),
         # fg='roll',
-        fg=['red', 'green', 'blue'],
+        fg=['beige', 'green', 'brown', 'red', 'yellow'],
         bg=['blue', 'white', 'black'],
         # bg='white',
-        palette='glasbey_light',
+        # palette='glasbey_light',
+        palette='BlueRidgePkwy',
         num_colors=48,
         outline=False,
         outline_color='black',
