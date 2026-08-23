@@ -40,6 +40,11 @@ def make_tile_factory(
     static_inset = math.sqrt(2) if inset is None else inset
     custom_palette = CustomPalette(palette or 'Standard')
 
+    def resolve_color(value, index: int):
+        if isinstance(value, list):
+            value = value[index % len(value)]
+        return custom_palette.get(value) if isinstance(value, (str, list, tuple)) else value
+
     def factory(x: int, y: int) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
@@ -47,8 +52,8 @@ def make_tile_factory(
             actual_rot = rot
 
         config = TileConfig(
-            fg_color=custom_palette.get(fg) if isinstance(fg, str) else fg,
-            bg_color=custom_palette.get(bg) if isinstance(bg, str) else bg,
+            fg_color=resolve_color(fg, x),
+            bg_color=resolve_color(bg, x),
             outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
             palette=palette,
             num_colors=num_colors,
