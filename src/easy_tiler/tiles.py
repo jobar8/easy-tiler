@@ -12,6 +12,7 @@ import cairo
 import colorcet as cc
 from pypalettes import load_palette
 
+from easy_tiler.colors import CUSTOM_PALETTES
 from easy_tiler.helpers import color
 
 # precompute some constants for efficiency and readability
@@ -45,17 +46,20 @@ class TileConfig:
     _colors: list | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
-        self.outline_color = color(self.outline_color)
+        self.outline_color = color(self.outline_color, self.palette)
 
         if self.palette is not None:
             self._colors = self.get_palette(self.palette, self.num_colors)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
-        try:
-            colors = cc.palette[palette]
-        except KeyError:
-            colors = load_palette(palette)
+        if palette in CUSTOM_PALETTES:
+            colors = list(CUSTOM_PALETTES[palette].values())
+        else:
+            try:
+                colors = cc.palette[palette]
+            except KeyError:
+                colors = load_palette(palette)
 
         if num_colors is not None:
             return colors[:num_colors]
@@ -74,7 +78,7 @@ class TileConfig:
                 return color(random.choice(self._colors))
             return (random.random(), random.random(), random.random(), 1.0)
 
-        return color(val)
+        return color(val, self.palette)
 
     def get_fg_color(self, index: int = 0) -> tuple:
         """Get the foreground color."""
