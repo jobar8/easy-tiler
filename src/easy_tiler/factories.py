@@ -21,8 +21,8 @@ from easy_tiler.tiles import TileConfig
 def make_tile_factory(
     tile_type: str = 'polygon',
     rot: str | int = 'random',
-    fg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
-    bg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
+    fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     inset: float | None = None,
     flipped: bool = False,
     outline: bool = False,
@@ -39,19 +39,18 @@ def make_tile_factory(
 
     # Pre-calculate static values outside the closure to optimize performance
     static_inset = math.sqrt(2) if inset is None else inset
+    custom_palette = CustomPalette(palette or 'Standard')
 
-    def factory(
-        x: int, y: int
-    ) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
+    def factory(x: int, y: int) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
         else:
             actual_rot = rot
 
         config = TileConfig(
-            fg_color=fg,
-            bg_color=bg,
-            outline_color=outline_color,
+            fg_color=custom_palette.get(fg) if isinstance(fg, str) else fg,
+            bg_color=custom_palette.get(bg) if isinstance(bg, str) else bg,
+            outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
             palette=palette,
             num_colors=num_colors,
         )

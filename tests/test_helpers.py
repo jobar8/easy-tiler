@@ -9,4 +9,4 @@ def test_color_uses_palette_values_for_named_colors():
 
 def test_color_falls_back_to_standard_values_when_palette_missing():
     assert color('purple', palette='FridaKahlo') == (0.7, 0.2, 0.5, 1)
-    assert color('orange', palette='ClaudeMonet') == (1, 0.75, 0.0, 1)
+    assert color('pink', palette='ClaudeMonet') == (1, 0.5, 0.8, 1)

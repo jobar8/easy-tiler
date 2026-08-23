@@ -96,6 +96,8 @@ class CustomPalette:
                 return (*self._hex_to_rgb(self.palette[val]), 1)
             except KeyError:
                 return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
+            except AttributeError:
+                return self.get(self.palette[val])
             else:
                 raise ValueError(f'Invalid color string format: {val}')
 
