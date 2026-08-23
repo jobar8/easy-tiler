@@ -58,7 +58,7 @@ STANDARD_PALETTE = {
 }
 
 
-class CustomColor:
+class CustomPalette:
     """Class to represent a custom color with RGBA values."""
 
     def __init__(self, palette: str = 'Standard'):

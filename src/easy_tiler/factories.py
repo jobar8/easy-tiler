@@ -13,7 +13,7 @@ from easy_tiler import (
     RileyTile,
     TruchetTile,
 )
-from easy_tiler.colors import CustomColor
+from easy_tiler.colors import CustomPalette
 from easy_tiler.helpers import color
 from easy_tiler.tiles import TileConfig
 
@@ -198,14 +198,14 @@ def make_node_factory(
     # Use parameters to seed randomness for this specific sequence
     rng = random.Random(f'{tile_type}-{node_sequence}')
     nr, nc = node_sequence.shape
-    custom_color = CustomColor(palette)
+    custom_palette = CustomPalette(palette)
     if isinstance(fg, list):
-        fg_sequence_colors = [custom_color.get(f) for f in fg] * (nr * nc // len(fg) + 1)
+        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
     else:
         fg_sequence_colors = rng.choices(colors, k=nr * nc)
 
     if isinstance(bg, list):
-        bg_sequence_colors = [custom_color.get(f) for f in bg] * (nr * nc // len(bg) + 1)
+        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
     else:
         bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
@@ -217,28 +217,28 @@ def make_node_factory(
         rotation = node_sequence[y_offset, x_offset]
 
         if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_color.get(fg_sequence_colors[offset])
+            actual_fg = custom_palette.get(fg_sequence_colors[offset])
         elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, node_idx)
-            actual_fg = custom_color.get(sequence_colors[offset])
+            actual_fg = custom_palette.get(sequence_colors[offset])
         elif fg == 'random':
             actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
-            actual_fg = custom_color.get('black')
+            actual_fg = custom_palette.get('black')
         else:
-            actual_fg = custom_color.get(fg)
+            actual_fg = custom_palette.get(fg)
 
         if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_color.get(bg_sequence_colors[offset])
+            actual_bg = custom_palette.get(bg_sequence_colors[offset])
         elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, node_idx)
-            actual_bg = custom_color.get(sequence_colors[offset])
+            actual_bg = custom_palette.get(sequence_colors[offset])
         elif bg == 'random':
             actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
-            actual_bg = custom_color.get('white')
+            actual_bg = custom_palette.get('white')
         else:
-            actual_bg = custom_color.get(bg)
+            actual_bg = custom_palette.get(bg)
 
         config = TileConfig(
             fg_color=actual_fg,
