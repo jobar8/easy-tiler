@@ -38,6 +38,19 @@ CUSTOM_PALETTES = {
         'yellow': '#B1B94CFF',
         'beige': '#E5DCBEFF',
     },
+    'ColorsOfTheWind': {
+        'cyan': '#9cf1ff',
+        'pink': '#ff9acd',
+        'yellow': '#fff091',
+        'green': '#b1ffa6',
+        'purple': '#dda3ff',
+        'beige': '#E6D5C3',
+        'blue': '#b8dbec',
+        'gray': '#c9b8ec',
+        'red': '#ecb8db',
+        'orange': '#ecc9b8',
+    },
+    
 }
 
 STANDARD_PALETTE = {
