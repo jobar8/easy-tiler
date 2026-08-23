@@ -4,7 +4,9 @@ Custom palettes found on https://y-sunflower.github.io/pypalettes/
 
 import random
 
+import colorcet as cc
 from numpy import ndarray
+from pypalettes import load_palette
 
 CUSTOM_PALETTES = {
     'FridaKahlo': {
@@ -72,18 +74,37 @@ STANDARD_PALETTE = {
 
 
 class CustomPalette:
-    """Class to represent a custom color with RGBA values."""
+    """Load a palette and resolve its colors to RGBA values."""
 
-    def __init__(self, palette: str = 'Standard'):
-        self.palette = CUSTOM_PALETTES.get(palette) or STANDARD_PALETTE
+    def __init__(self, palette: str = 'Standard', num_colors: int | None = None):
+        if palette == 'Standard':
+            colors = STANDARD_PALETTE
+        elif palette in CUSTOM_PALETTES:
+            colors = CUSTOM_PALETTES[palette]
+        else:
+            try:
+                colors = cc.palette[palette]
+            except KeyError:
+                colors = load_palette(palette)
 
-    def _hex_to_rgb(self, hex_color: str) -> tuple[float, float, float]:
-        """Convert a hex color string to an RGB tuple with values in the range [0, 1]."""
+        if isinstance(colors, dict):
+            self.palette = colors
+            self.colors = list(colors.values())
+        else:
+            self.palette = {}
+            self.colors = list(colors)
+
+        if num_colors is not None:
+            self.colors = self.colors[:num_colors]
+
+    def _hex_to_rgba(self, hex_color: str) -> tuple[float, float, float, float]:
+        """Convert a hex color string to an RGBA tuple."""
         hex_color = hex_color.lstrip('#')
         r = int(hex_color[0:2], 16) / 255.0
         g = int(hex_color[2:4], 16) / 255.0
         b = int(hex_color[4:6], 16) / 255.0
-        return (r, g, b)
+        a = int(hex_color[6:8], 16) / 255.0 if len(hex_color) >= 8 else 1.0
+        return (r, g, b, a)
 
     def get(
         self,
@@ -100,18 +121,14 @@ class CustomPalette:
             return tuple(val)
         if isinstance(val, str):
             if val.startswith('#'):
-                return (*self._hex_to_rgb(val), 1)
+                return self._hex_to_rgba(val)
             if val == 'random':
                 return (random.random(), random.random(), random.random(), 1)
             if val == 'random_choice':
-                return (*self._hex_to_rgb(random.choice(list(self.palette.values()))), 1)
+                return self.get(random.choice(self.colors))
             try:
-                return (*self._hex_to_rgb(self.palette[val]), 1)
+                return self.get(self.palette[val])
             except KeyError:
                 return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
-            except AttributeError:
-                return self.get(self.palette[val])
-            else:
-                raise ValueError(f'Invalid color string format: {val}')
 
         raise TypeError(f'Unsupported color value: {val}')

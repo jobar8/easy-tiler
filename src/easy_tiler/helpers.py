@@ -4,10 +4,6 @@ import colorsys
 import itertools
 import random
 
-from numpy import ndarray
-
-from easy_tiler.colors import CUSTOM_PALETTES
-
 
 def range2d(nx, ny):
     return itertools.product(range(nx), range(ny))
@@ -46,60 +42,6 @@ def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
     g = int(hex_color[2:4], 16) / 255.0
     b = int(hex_color[4:6], 16) / 255.0
     return (r, g, b)
-
-
-def color(
-    val: float | list | tuple | ndarray | str | None,
-    palette: str | None = None,
-) -> tuple[float, float, float, float]:
-    """Create an RGBA color tuple from a variety of inputs."""
-    if val is None:
-        return (0, 0, 0, 0)  # transparent
-    if isinstance(val, (int, float)):
-        return (val, val, val, 1)
-    if isinstance(val, (list, tuple)):
-        if len(val) == 3:
-            return (*val, 1)
-        return tuple(val)
-    if isinstance(val, str):
-        if val.startswith('#'):
-            return (*hex_to_rgb(val), 1)
-        if palette is not None:
-            custom_palette = CUSTOM_PALETTES.get(palette)
-            if custom_palette is not None and val in custom_palette:
-                return (*hex_to_rgb(custom_palette[val]), 1)
-        if val == 'black':
-            return (0, 0, 0, 1)
-        if val == 'white':
-            return (1, 1, 1, 1)
-        if val == 'red':
-            return (1, 0, 0, 1)
-        if val == 'green':
-            return (0, 1, 0, 1)
-        if val == 'blue':
-            return (0, 0, 1, 1)
-        if val == 'yellow':
-            return (1, 1, 0, 1)
-        if val == 'gray' or val == 'grey':
-            return (0.5, 0.5, 0.5, 1)
-        if val == 'brown':
-            return (0.6, 0.4, 0.2, 1)
-        if val == 'beige':
-            return (0.96, 0.96, 0.86, 1)
-        if val == 'magenta':
-            return (1, 0, 1, 1)
-        if val == 'cyan':
-            return (0, 1, 1, 1)
-        if val == 'purple':
-            return (0.7, 0.2, 0.5, 1)
-        if val == 'orange':
-            return (1, 0.75, 0.0, 1)
-        if val == 'pink':
-            return (1, 0.5, 0.8, 1)
-        if val == 'random':
-            return (random.random(), random.random(), random.random(), 1)
-        raise ValueError(f'Invalid color string format: {val}')
-    raise TypeError(f'Unsupported color value: {val}')
 
 
 def make_bgfg(hs, ls, ss):

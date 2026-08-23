@@ -38,7 +38,7 @@ def make_tile_factory(
 
     # Pre-calculate static values outside the closure to optimize performance
     static_inset = math.sqrt(2) if inset is None else inset
-    custom_palette = CustomPalette(palette or 'Standard')
+    custom_palette = CustomPalette(palette or 'Standard', num_colors)
 
     def resolve_color(value, index: int):
         if isinstance(value, list):
@@ -55,8 +55,7 @@ def make_tile_factory(
             fg_color=resolve_color(fg, x),
             bg_color=resolve_color(bg, x),
             outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
-            palette=palette,
-            num_colors=num_colors,
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
@@ -95,8 +94,8 @@ def make_sequence_factory(
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
-    colors = TileConfig.get_palette(palette, num_colors)
-    custom_palette = CustomPalette(palette)
+    custom_palette = CustomPalette(palette, num_colors)
+    colors = custom_palette.colors
 
     if tile_sequence is None:
         tile_sequence = [0] * sequence_length
@@ -157,6 +156,7 @@ def make_sequence_factory(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
@@ -189,7 +189,8 @@ def make_node_factory(
     """Factory for creating nodes, i.e. a grid of tiles."""
     if node_sequence is None:
         node_sequence = np.random.randint(0, 4, size=(4, 4))
-    colors = TileConfig.get_palette(palette, num_colors)
+    custom_palette = CustomPalette(palette, num_colors)
+    colors = custom_palette.colors
 
     # Get other keyword args
     inset = kwargs.get('inset', 0.85)
@@ -202,7 +203,6 @@ def make_node_factory(
     # Use parameters to seed randomness for this specific sequence
     rng = random.Random(f'{tile_type}-{node_sequence}')
     nr, nc = node_sequence.shape
-    custom_palette = CustomPalette(palette)
     if isinstance(fg, list):
         fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
     else:
@@ -247,7 +247,8 @@ def make_node_factory(
         config = TileConfig(
             fg_color=actual_fg,
             bg_color=actual_bg,
-            outline_color=outline_color,
+            outline_color=custom_palette.get(outline_color),
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
