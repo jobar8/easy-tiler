@@ -25,6 +25,13 @@ CUSTOM_PALETTES = {
         'green': '#8C9D57FF',
         'blue': '#163343FF',
     },
+    'Budnitz': {
+        'green': '#86DD45FF',
+        'yellow': '#F6E71CFF',
+        'orange': '#FDA900FF',
+        'red': '#FD5300FF',
+        'purple': '#57348BFF',
+    },
     'ClaudeMonet': {
         'green': '#184430FF',
         'light_green': '#548150FF',
@@ -52,7 +59,6 @@ CUSTOM_PALETTES = {
         'red': '#ecb8db',
         'orange': '#ecc9b8',
     },
-    
 }
 
 STANDARD_PALETTE = {
