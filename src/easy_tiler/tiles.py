@@ -9,10 +9,8 @@ import random
 from dataclasses import dataclass, field
 
 import cairo
-import colorcet as cc
-from pypalettes import load_palette
 
-from easy_tiler.helpers import color
+from easy_tiler.colors import CustomPalette
 
 # precompute some constants for efficiency and readability
 PI = math.pi
@@ -36,30 +34,27 @@ class TileConfig:
     """Configuration for a tile."""
 
     width: int = 0
-    bg_color: str | tuple | None = None
+    bg_color: str | tuple | list | None = None
     fg_color: str | tuple | list | None = None
     outline_color: str | tuple | None = None
-    palette: str | None = None
+    palette: str | CustomPalette | None = None
     num_colors: int | None = None
 
     _colors: list | None = field(default=None, init=False)
+    _palette: CustomPalette = field(init=False)
 
     def __post_init__(self) -> None:
-        self.outline_color = color(self.outline_color)
-
-        if self.palette is not None:
-            self._colors = self.get_palette(self.palette, self.num_colors)
+        self._palette = (
+            self.palette
+            if isinstance(self.palette, CustomPalette)
+            else CustomPalette(self.palette or 'Standard', self.num_colors)
+        )
+        self.outline_color = self._palette.get(self.outline_color)
+        self._colors = self._palette.colors if self.palette is not None else None
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
-        try:
-            colors = cc.palette[palette]
-        except KeyError:
-            colors = load_palette(palette)
-
-        if num_colors is not None:
-            return colors[:num_colors]
-        return colors
+        return CustomPalette(palette, num_colors).colors
 
     def _resolve_color(self, val, index: int = 0) -> tuple:
         """Resolve a color value to a tuple."""
@@ -71,10 +66,10 @@ class TileConfig:
 
         if val == 'random':
             if self._colors:
-                return color(random.choice(self._colors))
+                return self._palette.get(random.choice(self._colors))
             return (random.random(), random.random(), random.random(), 1.0)
 
-        return color(val)
+        return self._palette.get(val)
 
     def get_fg_color(self, index: int = 0) -> tuple:
         """Get the foreground color."""
@@ -120,7 +115,7 @@ class TileBase(abc.ABC):
         # Draw outline of tile
         if self.outline:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*g.outline_color)
+            ctx.set_source_rgba(*g.outline_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
@@ -288,7 +283,7 @@ class PentagonTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*color(g.outline_color))
+        ctx.set_source_rgba(*g._palette.get(g.outline_color))
         ctx.stroke()
         ctx.restore()
 

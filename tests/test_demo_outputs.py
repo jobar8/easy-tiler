@@ -6,6 +6,8 @@ def _load_demo_module():
     repo_root = Path(__file__).resolve().parents[1]
     demo_path = repo_root / 'examples' / 'demo.py'
     spec = importlib.util.spec_from_file_location('examples.demo', str(demo_path))
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module from {demo_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

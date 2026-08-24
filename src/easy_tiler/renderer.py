@@ -5,8 +5,8 @@ from collections.abc import Callable
 
 import cairo
 
+from easy_tiler.colors import CustomPalette
 from easy_tiler.grid import Grid
-from easy_tiler.helpers import color
 from easy_tiler.tiles import TileBase
 
 
@@ -26,7 +26,7 @@ class Renderer:
         self.grid = grid
         self.tile_getter = tile_getter
         self.scale = scale
-        self.background_color = background_col
+        self.background_color = CustomPalette().get(background_col)
 
     def _render_to_context(self, ctx: cairo.Context):
         """Render the grid to a Cairo context."""
@@ -58,8 +58,8 @@ class Renderer:
 
     def _prepare_surface(self, ctx: cairo.Context):
         """Fill background if background_color is set."""
-        if self.background_color is not None:
-            ctx.set_source_rgba(*color(self.background_color))
+        if self.background_color != (0, 0, 0, 0):
+            ctx.set_source_rgba(*self.background_color)
             ctx.paint()
 
     def _set_context(self, ctx: cairo.Context):

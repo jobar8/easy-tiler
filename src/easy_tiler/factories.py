@@ -13,15 +13,15 @@ from easy_tiler import (
     RileyTile,
     TruchetTile,
 )
-from easy_tiler.helpers import color
+from easy_tiler.colors import CustomPalette
 from easy_tiler.tiles import TileConfig
 
 
 def make_tile_factory(
     tile_type: str = 'polygon',
     rot: str | int = 'random',
-    fg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
-    bg: tuple[float, float, float, float] | str | list[tuple[float, float, float, float]] | None = 'random',
+    fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     inset: float | None = None,
     flipped: bool = False,
     outline: bool = False,
@@ -38,21 +38,24 @@ def make_tile_factory(
 
     # Pre-calculate static values outside the closure to optimize performance
     static_inset = math.sqrt(2) if inset is None else inset
+    custom_palette = CustomPalette(palette or 'Standard', num_colors)
 
-    def factory(
-        x: int, y: int
-    ) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
+    def resolve_color(value, index: int):
+        if isinstance(value, list):
+            value = value[index % len(value)]
+        return custom_palette.get(value) if isinstance(value, (str, list, tuple)) else value
+
+    def factory(x: int, y: int) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
         if rot == 'random':
             actual_rot = random.randint(0, 4)
         else:
             actual_rot = rot
 
         config = TileConfig(
-            fg_color=fg,
-            bg_color=bg,
-            outline_color=outline_color,
-            palette=palette,
-            num_colors=num_colors,
+            fg_color=resolve_color(fg, x),
+            bg_color=resolve_color(bg, x),
+            outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
@@ -91,7 +94,8 @@ def make_sequence_factory(
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
-    colors = TileConfig.get_palette(palette, num_colors)
+    custom_palette = CustomPalette(palette, num_colors)
+    colors = custom_palette.colors
 
     if tile_sequence is None:
         tile_sequence = [0] * sequence_length
@@ -119,39 +123,40 @@ def make_sequence_factory(
         rotation = tile_sequence[offset]
 
         if fg == 'sequence':
-            actual_fg = color(fg_sequence_colors[offset])
+            actual_fg = custom_palette.get(fg_sequence_colors[offset])
         elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, sequence_idx)
-            actual_fg = color(sequence_colors[offset])
+            actual_fg = custom_palette.get(sequence_colors[offset])
         elif fg == 'random':
             actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
-            actual_fg = color(0)
+            actual_fg = custom_palette.get('black')
         elif isinstance(fg, list):
-            actual_fg = color(fg[x % len(fg)])
+            actual_fg = custom_palette.get(fg[x % len(fg)])
         else:
-            actual_fg = fg
+            actual_fg = custom_palette.get(fg)
 
         if bg == 'sequence':
-            actual_bg = color(bg_sequence_colors[offset])
+            actual_bg = custom_palette.get(bg_sequence_colors[offset])
         elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, sequence_idx)
-            actual_bg = color(sequence_colors[offset])
+            actual_bg = custom_palette.get(sequence_colors[offset])
         elif bg == 'random':
             actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
-            actual_bg = color(1)
+            actual_bg = custom_palette.get('white')
         elif bg == 'black':
-            actual_bg = color(0)
+            actual_bg = custom_palette.get('black')
         elif isinstance(bg, list):
-            actual_bg = color(bg[x % len(bg)])
+            actual_bg = custom_palette.get(bg[x % len(bg)])
         else:
-            actual_bg = bg
+            actual_bg = custom_palette.get(bg)
 
         config = TileConfig(
             fg_color=actual_fg,
             bg_color=actual_bg,
-            outline_color=outline_color,
+            outline_color=custom_palette.get(outline_color),
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
@@ -184,7 +189,8 @@ def make_node_factory(
     """Factory for creating nodes, i.e. a grid of tiles."""
     if node_sequence is None:
         node_sequence = np.random.randint(0, 4, size=(4, 4))
-    colors = TileConfig.get_palette(palette, num_colors)
+    custom_palette = CustomPalette(palette, num_colors)
+    colors = custom_palette.colors
 
     # Get other keyword args
     inset = kwargs.get('inset', 0.85)
@@ -198,12 +204,12 @@ def make_node_factory(
     rng = random.Random(f'{tile_type}-{node_sequence}')
     nr, nc = node_sequence.shape
     if isinstance(fg, list):
-        fg_sequence_colors = [color(f) for f in fg] * (nr * nc // len(fg) + 1)
+        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
     else:
         fg_sequence_colors = rng.choices(colors, k=nr * nc)
 
     if isinstance(bg, list):
-        bg_sequence_colors = [color(f) for f in bg] * (nr * nc // len(bg) + 1)
+        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
     else:
         bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
@@ -215,33 +221,34 @@ def make_node_factory(
         rotation = node_sequence[y_offset, x_offset]
 
         if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = color(fg_sequence_colors[offset])
+            actual_fg = custom_palette.get(fg_sequence_colors[offset])
         elif fg == 'roll':
             sequence_colors = np.roll(fg_sequence_colors, node_idx)
-            actual_fg = color(sequence_colors[offset])
+            actual_fg = custom_palette.get(sequence_colors[offset])
         elif fg == 'random':
             actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
-            actual_fg = color(0)
+            actual_fg = custom_palette.get('black')
         else:
-            actual_fg = fg
+            actual_fg = custom_palette.get(fg)
 
         if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = color(bg_sequence_colors[offset])
+            actual_bg = custom_palette.get(bg_sequence_colors[offset])
         elif bg == 'roll':
             sequence_colors = np.roll(bg_sequence_colors, node_idx)
-            actual_bg = color(sequence_colors[offset])
+            actual_bg = custom_palette.get(sequence_colors[offset])
         elif bg == 'random':
             actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
-            actual_bg = color(1)
+            actual_bg = custom_palette.get('white')
         else:
-            actual_bg = bg
+            actual_bg = custom_palette.get(bg)
 
         config = TileConfig(
             fg_color=actual_fg,
             bg_color=actual_bg,
-            outline_color=outline_color,
+            outline_color=custom_palette.get(outline_color),
+            palette=custom_palette,
         )
 
         if tile_type == 'polygon':
