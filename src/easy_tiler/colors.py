@@ -18,7 +18,7 @@ CUSTOM_PALETTES = {
         'brown': '#BD5630FF',
     },
     'BlueRidgePkwy': {
-        'pink': '#EC8FA3FF',
+        'red': '#EC8FA3FF',
         'orange': '#FCBA65FF',
         'beige': '#FAECCFFF',
         'purple': '#8D7F99FF',
