@@ -8,7 +8,7 @@ from easy_tiler.io import save_png, save_svg
 
 
 def run_node_demo():
-    grid = Grid(12, 10, x_size=60, y_size=60)
+    grid = Grid(12, 12, x_size=60, y_size=60)
     factory = make_node_factory(
         tile_type='truchet',
         node_sequence=np.array([[1, 1, 2], [0, 0, 0], [1, 2, 3]]),
@@ -18,7 +18,7 @@ def run_node_demo():
         # bg='white',
         # palette='glasbey_light',
         # palette='BlueRidgePkwy',
-        palette='moose_pond',
+        palette='CrazyLaceAgate',
         num_colors=48,
         outline=False,
         outline_color='black',
