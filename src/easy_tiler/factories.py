@@ -6,11 +6,13 @@ import random
 import numpy as np
 
 from easy_tiler import (
+    ArrowTile,
     CairoTile,
     PentagonTile,
     PuckTile,
     RegularPolygonTile,
     RileyTile,
+    TileBase,
     TruchetTile,
 )
 from easy_tiler.colors import CustomPalette
@@ -22,30 +24,32 @@ def make_tile_factory(
     rot: str | int = 'random',
     fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    inset: float | None = None,
-    flipped: bool = False,
-    outline: bool = False,
-    outline_color: tuple[float, float, float, float] | str | None = None,
-    radius: float = 3.0,
     side_length: float | None = None,
-    sides: int = 4,
     palette: str | None = None,
     num_colors: int | None = None,
+    **kwargs,
 ):
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-
-    # Pre-calculate static values outside the closure to optimize performance
-    static_inset = math.sqrt(2) if inset is None else inset
     custom_palette = CustomPalette(palette or 'Standard', num_colors)
+
+    # Get other keyword args
+    inset = kwargs.get('inset', math.sqrt(2))
+    flipped = kwargs.get('flipped', False)
+    outline = kwargs.get('outline', False)
+    outline_color = kwargs.get('outline_color', None)
+    radius = kwargs.get('radius', 3.0)
+    sides = kwargs.get('sides', 4)
+    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
 
     def resolve_color(value, index: int):
         if isinstance(value, list):
             value = value[index % len(value)]
         return custom_palette.get(value) if isinstance(value, (str, list, tuple)) else value
 
-    def factory(x: int, y: int) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile | CairoTile | PentagonTile:
+    def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
+        """Factory function to create a tile at position (x, y)."""
         if rot == 'random':
             actual_rot = random.randint(0, 4)
         else:
@@ -60,12 +64,14 @@ def make_tile_factory(
 
         if tile_type == 'polygon':
             tile = RegularPolygonTile(
-                rot=actual_rot, flipped=flipped, outline=outline, sides=sides, inset=static_inset, config=config
+                rot=actual_rot, flipped=flipped, outline=outline, sides=sides, inset=inset, config=config
             )
         elif tile_type == 'puck':
             tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline, config=config)
         elif tile_type == 'truchet':
             tile = TruchetTile(rot=actual_rot, flipped=flipped, outline=outline, config=config)
+        elif tile_type == 'arrow':
+            tile = ArrowTile(rot=actual_rot, flipped=flipped, outline=outline, width=width, config=config)
         elif tile_type == 'riley':
             tile = RileyTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius, config=config)
         elif tile_type == 'cairo':
@@ -108,6 +114,7 @@ def make_sequence_factory(
     outline_color = kwargs.get('outline_color', None)
     radius = kwargs.get('radius', 1.0)
     sides = kwargs.get('sides', 4)
+    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
 
     # Use parameters to seed randomness for this specific sequence
     if use_seed:
@@ -117,7 +124,7 @@ def make_sequence_factory(
     fg_sequence_colors = rng.choices(colors, k=sequence_length)
     bg_sequence_colors = rng.choices(colors, k=sequence_length)
 
-    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
+    def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
         rotation = tile_sequence[offset]
@@ -169,6 +176,8 @@ def make_sequence_factory(
             tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline, config=config)
         elif tile_type == 'riley':
             tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
+        elif tile_type == 'arrow':
+            tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
@@ -199,6 +208,7 @@ def make_node_factory(
     outline_color = kwargs.get('outline_color', None)
     radius = kwargs.get('radius', 1.0)
     sides = kwargs.get('sides', 4)
+    width = kwargs.get('width', 0.333)
 
     # Use parameters to seed randomness for this specific sequence
     rng = random.Random(f'{tile_type}-{node_sequence}')
@@ -213,7 +223,7 @@ def make_node_factory(
     else:
         bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
-    def factory(x, y) -> RegularPolygonTile | PuckTile | TruchetTile | RileyTile:
+    def factory(x, y) -> TileBase:
         node_idx = x // nc
         x_offset = x % nc
         y_offset = y % nr
@@ -259,6 +269,8 @@ def make_node_factory(
             tile = PuckTile(rot=rotation, flipped=flipped, outline=outline, config=config)
         elif tile_type == 'truchet':
             tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline, config=config)
+        elif tile_type == 'arrow':
+            tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
         elif tile_type == 'riley':
             tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
         else:

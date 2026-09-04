@@ -177,9 +177,7 @@ class RegularPolygonTile(TileBase):
         # stroke with slightly darker foreground
         ctx.fill_preserve()
         ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(
-            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
-        )
+        ctx.set_source_rgba(max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3])
         ctx.stroke()
         ctx.restore()
 
@@ -217,6 +215,35 @@ class TruchetTile(TileBase):
         # draw bottom-left corner
         ctx.set_source_rgba(*fg)
         ctx.move_to(0, 0)
+        ctx.line_to(wh, wh)
+        ctx.line_to(0, wh)
+        ctx.line_to(0, 0)
+        ctx.fill()
+        ctx.restore()
+
+
+class ArrowTile(TileBase):
+    """Draw a Truchet tile with one more triangle."""
+
+    def __init__(self, width: float = 0.333, **kwargs):
+        super().__init__(**kwargs)
+        if not (0.0 < width < 1.0):
+            raise ValueError('ArrowTile width must be between 0 and 1.')
+        self.width = width
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        wh = g.width
+        fg = g.get_fg_color(0)
+
+        # position of the bottom of the branch
+        wa = (1 - self.width) / 2.0
+
+        # draw bottom-left corner
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(0, 0)
+        ctx.line_to(wh * wa, wh * wa)
+        ctx.line_to(wh, 0)
+        ctx.line_to(wh * (1 - wa), wh * (1 - wa))
         ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
