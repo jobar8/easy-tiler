@@ -99,6 +99,7 @@ easy-tiler
 - **Testing**: Uses `pytest`.
 
 To run tests:
+
 ```bash
 pytest
 ```
