@@ -115,7 +115,7 @@ class CustomPalette:
     def get(
         self,
         val: float | list | tuple | ndarray | str | None,
-    ) -> tuple[float, float, float, float]:
+    ) -> tuple[float, float, float, float] | None:
         """Create an RGBA color tuple from a variety of inputs."""
         if val is None:
             return (0, 0, 0, 0)  # transparent
@@ -135,6 +135,7 @@ class CustomPalette:
             try:
                 return self.get(self.palette[val])
             except KeyError:
-                return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
-
-        raise TypeError(f'Unsupported color value: {val}')
+                try:
+                    return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
+                except KeyError:
+                    raise TypeError(f'Unsupported color value: {val}')

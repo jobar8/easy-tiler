@@ -28,6 +28,39 @@ This would produce an image of 8x6 squares with random colors, similar to the im
 
 ![Polygon Tiles](examples/example_v1.png)
 
+### Sequence of Tiles
+
+Use `make_sequence_factory` to repeat a sequence of tile rotations across each row. The
+foreground and background colors can also be selected from a palette for each position in
+the sequence.
+
+```python
+from easy_tiler.factories import make_sequence_factory
+from easy_tiler.grid import Grid
+from easy_tiler.io import save_png, save_svg
+
+# Define a 12x10 grid with 60x60px cells
+grid = Grid(12, 10, x_size=60, y_size=60)
+
+# Repeat four Riley tile rotations with palette-based colors
+factory = make_sequence_factory(
+ tile_type='riley',
+ tile_sequence=[2, 2, 3, 3, 1, 0],
+ fg='sequence',
+ bg='roll',
+ palette='ColorsOfTheWind',
+)
+
+save_png('sequence_demo.png', grid, factory)
+save_svg('sequence_demo.svg', grid, factory)
+```
+
+Here, `tile_sequence` controls the repeating rotation pattern, while `fg='sequence'` and
+`bg='roll'` vary the tile colors across the sequence. This would produce an images similar this
+one:
+
+![Sequence Patterns](examples/sequence_demo.png)
+
 ## Key Features
 
 - **Multiple Tile Types**: Support for regular polygons (triangles, squares, etc.), Truchet tiles, Riley tiles, and Puck (circle-based) tiles.
@@ -99,6 +132,7 @@ easy-tiler
 - **Testing**: Uses `pytest`.
 
 To run tests:
+
 ```bash
 pytest
 ```
