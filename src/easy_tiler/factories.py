@@ -2,6 +2,7 @@
 
 import math
 import random
+from collections.abc import Callable
 
 import numpy as np
 
@@ -193,11 +194,18 @@ def make_node_factory(
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'glasbey_dark',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
-):
+) -> Callable[..., TileBase]:
     """Factory for creating nodes, i.e. a grid of tiles."""
     if node_sequence is None:
-        node_sequence = np.random.randint(0, 4, size=(4, 4))
+        if use_seed:
+            # Use parameters to seed randomness
+            rng = np.random.default_rng(len(tile_type) * len(palette))
+        else:
+            rng = np.random.default_rng()
+        node_sequence = rng.integers(low=0, high=10, size=(4, 4))
+
     custom_palette = CustomPalette(palette, num_colors)
     colors = custom_palette.colors
 
@@ -210,8 +218,12 @@ def make_node_factory(
     sides = kwargs.get('sides', 4)
     width = kwargs.get('width', 0.333)
 
-    # Use parameters to seed randomness for this specific sequence
-    rng = random.Random(f'{tile_type}-{node_sequence}')
+    if use_seed:
+        # Use parameters to seed randomness for this specific sequence
+        rng = random.Random(f'{tile_type}-{node_sequence}')
+    else:
+        rng = random.Random()
+
     nr, nc = node_sequence.shape
     if isinstance(fg, list):
         fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
