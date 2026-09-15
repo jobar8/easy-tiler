@@ -40,7 +40,7 @@ class TileConfig:
     palette: str | CustomPalette | None = None
     num_colors: int | None = None
 
-    _colors: list | None = field(default=None, init=False)
+    _colors: list = field(default_factory=list, init=False)
     _palette: CustomPalette = field(init=False)
 
     def __post_init__(self) -> None:
@@ -50,7 +50,7 @@ class TileConfig:
             else CustomPalette(self.palette or 'Standard', self.num_colors)
         )
         self.outline_color = self._palette.get(self.outline_color)
-        self._colors = self._palette.colors if self.palette is not None else None
+        self._colors = self._palette.colors if self.palette is not None else []
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
