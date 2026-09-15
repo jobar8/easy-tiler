@@ -9,6 +9,7 @@ import numpy as np
 from easy_tiler import (
     ArrowTile,
     CairoTile,
+    CircleTile,
     PentagonTile,
     PuckTile,
     RegularPolygonTile,
@@ -81,6 +82,8 @@ def make_tile_factory(
             tile = PentagonTile(
                 rot=actual_rot, flipped=flipped, outline=outline, side_length=side_length, config=config
             )
+        elif tile_type == 'circle':
+            tile = CircleTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius, config=config)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
@@ -179,6 +182,8 @@ def make_sequence_factory(
             tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
         elif tile_type == 'arrow':
             tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
+        elif tile_type == 'circle':
+            tile = CircleTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 
@@ -285,6 +290,8 @@ def make_node_factory(
             tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
         elif tile_type == 'riley':
             tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
+        elif tile_type == 'circle':
+            tile = CircleTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
         else:
             raise ValueError(f'Invalid tile_type: {tile_type}')
 

@@ -315,6 +315,25 @@ class PentagonTile(TileBase):
         ctx.restore()
 
 
+class CircleTile(TileBase):
+    """Draw a circle tile that can be used in Cairo tiling."""
+
+    def __init__(self, radius: float = 0.25, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = radius
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        radius = g.width * self.radius
+        fg = g.get_fg_color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(g.width / 4, g.width / 4)
+        ctx.arc(g.width / 4, g.width / 4, radius, 0, 2 * PI)
+        ctx.fill()
+        ctx.restore()
+
+
 class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
