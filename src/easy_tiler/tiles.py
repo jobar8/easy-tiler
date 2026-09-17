@@ -39,7 +39,7 @@ class TileConfig:
     outline_color: str | tuple | None = None
     palette: str | CustomPalette | None = None
     num_colors: int | None = None
-    seed: int | float | str | bytes | bytearray | None = None
+    seed: float | str | bytes | bytearray | None = None
 
     _colors: list = field(default_factory=list, init=False)
     _palette: CustomPalette = field(init=False)
@@ -99,11 +99,12 @@ class TileBase(abc.ABC):
         flipped: bool = False,
         outline: bool = True,
         config: TileConfig | None = None,
+        random_seed: float | str | bytes | bytearray | None = None,
     ):
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
         self.outline = bool(outline)
-        self.config = config or TileConfig()
+        self.config = config or TileConfig(seed=random_seed)
 
     def init_tile(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
@@ -290,7 +291,7 @@ class CircleTile(TileBase):
         self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
-        radius = g.width * self.radius
+        radius = g._rng.uniform(0.5, 1.0) * g.width * self.radius
         fg = g.get_fg_color(0)
 
         ctx.set_source_rgba(*fg)

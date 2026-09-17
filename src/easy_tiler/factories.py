@@ -44,6 +44,7 @@ def make_tile_factory(
     radius = kwargs.get('radius', 3.0)
     sides = kwargs.get('sides', 4)
     width = kwargs.get('width', 0.333)  # Default width for ArrowTile
+    use_seed = kwargs.get('use_seed', True)
 
     def resolve_color(value, index: int):
         if isinstance(value, list):
@@ -62,6 +63,7 @@ def make_tile_factory(
             bg_color=resolve_color(bg, x),
             outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
             palette=custom_palette,
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None
         )
 
         if tile_type == 'polygon':
@@ -168,6 +170,7 @@ def make_sequence_factory(
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None
         )
 
         if tile_type == 'polygon':
@@ -276,6 +279,7 @@ def make_node_factory(
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None
         )
 
         if tile_type == 'polygon':
