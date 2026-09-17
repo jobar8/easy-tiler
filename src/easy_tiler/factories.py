@@ -26,7 +26,6 @@ def make_tile_factory(
     rot: str | int = 'random',
     fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    side_length: float | None = None,
     palette: str | None = None,
     num_colors: int | None = None,
     **kwargs,
@@ -43,6 +42,7 @@ def make_tile_factory(
     outline_color = kwargs.get('outline_color', None)
     radius = kwargs.get('radius', 3.0)
     sides = kwargs.get('sides', 4)
+    side_length = kwargs.get('side_length', 1.0)  # Default side length for PentagonTile
     width = kwargs.get('width', 0.333)  # Default width for ArrowTile
     use_seed = kwargs.get('use_seed', True)
 
