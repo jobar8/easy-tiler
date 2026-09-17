@@ -25,6 +25,14 @@ def test_tile_config_resolves_local_palette_colors():
     assert config.outline_color == CustomPalette('ColorsOfTheWind').get('purple')
 
 
+def test_tile_config_seed_makes_random_colors_reproducible():
+    first = TileConfig(fg_color='random', bg_color='random', palette='Standard', seed=123)
+    second = TileConfig(fg_color='random', bg_color='random', palette='Standard', seed=123)
+
+    assert first.get_fg_color() == second.get_fg_color()
+    assert first.get_bg_color() == second.get_bg_color()
+
+
 def test_make_tile_factory_uses_palette_colors_sequentially():
     factory = make_tile_factory(
         fg=['blue', 'green'],

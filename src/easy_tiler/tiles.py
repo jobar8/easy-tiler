@@ -39,9 +39,11 @@ class TileConfig:
     outline_color: str | tuple | None = None
     palette: str | CustomPalette | None = None
     num_colors: int | None = None
+    seed: int | float | str | bytes | bytearray | None = None
 
     _colors: list = field(default_factory=list, init=False)
     _palette: CustomPalette = field(init=False)
+    _rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
         self._palette = (
@@ -51,6 +53,7 @@ class TileConfig:
         )
         self.outline_color = self._palette.get(self.outline_color)
         self._colors = self._palette.colors if self.palette is not None else []
+        self._rng = random.Random(self.seed)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
@@ -66,8 +69,8 @@ class TileConfig:
 
         if val == 'random':
             if self._colors:
-                return self._palette.get(random.choice(self._colors))
-            return (random.random(), random.random(), random.random(), 1.0)
+                return self._palette.get(self._rng.choice(self._colors))
+            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
         return self._palette.get(val)
 
@@ -278,6 +281,25 @@ class RileyTile(TileBase):
         ctx.restore()
 
 
+class CircleTile(TileBase):
+    """Draw a circle tile that can be used in Cairo tiling."""
+
+    def __init__(self, radius: float = 0.25, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = radius
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        radius = g.width * self.radius
+        fg = g.get_fg_color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(g.width / 4, g.width / 4)
+        ctx.arc(g.width / 4, g.width / 4, radius, 0, 2 * PI)
+        ctx.fill()
+        ctx.restore()
+
+
 class PentagonTile(TileBase):
     """Draw a pentagon tile that can be used in Cairo tiling."""
 
@@ -312,25 +334,6 @@ class PentagonTile(TileBase):
         # draw outline of the pentagon
         ctx.set_source_rgba(*g._palette.get(g.outline_color))
         ctx.stroke()
-        ctx.restore()
-
-
-class CircleTile(TileBase):
-    """Draw a circle tile that can be used in Cairo tiling."""
-
-    def __init__(self, radius: float = 0.25, **kwargs):
-        super().__init__(**kwargs)
-        self.radius = radius
-        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
-
-    def draw(self, ctx: cairo.Context, g: TileConfig):
-        radius = g.width * self.radius
-        fg = g.get_fg_color(0)
-
-        ctx.set_source_rgba(*fg)
-        ctx.move_to(g.width / 4, g.width / 4)
-        ctx.arc(g.width / 4, g.width / 4, radius, 0, 2 * PI)
-        ctx.fill()
         ctx.restore()
 
 
