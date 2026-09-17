@@ -132,12 +132,14 @@ class CustomPalette:
                 return (random.random(), random.random(), random.random(), 1)
             if val == 'random_choice':
                 return self.get(random.choice(self.colors))
+            if val == 'transparent':
+                return (0, 0, 0, 0)
             try:
                 return self.get(self.palette[val])
             except KeyError:
                 try:
                     return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
                 except KeyError:
-                    print(TypeError(f'Unsupported color value: {val}'))
+                    print(TypeError(f'Unsupported color value: {val} - returning transparent'))
                     return (0, 0, 0, 0)  # transparent
         return (0, 0, 0, 0)  # transparent
