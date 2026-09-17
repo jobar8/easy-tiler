@@ -13,18 +13,18 @@ from easy_tiler.tiles import TileBase
 class Renderer:
     """Render a Grid using a tile provider function.
 
-    The `tile_getter` is a callable tile_getter(x, y) -> TileBase
+    The `tile_factory` is a callable tile_factory(x, y) -> TileBase
     """
 
     def __init__(
         self,
         grid: Grid,
-        tile_getter: Callable[[int, int], TileBase],
+        tile_factory: Callable[[int, int], TileBase],
         scale: float = 1.0,
         background_col: str | None = None,
     ):
         self.grid = grid
-        self.tile_getter = tile_getter
+        self.tile_factory = tile_factory
         self.scale = scale
         self.background_color = CustomPalette().get(background_col)
 
@@ -41,7 +41,7 @@ class Renderer:
         ctx.scale(self.scale * math.cos(y_skew), self.scale * math.cos(x_skew))
 
         for x, y in self.grid.iter_cells():
-            tile = self.tile_getter(x, y)
+            tile = self.tile_factory(x, y)
             px, py = self.grid.cell_to_pixel(x, y)
             ctx.save()
             ctx.translate(px, py)
