@@ -3,6 +3,7 @@
 import math
 import random
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 
@@ -19,6 +20,43 @@ from easy_tiler import (
 )
 from easy_tiler.colors import CustomPalette
 from easy_tiler.tiles import TileConfig
+
+_TILE_CLASSES: dict[str, type[TileBase]] = {
+    'polygon': RegularPolygonTile,
+    'puck': PuckTile,
+    'truchet': TruchetTile,
+    'arrow': ArrowTile,
+    'riley': RileyTile,
+    'cairo': CairoTile,
+    'pentagon': PentagonTile,
+    'circle': CircleTile,
+}
+
+_TILE_OPTIONS: dict[str, tuple[str, ...]] = {
+    'polygon': ('sides', 'inset'),
+    'arrow': ('width',),
+    'riley': ('radius',),
+    'pentagon': ('side_length',),
+    'circle': ('radius',),
+}
+
+
+def _make_tile(
+    tile_type: str,
+    *,
+    rot: Any,
+    flipped: bool,
+    outline: bool,
+    config: TileConfig,
+    options: dict[str, Any],
+) -> TileBase:
+    try:
+        tile_class = _TILE_CLASSES[tile_type]
+    except KeyError as exc:
+        raise ValueError(f'Invalid tile_type: {tile_type}') from exc
+
+    tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
+    return tile_class(rot=rot, flipped=flipped, outline=outline, config=config, **tile_options)
 
 
 def make_tile_factory(
@@ -63,33 +101,23 @@ def make_tile_factory(
             bg_color=resolve_color(bg, x),
             outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
         )
 
-        if tile_type == 'polygon':
-            tile = RegularPolygonTile(
-                rot=actual_rot, flipped=flipped, outline=outline, sides=sides, inset=inset, config=config
-            )
-        elif tile_type == 'puck':
-            tile = PuckTile(rot=actual_rot, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'truchet':
-            tile = TruchetTile(rot=actual_rot, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'arrow':
-            tile = ArrowTile(rot=actual_rot, flipped=flipped, outline=outline, width=width, config=config)
-        elif tile_type == 'riley':
-            tile = RileyTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius, config=config)
-        elif tile_type == 'cairo':
-            tile = CairoTile(rot=actual_rot, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'pentagon':
-            tile = PentagonTile(
-                rot=actual_rot, flipped=flipped, outline=outline, side_length=side_length, config=config
-            )
-        elif tile_type == 'circle':
-            tile = CircleTile(rot=actual_rot, flipped=flipped, outline=outline, radius=radius, config=config)
-        else:
-            raise ValueError(f'Invalid tile_type: {tile_type}')
-
-        return tile
+        return _make_tile(
+            tile_type,
+            rot=actual_rot,
+            flipped=flipped,
+            outline=outline,
+            config=config,
+            options={
+                'sides': sides,
+                'inset': inset,
+                'radius': radius,
+                'side_length': side_length,
+                'width': width,
+            },
+        )
 
     return factory
 
@@ -102,7 +130,6 @@ def make_sequence_factory(
     bg: tuple[float, float, float, float] | str = 'random',
     palette: str = 'glasbey_dark',
     num_colors: int | None = None,
-    use_seed: bool = True,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
@@ -121,6 +148,7 @@ def make_sequence_factory(
     radius = kwargs.get('radius', 1.0)
     sides = kwargs.get('sides', 4)
     width = kwargs.get('width', 0.333)  # Default width for ArrowTile
+    use_seed = kwargs.get('use_seed', True)
 
     # Use parameters to seed randomness for this specific sequence
     if use_seed:
@@ -170,27 +198,22 @@ def make_sequence_factory(
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
         )
 
-        if tile_type == 'polygon':
-            tile = RegularPolygonTile(
-                sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline, config=config
-            )
-        elif tile_type == 'puck':
-            tile = PuckTile(rot=rotation, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'truchet':
-            tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'riley':
-            tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
-        elif tile_type == 'arrow':
-            tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
-        elif tile_type == 'circle':
-            tile = CircleTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
-        else:
-            raise ValueError(f'Invalid tile_type: {tile_type}')
-
-        return tile
+        return _make_tile(
+            tile_type,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            config=config,
+            options={
+                'sides': sides,
+                'inset': inset,
+                'radius': radius,
+                'width': width,
+            },
+        )
 
     return factory
 
@@ -279,26 +302,21 @@ def make_node_factory(
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
         )
 
-        if tile_type == 'polygon':
-            tile = RegularPolygonTile(
-                sides=sides, rot=rotation, inset=inset, flipped=flipped, outline=outline, config=config
-            )
-        elif tile_type == 'puck':
-            tile = PuckTile(rot=rotation, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'truchet':
-            tile = TruchetTile(rot=rotation, flipped=flipped, outline=outline, config=config)
-        elif tile_type == 'arrow':
-            tile = ArrowTile(rot=rotation, flipped=flipped, outline=outline, width=width, config=config)
-        elif tile_type == 'riley':
-            tile = RileyTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
-        elif tile_type == 'circle':
-            tile = CircleTile(rot=rotation, flipped=flipped, outline=outline, radius=radius, config=config)
-        else:
-            raise ValueError(f'Invalid tile_type: {tile_type}')
-
-        return tile
+        return _make_tile(
+            tile_type,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            config=config,
+            options={
+                'sides': sides,
+                'inset': inset,
+                'radius': radius,
+                'width': width,
+            },
+        )
 
     return factory
