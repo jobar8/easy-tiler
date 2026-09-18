@@ -43,6 +43,16 @@ def test_tile_config_seed_makes_random_colors_reproducible():
     assert first.get_bg_color() == second.get_bg_color()
 
 
+def test_make_tile_factory_seed_makes_random_colors_reproducible():
+    first = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+    second = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+
+    assert first.config.fg_color == 'random'
+    assert first.config.bg_color == 'random'
+    assert first.config.get_fg_color() == second.config.get_fg_color()
+    assert first.config.get_bg_color() == second.config.get_bg_color()
+
+
 def test_make_tile_factory_uses_palette_colors_sequentially():
     factory = make_tile_factory(
         fg=['blue', 'green'],
