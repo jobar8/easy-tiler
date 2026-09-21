@@ -7,8 +7,10 @@ from easy_tiler.tiles import (
     ArrowTile,
     CairoTile,
     CircleTile,
+    PaletteTileConfig,
     PentagonTile,
     PuckTile,
+    RandomColorTileConfig,
     RegularPolygonTile,
     RileyTile,
     TileConfig,
@@ -51,6 +53,22 @@ def test_make_tile_factory_seed_makes_random_colors_reproducible():
     assert first.config.bg_color == 'random'
     assert first.config.get_fg_color() == second.config.get_fg_color()
     assert first.config.get_bg_color() == second.config.get_bg_color()
+
+
+def test_make_tile_factory_selects_random_color_config_for_deferred_random_values():
+    tile = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+
+    assert isinstance(tile.config, RandomColorTileConfig)
+
+
+def test_factories_select_palette_config_for_resolved_colors():
+    direct_tile = make_tile_factory(fg='blue', bg='white')(0, 0)
+    sequence_tile = make_sequence_factory(fg='blue', bg='white', tile_sequence=[0])(0, 0)
+    node_tile = make_node_factory(node_sequence=np.array([[0]]), fg='blue', bg='white')(0, 0)
+
+    assert isinstance(direct_tile.config, PaletteTileConfig)
+    assert isinstance(sequence_tile.config, PaletteTileConfig)
+    assert isinstance(node_tile.config, PaletteTileConfig)
 
 
 def test_make_tile_factory_uses_palette_colors_sequentially():

@@ -4,11 +4,14 @@ from .tiles import (
     ArrowTile,
     CairoTile,
     CircleTile,
+    PaletteTileConfig,
     PentagonTile,
     PuckTile,
+    RandomColorTileConfig,
     RegularPolygonTile,
     RileyTile,
     TileBase,
+    TileConfig,
     TruchetTile,
 )
 
@@ -22,11 +25,14 @@ __all__ = [
     'CairoTile',
     'CircleTile',
     'Grid',
+    'PaletteTileConfig',
     'PentagonTile',
     'PuckTile',
+    'RandomColorTileConfig',
     'RegularPolygonTile',
     'Renderer',
     'RileyTile',
     'TileBase',
-    'TruchetTile'
+    'TileConfig',
+    'TruchetTile',
 ]

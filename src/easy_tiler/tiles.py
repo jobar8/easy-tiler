@@ -68,11 +68,15 @@ class TileConfig:
             val = val[index % len(val)]
 
         if val == 'random':
-            if self._colors:
-                return self._palette.get(self._rng.choice(self._colors))
-            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
+            return self._resolve_random_color()
 
         return self._palette.get(val)
+
+    def _resolve_random_color(self) -> tuple:
+        """Resolve a random color using the configured palette when available."""
+        if self._colors:
+            return self._palette.get(self._rng.choice(self._colors))
+        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
     def get_fg_color(self, index: int = 0) -> tuple:
         """Get the foreground color."""
@@ -81,6 +85,20 @@ class TileConfig:
     def get_bg_color(self) -> tuple:
         """Get the background color."""
         return self._resolve_color(self.bg_color)
+
+
+@dataclass
+class PaletteTileConfig(TileConfig):
+    """Tile configuration for colors resolved through a palette."""
+
+
+@dataclass
+class RandomColorTileConfig(TileConfig):
+    """Tile configuration that generates deferred random colors from its seed."""
+
+    def _resolve_random_color(self) -> tuple:
+        """Generate an arbitrary seeded RGB color."""
+        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
 
 class TileBase(abc.ABC):

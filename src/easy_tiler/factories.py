@@ -19,7 +19,7 @@ from easy_tiler import (
     TruchetTile,
 )
 from easy_tiler.colors import CustomPalette
-from easy_tiler.tiles import TileConfig
+from easy_tiler.tiles import PaletteTileConfig, RandomColorTileConfig, TileConfig
 
 _TILE_CLASSES: dict[str, type[TileBase]] = {
     'polygon': RegularPolygonTile,
@@ -57,6 +57,25 @@ def _make_tile(
 
     tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
     return tile_class(rot=rot, flipped=flipped, outline=outline, config=config, **tile_options)
+
+
+def _make_config(
+    *,
+    fg_color,
+    bg_color,
+    outline_color,
+    palette: CustomPalette,
+    seed,
+    random_colors: bool = False,
+) -> TileConfig:
+    config_class = RandomColorTileConfig if random_colors else PaletteTileConfig
+    return config_class(
+        fg_color=fg_color,
+        bg_color=bg_color,
+        outline_color=outline_color,
+        palette=palette,
+        seed=seed,
+    )
 
 
 def make_tile_factory(
@@ -98,12 +117,15 @@ def make_tile_factory(
         else:
             actual_rot = rot
 
-        config = TileConfig(
-            fg_color=resolve_color(fg, x),
-            bg_color=resolve_color(bg, x),
+        fg_color = resolve_color(fg, x)
+        bg_color = resolve_color(bg, x)
+        config = _make_config(
+            fg_color=fg_color,
+            bg_color=bg_color,
             outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
             palette=custom_palette,
             seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            random_colors=fg_color == 'random' or bg_color == 'random',
         )
 
         return _make_tile(
@@ -195,7 +217,7 @@ def make_sequence_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        config = TileConfig(
+        config = _make_config(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
@@ -299,7 +321,7 @@ def make_node_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        config = TileConfig(
+        config = _make_config(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
