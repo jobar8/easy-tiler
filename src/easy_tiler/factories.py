@@ -122,7 +122,7 @@ def make_tile_factory(
         config = _make_config(
             fg_color=fg_color,
             bg_color=bg_color,
-            outline_color=custom_palette.get(outline_color) if isinstance(outline_color, str) else outline_color,
+            outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=f'{tile_type}-{x}-{y}' if use_seed else None,
             random_colors=fg_color == 'random' or bg_color == 'random',
