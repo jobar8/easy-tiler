@@ -108,17 +108,18 @@ class TileBase(abc.ABC):
     on the provided cairo `Context` using the small graphics config `g`.
     """
 
-    rotations = 4
-    flip = False
-
     def __init__(
         self,
+        rotations: int = 4,
+        rot_angle: float = PI2,
         rot: float = 0,
         flipped: bool = False,
         outline: bool = True,
         config: TileConfig | None = None,
         random_seed: float | str | bytes | bytearray | None = None,
     ):
+        self.rotations = rotations
+        self.rot_angle = rot_angle
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
         self.outline = bool(outline)
@@ -145,7 +146,7 @@ class TileBase(abc.ABC):
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
-        ctx.rotate(PI2 * self.rot)
+        ctx.rotate(self.rot_angle * self.rot)
         ctx.translate(-wh2, -wh2)
 
         if self.flipped:
