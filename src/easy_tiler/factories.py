@@ -112,8 +112,10 @@ def make_tile_factory(
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
+        random_seed = f'{tile_type}-{x}-{y}' if use_seed else None
         if rot == 'random':
-            actual_rot = random.randrange(4)
+            rng = random.Random(random_seed)
+            actual_rot = rng.randrange(4)
         else:
             actual_rot = rot
 
@@ -124,7 +126,7 @@ def make_tile_factory(
             bg_color=bg_color,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            seed=random_seed,
             random_colors=fg_color == 'random' or bg_color == 'random',
         )
 
