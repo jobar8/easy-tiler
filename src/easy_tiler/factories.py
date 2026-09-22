@@ -112,10 +112,11 @@ def make_tile_factory(
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
-        random_seed = f'{tile_type}-{x}-{y}' if use_seed else None
+        random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
+
         if rot == 'random':
             rng = random.Random(random_seed)
-            actual_rot = rng.randrange(4)
+            actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
         else:
             actual_rot = rot
 
