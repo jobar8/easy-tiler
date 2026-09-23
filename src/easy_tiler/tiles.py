@@ -125,12 +125,12 @@ class TileBase(abc.ABC):
         self.outline = bool(outline)
         self.config = config or TileConfig(seed=random_seed)
 
-    def init_tile(self, ctx: cairo.Context, g: TileConfig):
-        wh = g.width
+    def init_tile(self, ctx: cairo.Context):
+        wh = self.config.width
         wh2 = wh / 2.0
 
         # draw background
-        bg_col = g.get_bg_color()
+        bg_col = self.config.get_bg_color()
         if bg_col != (0, 0, 0, 0):
             ctx.set_source_rgba(*bg_col)
             ctx.rectangle(0, 0, wh, wh)
@@ -138,7 +138,7 @@ class TileBase(abc.ABC):
         # Draw outline of tile
         if self.outline:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*g.outline_color)  # type: ignore
+            ctx.set_source_rgba(*self.config.outline_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
@@ -159,7 +159,7 @@ class TileBase(abc.ABC):
 
     def draw_tile(self, ctx: cairo.Context, wh: int) -> None:
         self.config.width = wh
-        self.init_tile(ctx, self.config)
+        self.init_tile(ctx)
         self.draw(ctx, self.config)
 
 
