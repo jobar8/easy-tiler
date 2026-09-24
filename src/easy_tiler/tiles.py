@@ -320,6 +320,28 @@ class CircleTile(TileBase):
         ctx.restore()
 
 
+class SmithTile(TileBase):
+    def __init__(self, radius: float = 0.5, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = radius
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        radius = self.radius * g.width
+        fg = g.get_fg_color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.arc(0, g.width, radius, -PI2, 0)
+        ctx.line_to(0, g.width)
+        ctx.close_path()
+        ctx.fill()
+
+        ctx.arc(g.width, 0, radius, PI2, PI)
+        ctx.line_to(g.width, 0)
+        ctx.close_path()
+        ctx.fill()
+        ctx.restore()
+
+
 class PentagonTile(TileBase):
     """Draw a pentagon tile that can be used in Cairo tiling."""
 

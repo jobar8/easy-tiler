@@ -15,6 +15,7 @@ from easy_tiler import (
     PuckTile,
     RegularPolygonTile,
     RileyTile,
+    SmithTile,
     TileBase,
     TruchetTile,
 )
@@ -30,6 +31,7 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'cairo': CairoTile,
     'pentagon': PentagonTile,
     'circle': CircleTile,
+    'smith': SmithTile,
 }
 
 _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
@@ -38,6 +40,7 @@ _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
     'riley': ('radius',),
     'pentagon': ('side_length',),
     'circle': ('radius',),
+    'smith': ('radius',),
 }
 
 
