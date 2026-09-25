@@ -350,3 +350,110 @@ def make_node_factory(
         )
 
     return factory
+
+
+
+def make_form_factory(
+    tile_type: str = 'polygon',
+    node_sequence: np.ndarray | None = None,
+    fg: tuple[float, float, float, float] | list[str] | str = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    palette: str = 'glasbey_dark',
+    num_colors: int | None = None,
+    use_seed: bool = True,
+    **kwargs,
+) -> Callable[..., TileBase]:
+    """Factory for creating nodes, i.e. a grid of tiles."""
+    if node_sequence is None:
+        if use_seed:
+            # Use parameters to seed randomness
+            rng = np.random.default_rng(len(tile_type) * len(palette))
+        else:
+            rng = np.random.default_rng()
+        node_sequence = rng.integers(low=0, high=10, size=(4, 4))
+
+    custom_palette = CustomPalette(palette, num_colors)
+    colors = custom_palette.colors
+
+    # Get other keyword args
+    inset = kwargs.get('inset', 0.85)
+    flipped = kwargs.get('flipped', False)
+    outline = kwargs.get('outline', False)
+    outline_color = kwargs.get('outline_color', None)
+    radius = kwargs.get('radius', 1.0)
+    sides = kwargs.get('sides', 4)
+    width = kwargs.get('width', 0.333)
+
+    if use_seed:
+        # Use parameters to seed randomness for this specific sequence
+        rng = random.Random(f'{tile_type}-{node_sequence}')
+    else:
+        rng = random.Random()
+
+    nr, nc = node_sequence.shape
+    if isinstance(fg, list):
+        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
+    else:
+        fg_sequence_colors = rng.choices(colors, k=nr * nc)
+
+    if isinstance(bg, list):
+        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
+    else:
+        bg_sequence_colors = rng.choices(colors, k=nr * nc)
+
+    def factory(x, y) -> TileBase:
+        node_idx = x // nc
+        x_offset = x % nc
+        y_offset =( 2 * y) % nr
+        offset = x_offset + y_offset * nc
+        offset = (2*y) + 3*x
+        rotation = offset % 3  # Use offset to determine rotation for variety
+        offset = offset % (nr * nc)  # Ensure offset is within bounds of the color sequences
+
+        if fg == 'sequence' or isinstance(fg, list):
+            actual_fg = custom_palette.get(fg_sequence_colors[offset])
+        elif fg == 'roll':
+            sequence_colors = np.roll(fg_sequence_colors, node_idx)
+            actual_fg = custom_palette.get(sequence_colors[offset])
+        elif fg == 'random':
+            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
+        elif fg == 'black':
+            actual_fg = custom_palette.get('black')
+        else:
+            actual_fg = custom_palette.get(fg)
+
+        if bg == 'sequence' or isinstance(bg, list):
+            actual_bg = custom_palette.get(bg_sequence_colors[offset])
+        elif bg == 'roll':
+            sequence_colors = np.roll(bg_sequence_colors, node_idx)
+            actual_bg = custom_palette.get(sequence_colors[offset])
+        elif bg == 'random':
+            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
+        elif bg == 'white':
+            actual_bg = custom_palette.get('white')
+        else:
+            actual_bg = custom_palette.get(bg)
+
+        config = _make_config(
+            fg_color=actual_fg,
+            bg_color=actual_bg,
+            outline_color=custom_palette.get(outline_color),
+            palette=custom_palette,
+            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+        )
+
+        return _make_tile(
+            tile_type,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            config=config,
+            options={
+                'sides': sides,
+                'inset': inset,
+                'radius': radius,
+                'width': width,
+            },
+        )
+
+    return factory
