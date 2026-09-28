@@ -357,8 +357,8 @@ def make_form_factory(
     a: float = 3.0,
     b: float = 1.0,
     c: float = 0.0,
-    rot_mod=4,
-    color_mod=16,
+    rot_mod: int = 4,
+    color_mod: int = 16,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'glasbey_dark',
@@ -366,7 +366,7 @@ def make_form_factory(
     use_seed: bool = True,
     **kwargs,
 ) -> Callable[..., TileBase]:
-    """Factory for creating nodes, i.e. a grid of tiles."""
+    """Factory for creating patterns based on mathematical functions."""
     custom_palette = CustomPalette(palette, num_colors)
     colors = custom_palette.colors
 
