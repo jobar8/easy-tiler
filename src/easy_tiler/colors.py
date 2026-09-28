@@ -59,6 +59,14 @@ CUSTOM_PALETTES = {
         'red': '#ecb8db',
         'orange': '#ecc9b8',
     },
+    'Apricot': {
+        'red': '#D72000FF',
+        'orange': '#EE6100FF',
+        'yellow': '#FFAD0AFF',
+        'green': '#1BB6AFFF',
+        'blue': '#9093A2FF',
+        'purple': '#132157FF',
+    },
 }
 
 STANDARD_PALETTE = {
