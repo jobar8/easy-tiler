@@ -352,10 +352,13 @@ def make_node_factory(
     return factory
 
 
-
 def make_form_factory(
     tile_type: str = 'polygon',
-    node_sequence: np.ndarray | None = None,
+    a: float = 3.0,
+    b: float = 1.0,
+    c: float = 0.0,
+    rot_mod=4,
+    color_mod=16,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'glasbey_dark',
@@ -364,14 +367,6 @@ def make_form_factory(
     **kwargs,
 ) -> Callable[..., TileBase]:
     """Factory for creating nodes, i.e. a grid of tiles."""
-    if node_sequence is None:
-        if use_seed:
-            # Use parameters to seed randomness
-            rng = np.random.default_rng(len(tile_type) * len(palette))
-        else:
-            rng = np.random.default_rng()
-        node_sequence = rng.integers(low=0, high=10, size=(4, 4))
-
     custom_palette = CustomPalette(palette, num_colors)
     colors = custom_palette.colors
 
@@ -384,37 +379,29 @@ def make_form_factory(
     sides = kwargs.get('sides', 4)
     width = kwargs.get('width', 0.333)
 
-    if use_seed:
-        # Use parameters to seed randomness for this specific sequence
-        rng = random.Random(f'{tile_type}-{node_sequence}')
-    else:
-        rng = random.Random()
+    random_seed = f'{use_seed}-{rot_mod}-{color_mod}' if use_seed else None
+    rng = random.Random(random_seed)
 
-    nr, nc = node_sequence.shape
     if isinstance(fg, list):
-        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
+        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (color_mod // len(fg) + 1)
     else:
-        fg_sequence_colors = rng.choices(colors, k=nr * nc)
+        fg_sequence_colors = rng.choices(colors, k=color_mod)
 
     if isinstance(bg, list):
-        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
+        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (color_mod // len(bg) + 1)
     else:
-        bg_sequence_colors = rng.choices(colors, k=nr * nc)
+        bg_sequence_colors = rng.choices(colors, k=color_mod)
 
     def factory(x, y) -> TileBase:
-        node_idx = x // nc
-        x_offset = x % nc
-        y_offset =( 2 * y) % nr
-        offset = x_offset + y_offset * nc
-        offset = (2*y) + 3*x
-        rotation = offset % 3  # Use offset to determine rotation for variety
-        offset = offset % (nr * nc)  # Ensure offset is within bounds of the color sequences
+        sequence_position = int(a * x + (b * y) + c)
+        rotation = sequence_position % rot_mod  # Use offset to determine rotation for variety
+        sequence_position = sequence_position % (color_mod)  # Ensure offset is within bounds of the color sequences
 
         if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_palette.get(fg_sequence_colors[offset])
+            actual_fg = custom_palette.get(fg_sequence_colors[sequence_position])
         elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, node_idx)
-            actual_fg = custom_palette.get(sequence_colors[offset])
+            sequence_colors = np.roll(fg_sequence_colors, y)
+            actual_fg = custom_palette.get(sequence_colors[sequence_position])
         elif fg == 'random':
             actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif fg == 'black':
@@ -423,10 +410,10 @@ def make_form_factory(
             actual_fg = custom_palette.get(fg)
 
         if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_palette.get(bg_sequence_colors[offset])
+            actual_bg = custom_palette.get(bg_sequence_colors[sequence_position])
         elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, node_idx)
-            actual_bg = custom_palette.get(sequence_colors[offset])
+            sequence_colors = np.roll(bg_sequence_colors, y)
+            actual_bg = custom_palette.get(sequence_colors[sequence_position])
         elif bg == 'random':
             actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
         elif bg == 'white':
