@@ -1,6 +1,20 @@
 from .grid import Grid
 from .renderer import Renderer
-from .tiles import ArrowTile, CairoTile, PentagonTile, PuckTile, RegularPolygonTile, RileyTile, TileBase, TruchetTile
+from .tiles import (
+    ArrowTile,
+    CairoTile,
+    CircleTile,
+    PaletteTileConfig,
+    PentagonTile,
+    PuckTile,
+    RandomColorTileConfig,
+    RegularPolygonTile,
+    RileyTile,
+    SmithTile,
+    TileBase,
+    TileConfig,
+    TruchetTile,
+)
 
 
 def main() -> None:
@@ -10,12 +24,17 @@ def main() -> None:
 __all__ = [
     'ArrowTile',
     'CairoTile',
+    'CircleTile',
     'Grid',
+    'PaletteTileConfig',
     'PentagonTile',
     'PuckTile',
+    'RandomColorTileConfig',
     'RegularPolygonTile',
     'Renderer',
     'RileyTile',
+    'SmithTile',
     'TileBase',
-    'TruchetTile'
+    'TileConfig',
+    'TruchetTile',
 ]

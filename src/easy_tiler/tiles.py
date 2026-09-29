@@ -39,9 +39,11 @@ class TileConfig:
     outline_color: str | tuple | None = None
     palette: str | CustomPalette | None = None
     num_colors: int | None = None
+    seed: float | str | bytes | bytearray | None = None
 
-    _colors: list | None = field(default=None, init=False)
+    _colors: list = field(default_factory=list, init=False)
     _palette: CustomPalette = field(init=False)
+    _rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
         self._palette = (
@@ -50,7 +52,8 @@ class TileConfig:
             else CustomPalette(self.palette or 'Standard', self.num_colors)
         )
         self.outline_color = self._palette.get(self.outline_color)
-        self._colors = self._palette.colors if self.palette is not None else None
+        self._colors = self._palette.colors if self.palette is not None else []
+        self._rng = random.Random(self.seed)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
@@ -65,11 +68,15 @@ class TileConfig:
             val = val[index % len(val)]
 
         if val == 'random':
-            if self._colors:
-                return self._palette.get(random.choice(self._colors))
-            return (random.random(), random.random(), random.random(), 1.0)
+            return self._resolve_random_color()
 
         return self._palette.get(val)
+
+    def _resolve_random_color(self) -> tuple:
+        """Resolve a random color using the configured palette when available."""
+        if self._colors:
+            return self._palette.get(self._rng.choice(self._colors))
+        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
     def get_fg_color(self, index: int = 0) -> tuple:
         """Get the foreground color."""
@@ -80,6 +87,20 @@ class TileConfig:
         return self._resolve_color(self.bg_color)
 
 
+@dataclass
+class PaletteTileConfig(TileConfig):
+    """Tile configuration for colors resolved through a palette."""
+
+
+@dataclass
+class RandomColorTileConfig(TileConfig):
+    """Tile configuration that generates deferred random colors from its seed."""
+
+    def _resolve_random_color(self) -> tuple:
+        """Generate an arbitrary seeded RGB color."""
+        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
+
+
 class TileBase(abc.ABC):
     """Base tile class.
 
@@ -87,27 +108,29 @@ class TileBase(abc.ABC):
     on the provided cairo `Context` using the small graphics config `g`.
     """
 
-    rotations = 4
-    flip = False
-
     def __init__(
         self,
+        rotations: int = 4,
+        rot_angle: float = PI2,
         rot: float = 0,
         flipped: bool = False,
         outline: bool = True,
         config: TileConfig | None = None,
+        random_seed: float | str | bytes | bytearray | None = None,
     ):
+        self.rotations = rotations
+        self.rot_angle = rot_angle
         self.rot = rot % self.rotations
         self.flipped = bool(flipped)
         self.outline = bool(outline)
-        self.config = config or TileConfig()
+        self.config = config or TileConfig(seed=random_seed)
 
-    def init_tile(self, ctx: cairo.Context, g: TileConfig):
-        wh = g.width
+    def init_tile(self, ctx: cairo.Context):
+        wh = self.config.width
         wh2 = wh / 2.0
 
         # draw background
-        bg_col = g.get_bg_color()
+        bg_col = self.config.get_bg_color()
         if bg_col != (0, 0, 0, 0):
             ctx.set_source_rgba(*bg_col)
             ctx.rectangle(0, 0, wh, wh)
@@ -115,7 +138,7 @@ class TileBase(abc.ABC):
         # Draw outline of tile
         if self.outline:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*g.outline_color)  # type: ignore
+            ctx.set_source_rgba(*self.config.outline_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
@@ -123,7 +146,7 @@ class TileBase(abc.ABC):
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
-        ctx.rotate(PI2 * self.rot)
+        ctx.rotate(self.rot_angle * self.rot)
         ctx.translate(-wh2, -wh2)
 
         if self.flipped:
@@ -136,7 +159,7 @@ class TileBase(abc.ABC):
 
     def draw_tile(self, ctx: cairo.Context, wh: int) -> None:
         self.config.width = wh
-        self.init_tile(ctx, self.config)
+        self.init_tile(ctx)
         self.draw(ctx, self.config)
 
 
@@ -274,6 +297,47 @@ class RileyTile(TileBase):
         ctx.arc(xc, yc, self.radius, angle1, angle2)  # top-left
         ctx.line_to(0, 0)
         ctx.line_to(wh, 0)
+        ctx.fill()
+        ctx.restore()
+
+
+class CircleTile(TileBase):
+    """Draw a circle tile that can be used in Cairo tiling."""
+
+    def __init__(self, radius: float = 0.25, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = radius
+        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        radius = g._rng.uniform(0.5, 1.0) * g.width * self.radius
+        fg = g.get_fg_color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.move_to(g.width / 4, g.width / 4)
+        ctx.arc(g.width / 4, g.width / 4, radius, 0, 2 * PI)
+        ctx.fill()
+        ctx.restore()
+
+
+class SmithTile(TileBase):
+    def __init__(self, radius: float = 0.5, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = radius
+
+    def draw(self, ctx: cairo.Context, g: TileConfig):
+        radius = self.radius * g.width
+        fg = g.get_fg_color(0)
+
+        ctx.set_source_rgba(*fg)
+        ctx.arc(0, g.width, radius, -PI2, 0)
+        ctx.line_to(0, g.width)
+        ctx.close_path()
+        ctx.fill()
+
+        ctx.arc(g.width, 0, radius, PI2, PI)
+        ctx.line_to(g.width, 0)
+        ctx.close_path()
         ctx.fill()
         ctx.restore()
 

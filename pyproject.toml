@@ -1,6 +1,6 @@
 [project]
 name = "easy-tiler"
-version = "0.5.0"
+version = "0.6.0"
 description = "Library for tiling and patterns"
 readme = "README.md"
 authors = [

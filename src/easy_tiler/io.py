@@ -7,11 +7,11 @@ from easy_tiler.renderer import Renderer
 from easy_tiler.tiles import TileBase
 
 
-def save_png(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase], **kwargs):
-    r = Renderer(grid, tile_getter, **kwargs)
+def save_png(path: str, grid: Grid, tile_factory: Callable[[int, int], TileBase], **kwargs):
+    r = Renderer(grid, tile_factory, **kwargs)
     r.render_png(path)
 
 
-def save_svg(path: str, grid: Grid, tile_getter: Callable[[int, int], TileBase], **kwargs):
-    r = Renderer(grid, tile_getter, **kwargs)
+def save_svg(path: str, grid: Grid, tile_factory: Callable[[int, int], TileBase], **kwargs):
+    r = Renderer(grid, tile_factory, **kwargs)
     r.render_svg(path)

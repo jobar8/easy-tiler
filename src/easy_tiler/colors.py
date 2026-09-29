@@ -59,6 +59,14 @@ CUSTOM_PALETTES = {
         'red': '#ecb8db',
         'orange': '#ecc9b8',
     },
+    'Apricot': {
+        'red': '#D72000FF',
+        'orange': '#EE6100FF',
+        'yellow': '#FFAD0AFF',
+        'green': '#1BB6AFFF',
+        'blue': '#9093A2FF',
+        'purple': '#132157FF',
+    },
 }
 
 STANDARD_PALETTE = {
@@ -115,7 +123,7 @@ class CustomPalette:
     def get(
         self,
         val: float | list | tuple | ndarray | str | None,
-    ) -> tuple[float, float, float, float] | None:
+    ) -> tuple[float, float, float, float]:
         """Create an RGBA color tuple from a variety of inputs."""
         if val is None:
             return (0, 0, 0, 0)  # transparent
@@ -132,10 +140,14 @@ class CustomPalette:
                 return (random.random(), random.random(), random.random(), 1)
             if val == 'random_choice':
                 return self.get(random.choice(self.colors))
+            if val == 'transparent':
+                return (0, 0, 0, 0)
             try:
                 return self.get(self.palette[val])
             except KeyError:
                 try:
                     return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
                 except KeyError:
-                    raise TypeError(f'Unsupported color value: {val}')
+                    print(TypeError(f'Unsupported color value: {val} - returning transparent'))
+                    return (0, 0, 0, 0)  # transparent
+        return (0, 0, 0, 0)  # transparent

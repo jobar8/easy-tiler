@@ -3,7 +3,19 @@ import pytest
 
 from easy_tiler.colors import CustomPalette
 from easy_tiler.factories import make_node_factory, make_sequence_factory, make_tile_factory
-from easy_tiler.tiles import TileConfig
+from easy_tiler.tiles import (
+    ArrowTile,
+    CairoTile,
+    CircleTile,
+    PaletteTileConfig,
+    PentagonTile,
+    PuckTile,
+    RandomColorTileConfig,
+    RegularPolygonTile,
+    RileyTile,
+    TileConfig,
+    TruchetTile,
+)
 
 
 def test_get_palette_resolves_local_palette_and_num_colors():
@@ -23,6 +35,40 @@ def test_tile_config_resolves_local_palette_colors():
     assert config.get_fg_color() == CustomPalette('ColorsOfTheWind').get('cyan')
     assert config.get_bg_color() == CustomPalette('ColorsOfTheWind').get('pink')
     assert config.outline_color == CustomPalette('ColorsOfTheWind').get('purple')
+
+
+def test_tile_config_seed_makes_random_colors_reproducible():
+    first = TileConfig(fg_color='random', bg_color='random', palette='Standard', seed=123)
+    second = TileConfig(fg_color='random', bg_color='random', palette='Standard', seed=123)
+
+    assert first.get_fg_color() == second.get_fg_color()
+    assert first.get_bg_color() == second.get_bg_color()
+
+
+def test_make_tile_factory_seed_makes_random_colors_reproducible():
+    first = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+    second = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+
+    assert first.config.fg_color == 'random'
+    assert first.config.bg_color == 'random'
+    assert first.config.get_fg_color() == second.config.get_fg_color()
+    assert first.config.get_bg_color() == second.config.get_bg_color()
+
+
+def test_make_tile_factory_selects_random_color_config_for_deferred_random_values():
+    tile = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
+
+    assert isinstance(tile.config, RandomColorTileConfig)
+
+
+def test_factories_select_palette_config_for_resolved_colors():
+    direct_tile = make_tile_factory(fg='blue', bg='white')(0, 0)
+    sequence_tile = make_sequence_factory(fg='blue', bg='white', tile_sequence=[0])(0, 0)
+    node_tile = make_node_factory(node_sequence=np.array([[0]]), fg='blue', bg='white')(0, 0)
+
+    assert isinstance(direct_tile.config, PaletteTileConfig)
+    assert isinstance(sequence_tile.config, PaletteTileConfig)
+    assert isinstance(node_tile.config, PaletteTileConfig)
 
 
 def test_make_tile_factory_uses_palette_colors_sequentially():
@@ -60,6 +106,44 @@ def test_make_tile_factory_supports_local_palette_outline():
     assert tile.config.fg_color == palette.get('cyan')
     assert tile.config.bg_color == palette.get('pink')
     assert tile.config.outline_color == palette.get('purple')
+
+
+@pytest.mark.parametrize(
+    ('tile_type', 'tile_class'),
+    [
+        ('polygon', RegularPolygonTile),
+        ('puck', PuckTile),
+        ('truchet', TruchetTile),
+        ('arrow', ArrowTile),
+        ('riley', RileyTile),
+        ('cairo', CairoTile),
+        ('pentagon', PentagonTile),
+        ('circle', CircleTile),
+    ],
+)
+def test_make_tile_factory_supports_registered_tile_types(tile_type, tile_class):
+    factory = make_tile_factory(tile_type=tile_type, rot=0, fg='blue', bg='white')
+
+    assert isinstance(factory(0, 0), tile_class)
+
+
+@pytest.mark.parametrize('tile_type', ['cairo', 'pentagon'])
+def test_make_sequence_factory_supports_tile_type(tile_type):
+    factory = make_sequence_factory(tile_type=tile_type, tile_sequence=[0], fg='blue', bg='white')
+
+    assert isinstance(factory(0, 0), {'cairo': CairoTile, 'pentagon': PentagonTile}[tile_type])
+
+
+@pytest.mark.parametrize('tile_type', ['cairo', 'pentagon'])
+def test_make_node_factory_supports_tile_type(tile_type):
+    factory = make_node_factory(
+        tile_type=tile_type,
+        node_sequence=np.array([[0]]),
+        fg='blue',
+        bg='white',
+    )
+
+    assert isinstance(factory(0, 0), {'cairo': CairoTile, 'pentagon': PentagonTile}[tile_type])
 
 
 @pytest.mark.parametrize(
