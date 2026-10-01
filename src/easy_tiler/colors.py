@@ -98,6 +98,8 @@ class CustomPalette:
             or a palette name from colorcet.
             num_colors: Number of colors to include in the palette.
         """
+        self.palette: dict[str, tuple[float, float, float, float]] = {}
+        self.colors: list[str] | list[tuple[float, float, float, float]] = []
 
         if name == 'Standard':
             palette: dict[str, tuple[float, float, float, float]] = STANDARD_PALETTE
@@ -110,8 +112,8 @@ class CustomPalette:
                 palette: list[str] = load_palette(name)
 
         if isinstance(palette, dict):
-            self.palette = palette  # Dictionary of named colors
-            self.colors = list(palette.values())  # List of hex color strings
+            self.palette = palette  # Dictionary of named colors  # ty: ignore[invalid-assignment]
+            self.colors = list(palette.values())  # List of hex color strings  # ty: ignore[invalid-assignment]
         else:
             self.palette = {}
             self.colors = list(palette)

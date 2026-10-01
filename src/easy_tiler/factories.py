@@ -20,7 +20,7 @@ from easy_tiler import (
     TruchetTile,
 )
 from easy_tiler.colors import CustomPalette
-from easy_tiler.tiles import PaletteTileConfig, RandomColorTileConfig, TileConfig
+from easy_tiler.tiles import TileConfig
 
 _TILE_CLASSES: dict[str, type[TileBase]] = {
     'polygon': RegularPolygonTile,
@@ -69,10 +69,8 @@ def _make_config(
     outline_color,
     palette: CustomPalette,
     seed,
-    random_colors: bool = False,
 ) -> TileConfig:
-    config_class = RandomColorTileConfig if random_colors else PaletteTileConfig
-    return config_class(
+    return TileConfig(
         fg_color=fg_color,
         bg_color=bg_color,
         outline_color=outline_color,
@@ -131,7 +129,6 @@ def make_tile_factory(
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=random_seed,
-            random_colors=fg_color == 'random' or bg_color == 'random',
         )
 
         return _make_tile(

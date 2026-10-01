@@ -37,22 +37,20 @@ class TileConfig:
     bg_color: str | tuple | list | None = None
     fg_color: str | tuple | list | None = None
     outline_color: str | tuple | None = None
-    palette: str | CustomPalette | None = None
+    palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
     seed: float | str | bytes | bytearray | None = None
 
-    _colors: list = field(default_factory=list, init=False)
     _palette: CustomPalette = field(init=False)
     _rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
-        self._palette = (
+        self._palette: CustomPalette = (
             self.palette
             if isinstance(self.palette, CustomPalette)
             else CustomPalette(self.palette or 'Standard', self.num_colors)
         )
         self.outline_color = self._palette.get(self.outline_color)
-        self._colors = self._palette.colors if self.palette is not None else []
         self._rng = random.Random(self.seed)
 
     @classmethod
@@ -68,15 +66,11 @@ class TileConfig:
             val = val[index % len(val)]
 
         if val == 'random':
-            return self._resolve_random_color()
+            if self._palette.colors:
+                return self._palette.get(self._rng.choice(self._palette.colors))
+            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
         return self._palette.get(val)
-
-    def _resolve_random_color(self) -> tuple:
-        """Resolve a random color using the configured palette when available."""
-        if self._colors:
-            return self._palette.get(self._rng.choice(self._colors))
-        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
     def get_fg_color(self, index: int = 0) -> tuple:
         """Get the foreground color."""
@@ -85,20 +79,6 @@ class TileConfig:
     def get_bg_color(self) -> tuple:
         """Get the background color."""
         return self._resolve_color(self.bg_color)
-
-
-@dataclass
-class PaletteTileConfig(TileConfig):
-    """Tile configuration for colors resolved through a palette."""
-
-
-@dataclass
-class RandomColorTileConfig(TileConfig):
-    """Tile configuration that generates deferred random colors from its seed."""
-
-    def _resolve_random_color(self) -> tuple:
-        """Generate an arbitrary seeded RGB color."""
-        return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
 
 class TileBase(abc.ABC):
