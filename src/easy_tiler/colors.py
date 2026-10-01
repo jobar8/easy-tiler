@@ -8,7 +8,7 @@ import colorcet as cc
 from numpy import ndarray
 from pypalettes import load_palette
 
-CUSTOM_PALETTES = {
+CUSTOM_PALETTES: dict[str, dict[str, str]] = {
     'FridaKahlo': {
         'black': '#121510FF',
         'blue': '#203caaFF',
@@ -69,7 +69,7 @@ CUSTOM_PALETTES = {
     },
 }
 
-STANDARD_PALETTE = {
+STANDARD_PALETTE: dict[str, tuple[float, float, float, float]] = {
     'black': (0, 0, 0, 1),
     'white': (1, 1, 1, 1),
     'red': (1, 0, 0, 1),
@@ -90,23 +90,31 @@ STANDARD_PALETTE = {
 class CustomPalette:
     """Load a palette and resolve its colors to RGBA values."""
 
-    def __init__(self, palette: str = 'Standard', num_colors: int | None = None):
-        if palette == 'Standard':
-            colors = STANDARD_PALETTE
-        elif palette in CUSTOM_PALETTES:
-            colors = CUSTOM_PALETTES[palette]
+    def __init__(self, name: str = 'Standard', num_colors: int | None = None):
+        """
+        Initialize the CustomPalette class.
+
+            name: Name of the palette to load. Can be 'Standard', a custom palette name,
+            or a palette name from colorcet.
+            num_colors: Number of colors to include in the palette.
+        """
+
+        if name == 'Standard':
+            palette: dict[str, tuple[float, float, float, float]] = STANDARD_PALETTE
+        elif name in CUSTOM_PALETTES:
+            palette: dict[str, str] = CUSTOM_PALETTES[name]
         else:
             try:
-                colors = cc.palette[palette]
+                palette: list[str] = cc.palette[name]
             except KeyError:
-                colors = load_palette(palette)
+                palette: list[str] = load_palette(name)
 
-        if isinstance(colors, dict):
-            self.palette = colors
-            self.colors = list(colors.values())
+        if isinstance(palette, dict):
+            self.palette = palette  # Dictionary of named colors
+            self.colors = list(palette.values())  # List of hex color strings
         else:
             self.palette = {}
-            self.colors = list(colors)
+            self.colors = list(palette)
 
         if num_colors is not None:
             self.colors = self.colors[:num_colors]
