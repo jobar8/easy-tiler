@@ -2,7 +2,10 @@
 Custom palettes found on https://y-sunflower.github.io/pypalettes/
 """
 
+from __future__ import annotations
+
 import random
+from dataclasses import dataclass, field
 
 import colorcet as cc
 from numpy import ndarray
@@ -85,6 +88,55 @@ STANDARD_PALETTE: dict[str, tuple[float, float, float, float]] = {
     'orange': (1, 0.75, 0.0, 1),
     'pink': (1, 0.5, 0.8, 1),
 }
+
+
+@dataclass
+class ColorConfig:
+    """Configuration for tile colors, palette resolution, and color RNG."""
+
+    fg_color: str | tuple | list | None = None
+    bg_color: str | tuple | list | None = None
+    outline_color: str | tuple | None = None
+    palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
+    num_colors: int | None = None
+    seed: float | str | bytes | bytearray | None = None
+
+    _palette: CustomPalette = field(init=False)
+    _rng: random.Random = field(init=False)
+
+    def __post_init__(self) -> None:
+        self._palette = (
+            self.palette
+            if isinstance(self.palette, CustomPalette)
+            else CustomPalette(self.palette or 'Standard', self.num_colors)
+        )
+        self.outline_color = self._palette.get(self.outline_color)
+        self._rng = random.Random(self.seed)
+
+    @classmethod
+    def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
+        return CustomPalette(palette, num_colors).colors
+
+    def _resolve_color(self, val, index: int = 0) -> tuple:
+        """Resolve a color value to an RGBA tuple."""
+        if val is None:
+            return (0, 0, 0, 0)
+
+        if isinstance(val, list):
+            val = val[index % len(val)]
+
+        if val == 'random':
+            if self._palette.colors:
+                return self._palette.get(self._rng.choice(self._palette.colors))
+            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
+
+        return self._palette.get(val)
+
+    def get_fg_color(self, index: int = 0) -> tuple:
+        return self._resolve_color(self.fg_color, index)
+
+    def get_bg_color(self) -> tuple:
+        return self._resolve_color(self.bg_color)
 
 
 class CustomPalette:

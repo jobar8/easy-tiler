@@ -19,7 +19,7 @@ from easy_tiler import (
     TileBase,
     TruchetTile,
 )
-from easy_tiler.colors import CustomPalette
+from easy_tiler.colors import ColorConfig, CustomPalette
 from easy_tiler.tiles import TileConfig
 
 _TILE_CLASSES: dict[str, type[TileBase]] = {
@@ -51,6 +51,7 @@ def _make_tile(
     flipped: bool,
     outline: bool,
     config: TileConfig,
+    color_config: ColorConfig,
     options: dict[str, Any],
 ) -> TileBase:
     try:
@@ -59,24 +60,52 @@ def _make_tile(
         raise ValueError(f'Invalid tile_type: {tile_type}') from exc
 
     tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
-    return tile_class(rot=rot, flipped=flipped, outline=outline, config=config, **tile_options)
+    return tile_class(
+        rot=rot,
+        flipped=flipped,
+        outline=outline,
+        config=config,
+        color_config=color_config,
+        **tile_options,
+    )
 
 
-def _make_config(
+def _make_configs(
     *,
     fg_color,
     bg_color,
     outline_color,
     palette: CustomPalette,
     seed,
-) -> TileConfig:
-    return TileConfig(
+    rot: Any,
+    flipped: bool,
+    outline: bool,
+    radius: float,
+    sides: int,
+    inset: float,
+    side_length: float,
+    width: float,
+) -> tuple[TileConfig, ColorConfig]:
+    tile_config = TileConfig(
+        width=0,
+        rot=rot,
+        flipped=flipped,
+        outline=outline,
+        radius=radius,
+        sides=sides,
+        inset=inset,
+        side_length=side_length,
+        arrow_width=width,
+        seed=seed,
+    )
+    color_config = ColorConfig(
         fg_color=fg_color,
         bg_color=bg_color,
         outline_color=outline_color,
         palette=palette,
         seed=seed,
     )
+    return tile_config, color_config
 
 
 def make_tile_factory(
@@ -123,12 +152,20 @@ def make_tile_factory(
 
         fg_color = resolve_color(fg, x)
         bg_color = resolve_color(bg, x)
-        config = _make_config(
+        tile_config, color_config = _make_configs(
             fg_color=fg_color,
             bg_color=bg_color,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=random_seed,
+            rot=actual_rot,
+            flipped=flipped,
+            outline=outline,
+            radius=radius,
+            sides=sides,
+            inset=inset,
+            side_length=side_length,
+            width=width,
         )
 
         return _make_tile(
@@ -136,7 +173,8 @@ def make_tile_factory(
             rot=actual_rot,
             flipped=flipped,
             outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
                 'sides': sides,
                 'inset': inset,
@@ -220,12 +258,20 @@ def make_sequence_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        config = _make_config(
+        tile_config, color_config = _make_configs(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            radius=radius,
+            sides=sides,
+            inset=inset,
+            side_length=1.0,
+            width=width,
         )
 
         return _make_tile(
@@ -233,7 +279,8 @@ def make_sequence_factory(
             rot=rotation,
             flipped=flipped,
             outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
                 'sides': sides,
                 'inset': inset,
@@ -324,12 +371,20 @@ def make_node_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        config = _make_config(
+        tile_config, color_config = _make_configs(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            radius=radius,
+            sides=sides,
+            inset=inset,
+            side_length=1.0,
+            width=width,
         )
 
         return _make_tile(
@@ -337,7 +392,8 @@ def make_node_factory(
             rot=rotation,
             flipped=flipped,
             outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
                 'sides': sides,
                 'inset': inset,
@@ -418,12 +474,20 @@ def make_form_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        config = _make_config(
+        tile_config, color_config = _make_configs(
             fg_color=actual_fg,
             bg_color=actual_bg,
             outline_color=custom_palette.get(outline_color),
             palette=custom_palette,
             seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            rot=rotation,
+            flipped=flipped,
+            outline=outline,
+            radius=radius,
+            sides=sides,
+            inset=inset,
+            side_length=1.0,
+            width=width,
         )
 
         return _make_tile(
@@ -431,7 +495,8 @@ def make_form_factory(
             rot=rotation,
             flipped=flipped,
             outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
                 'sides': sides,
                 'inset': inset,

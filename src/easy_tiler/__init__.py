@@ -1,3 +1,4 @@
+from .colors import ColorConfig
 from .grid import Grid
 from .renderer import Renderer
 from .tiles import (
@@ -23,6 +24,7 @@ __all__ = [
     'ArrowTile',
     'CairoTile',
     'CircleTile',
+    'ColorConfig',
     'Grid',
     'PentagonTile',
     'PuckTile',
