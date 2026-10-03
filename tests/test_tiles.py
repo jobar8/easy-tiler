@@ -2,7 +2,7 @@ import cairo
 import pytest
 
 from easy_tiler.colors import ColorConfig, CustomPalette
-from easy_tiler.tiles import TileBase
+from easy_tiler.tiles import TileBase, TileConfig
 
 
 class RecordingTile(TileBase):
@@ -20,16 +20,21 @@ def test_tilebase_is_abstract():
 
 
 def test_tilebase_can_be_instantiated_with_a_draw_implementation():
-    tile = RecordingTile(rotations=2, rot_angle=1.0, rot=1, flipped=True, outline=False)
+    tile = RecordingTile(
+        config=TileConfig(rotations=2, rot_angle=1.0, rot=1, flipped=True, outline=False)
+    )
 
-    assert tile.rotations == 2
-    assert tile.rot == 1
-    assert tile.flipped is True
-    assert tile.outline is False
+    assert tile.config.rotations == 2
+    assert tile.config.rot == 1
+    assert tile.config.flipped is True
+    assert tile.config.outline is False
+    assert not hasattr(tile, 'rot')
+    assert not hasattr(tile, 'flipped')
+    assert not hasattr(tile, 'outline')
 
 
 def test_tilebase_init_tile_applies_rotation_and_flip():
-    tile = RecordingTile(rot=1, flipped=True)
+    tile = RecordingTile(config=TileConfig(rot=1, flipped=True))
     tile.config.width = 20
     ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 20))
 

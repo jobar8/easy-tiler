@@ -47,9 +47,6 @@ _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
 def _make_tile(
     tile_type: str,
     *,
-    rot: Any,
-    flipped: bool,
-    outline: bool,
     config: TileConfig,
     color_config: ColorConfig,
     options: dict[str, Any],
@@ -61,9 +58,6 @@ def _make_tile(
 
     tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
     return tile_class(
-        rot=rot,
-        flipped=flipped,
-        outline=outline,
         config=config,
         color_config=color_config,
         **tile_options,
@@ -170,9 +164,6 @@ def make_tile_factory(
 
         return _make_tile(
             tile_type,
-            rot=actual_rot,
-            flipped=flipped,
-            outline=outline,
             config=tile_config,
             color_config=color_config,
             options={
@@ -276,9 +267,6 @@ def make_sequence_factory(
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
             config=tile_config,
             color_config=color_config,
             options={
@@ -389,9 +377,6 @@ def make_node_factory(
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
             config=tile_config,
             color_config=color_config,
             options={
@@ -492,9 +477,6 @@ def make_form_factory(
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
             config=tile_config,
             color_config=color_config,
             options={

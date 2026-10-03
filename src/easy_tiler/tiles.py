@@ -68,28 +68,12 @@ class TileBase(abc.ABC):
 
     def __init__(
         self,
-        rotations: int = 4,
-        rot_angle: float = PI2,
-        rot: float = 0,
-        flipped: bool = False,
-        outline: bool = True,
+        *,
         config: TileConfig | None = None,
         color_config: ColorConfig | None = None,
         random_seed: float | str | bytes | bytearray | None = None,
     ):
-        self.config = config or TileConfig(
-            rotations=rotations,
-            rot_angle=rot_angle,
-            rot=rot,
-            flipped=flipped,
-            outline=outline,
-            seed=random_seed,
-        )
-        self.rotations = self.config.rotations
-        self.rot_angle = self.config.rot_angle
-        self.rot = self.config.rot
-        self.flipped = self.config.flipped
-        self.outline = self.config.outline
+        self.config = config or TileConfig(seed=random_seed)
         self.color_config = color_config or ColorConfig(seed=random_seed)
 
     def init_tile(self, ctx: cairo.Context):
@@ -103,7 +87,7 @@ class TileBase(abc.ABC):
             ctx.rectangle(0, 0, wh, wh)
 
         # Draw outline of tile
-        if self.outline:
+        if self.config.outline:
             ctx.fill_preserve()
             ctx.set_source_rgba(*self.color_config.outline_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
@@ -113,10 +97,10 @@ class TileBase(abc.ABC):
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
-        ctx.rotate(self.rot_angle * self.rot)
+        ctx.rotate(self.config.rot_angle * self.config.rot)
         ctx.translate(-wh2, -wh2)
 
-        if self.flipped:
+        if self.config.flipped:
             ctx.translate(wh, 0)
             ctx.scale(-1, 1)
 
@@ -247,7 +231,7 @@ class RileyTile(TileBase):
     def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
-        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+        self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         wh = g.width
@@ -274,7 +258,7 @@ class CircleTile(TileBase):
     def __init__(self, radius: float = 0.25, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
-        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+        self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         radius = g._rng.uniform(0.5, 1.0) * g.width * self.radius
@@ -318,7 +302,7 @@ class PentagonTile(TileBase):
             self.side_length = 1.0 / (4 * math.cos(PI6))
         else:
             self.side_length = side_length
-        self.rot = self.rot - 1  # Rotate by -pi/2 to match the orientation of Truchet tiles
+        self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig):
         side_length = g.width * self.side_length
