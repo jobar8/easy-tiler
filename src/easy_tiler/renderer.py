@@ -46,13 +46,14 @@ class Renderer:
             ctx.save()
             ctx.translate(px, py)
             # ensure each tile draws in a wh x wh square starting at 0,0
-            tile.draw_tile(ctx, width)
+            tile.config.width = width
+            tile.draw_tile(ctx)
 
             if self.grid.double:
                 ctx.save()
                 ctx.translate(px + self.grid.x_size / 2, py + self.grid.y_size / 2)
                 # restore at the end brings it back to previous saved state
-                tile.draw_tile(ctx, width)
+                tile.draw_tile(ctx)
                 ctx.save()
                 ctx.restore()
 

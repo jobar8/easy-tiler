@@ -108,8 +108,7 @@ class TileBase(abc.ABC):
     def draw(self, ctx: cairo.Context, g: TileConfig):
         raise NotImplementedError()
 
-    def draw_tile(self, ctx: cairo.Context, wh: int) -> None:
-        self.config.width = wh
+    def draw_tile(self, ctx: cairo.Context) -> None:
         self.init_tile(ctx)
         self.draw(ctx, self.config)
 
