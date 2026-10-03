@@ -2,7 +2,12 @@ import numpy as np
 import pytest
 
 from easy_tiler.colors import ColorConfig, CustomPalette
-from easy_tiler.factories import make_node_factory, make_sequence_factory, make_tile_factory
+from easy_tiler.factories import (
+    make_form_factory,
+    make_node_factory,
+    make_sequence_factory,
+    make_tile_factory,
+)
 from easy_tiler.tiles import (
     ArrowTile,
     CairoTile,
@@ -64,13 +69,16 @@ def test_factories_select_palette_config_for_resolved_colors():
     direct_tile = make_tile_factory(fg='blue', bg='white')(0, 0)
     sequence_tile = make_sequence_factory(fg='blue', bg='white', tile_sequence=[0])(0, 0)
     node_tile = make_node_factory(node_sequence=np.array([[0]]), fg='blue', bg='white')(0, 0)
+    form_tile = make_form_factory(fg='blue', bg='white')(0, 0)
 
     assert type(direct_tile.config) is TileConfig
     assert type(sequence_tile.config) is TileConfig
     assert type(node_tile.config) is TileConfig
+    assert type(form_tile.config) is TileConfig
     assert type(direct_tile.color_config) is ColorConfig
     assert type(sequence_tile.color_config) is ColorConfig
     assert type(node_tile.color_config) is ColorConfig
+    assert type(form_tile.color_config) is ColorConfig
 
 
 def test_make_tile_factory_uses_palette_colors_sequentially():

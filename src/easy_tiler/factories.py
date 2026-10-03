@@ -64,47 +64,9 @@ def _make_tile(
     )
 
 
-def _make_configs(
-    *,
-    fg_color,
-    bg_color,
-    outline_color,
-    palette: CustomPalette,
-    seed,
-    rot: Any,
-    flipped: bool,
-    outline: bool,
-    radius: float,
-    sides: int,
-    inset: float,
-    side_length: float,
-    width: float,
-) -> tuple[TileConfig, ColorConfig]:
-    tile_config = TileConfig(
-        width=0,
-        rot=rot,
-        flipped=flipped,
-        outline=outline,
-        radius=radius,
-        sides=sides,
-        inset=inset,
-        side_length=side_length,
-        arrow_width=width,
-        seed=seed,
-    )
-    color_config = ColorConfig(
-        fg_color=fg_color,
-        bg_color=bg_color,
-        outline_color=outline_color,
-        palette=palette,
-        seed=seed,
-    )
-    return tile_config, color_config
-
-
 def make_tile_factory(
     tile_type: str = 'polygon',
-    rot: str | int = 'random',
+    rot: str | float = 'random',
     fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     palette: str | None = None,
@@ -124,15 +86,8 @@ def make_tile_factory(
     radius = kwargs.get('radius', 3.0)
     sides = kwargs.get('sides', 4)
     side_length = kwargs.get('side_length', 1.0)  # Default side length for PentagonTile
-    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
+    arrow_width = kwargs.get('width', 0.333)  # Default width for ArrowTile
     use_seed = kwargs.get('use_seed', True)
-
-    def resolve_color(value, index: int):
-        if isinstance(value, list):
-            value = value[index % len(value)]
-        if value == 'random' and use_seed:
-            return value
-        return custom_palette.get(value) if isinstance(value, (str, list, tuple)) else value
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
@@ -141,17 +96,11 @@ def make_tile_factory(
         if rot == 'random':
             rng = random.Random(random_seed)
             actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
-        else:
+        elif isinstance(rot, (int, float)):
             actual_rot = rot
 
-        fg_color = resolve_color(fg, x)
-        bg_color = resolve_color(bg, x)
-        tile_config, color_config = _make_configs(
-            fg_color=fg_color,
-            bg_color=bg_color,
-            outline_color=custom_palette.get(outline_color),
-            palette=custom_palette,
-            seed=random_seed,
+        tile_config = TileConfig(
+            width=0,
             rot=actual_rot,
             flipped=flipped,
             outline=outline,
@@ -159,7 +108,16 @@ def make_tile_factory(
             sides=sides,
             inset=inset,
             side_length=side_length,
-            width=width,
+            arrow_width=arrow_width,
+            seed=random_seed,
+        )
+
+        color_config = ColorConfig(
+            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
+            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
+            outline_color=outline_color,
+            palette=custom_palette,
+            seed=random_seed,
         )
 
         return _make_tile(
@@ -171,7 +129,7 @@ def make_tile_factory(
                 'inset': inset,
                 'radius': radius,
                 'side_length': side_length,
-                'width': width,
+                'width': arrow_width,
             },
         )
 
@@ -218,6 +176,7 @@ def make_sequence_factory(
         sequence_idx = x // sequence_length
         offset = x % sequence_length
         rotation = tile_sequence[offset]
+        random_seed = f'{tile_type}-{x}-{y}' if use_seed else None
 
         if fg == 'sequence':
             actual_fg = custom_palette.get(fg_sequence_colors[offset])
@@ -249,12 +208,8 @@ def make_sequence_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        tile_config, color_config = _make_configs(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
-            palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+        tile_config = TileConfig(
+            width=0,
             rot=rotation,
             flipped=flipped,
             outline=outline,
@@ -262,7 +217,15 @@ def make_sequence_factory(
             sides=sides,
             inset=inset,
             side_length=1.0,
-            width=width,
+            arrow_width=width,
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=actual_fg,
+            bg_color=actual_bg,
+            outline_color=outline_color,
+            palette=custom_palette,
+            seed=random_seed,
         )
 
         return _make_tile(
@@ -311,11 +274,8 @@ def make_node_factory(
     sides = kwargs.get('sides', 4)
     width = kwargs.get('width', 0.333)
 
-    if use_seed:
-        # Use parameters to seed randomness for this specific sequence
-        rng = random.Random(f'{tile_type}-{node_sequence}')
-    else:
-        rng = random.Random()
+    random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
+    rng = random.Random(random_seed)
 
     nr, nc = node_sequence.shape
     if isinstance(fg, list):
@@ -359,12 +319,8 @@ def make_node_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        tile_config, color_config = _make_configs(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
-            palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+        tile_config = TileConfig(
+            width=0,
             rot=rotation,
             flipped=flipped,
             outline=outline,
@@ -372,7 +328,15 @@ def make_node_factory(
             sides=sides,
             inset=inset,
             side_length=1.0,
-            width=width,
+            arrow_width=width,
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=actual_fg,
+            bg_color=actual_bg,
+            outline_color=outline_color,
+            palette=custom_palette,
+            seed=random_seed,
         )
 
         return _make_tile(
@@ -459,12 +423,8 @@ def make_form_factory(
         else:
             actual_bg = custom_palette.get(bg)
 
-        tile_config, color_config = _make_configs(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
-            palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+        tile_config = TileConfig(
+            width=0,
             rot=rotation,
             flipped=flipped,
             outline=outline,
@@ -472,7 +432,15 @@ def make_form_factory(
             sides=sides,
             inset=inset,
             side_length=1.0,
-            width=width,
+            arrow_width=width,
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=actual_fg,
+            bg_color=actual_bg,
+            outline_color=outline_color,
+            palette=custom_palette,
+            seed=random_seed,
         )
 
         return _make_tile(
