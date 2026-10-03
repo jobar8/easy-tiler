@@ -10,7 +10,7 @@ class RecordingTile(TileBase):
         super().__init__(**kwargs)
         self.draw_calls = []
 
-    def draw(self, ctx, g):
+    def draw(self, ctx, g, index=0):
         self.draw_calls.append((ctx, g))
 
 

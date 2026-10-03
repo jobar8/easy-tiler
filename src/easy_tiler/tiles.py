@@ -105,7 +105,7 @@ class TileBase(abc.ABC):
             ctx.scale(-1, 1)
 
     @abc.abstractmethod
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         raise NotImplementedError()
 
     def draw_tile(self, ctx: cairo.Context) -> None:
@@ -126,9 +126,9 @@ class RegularPolygonTile(TileBase):
         self.sides = max(3, int(sides))
         self.inset = float(inset)
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         # polygon geometry
         cx = cy = wh / 2.0
@@ -161,9 +161,9 @@ class PuckTile(TileBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         # draw quarter circles based on variant
         ctx.set_source_rgba(*fg)
@@ -181,9 +181,9 @@ class TruchetTile(TileBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         # draw bottom-left corner
         ctx.set_source_rgba(*fg)
@@ -204,9 +204,9 @@ class ArrowTile(TileBase):
             raise ValueError('ArrowTile width must be between 0 and 1.')
         self.width = width
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         # position of the bottom of the branch
         wa = (1 - self.width) / 2.0
@@ -232,10 +232,10 @@ class RileyTile(TileBase):
         self.radius = radius
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
         self.radius = self.radius * wh
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         # draw corner and round side
         ctx.set_source_rgba(*fg)
@@ -259,9 +259,9 @@ class CircleTile(TileBase):
         self.radius = radius
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         radius = g._rng.uniform(0.5, 1.0) * g.width * self.radius
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
         ctx.move_to(g.width / 4, g.width / 4)
@@ -275,9 +275,9 @@ class SmithTile(TileBase):
         super().__init__(**kwargs)
         self.radius = radius
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         radius = self.radius * g.width
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
         ctx.arc(0, g.width, radius, -PI2, 0)
@@ -303,9 +303,9 @@ class PentagonTile(TileBase):
             self.side_length = side_length
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         side_length = g.width * self.side_length
-        fg = self.color_config.get_fg_color(0)
+        fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
         ctx.move_to(0, 0)
@@ -363,28 +363,28 @@ class CairoTile(TileBase):
         ctx.stroke()
         ctx.move_to(0, 0)
 
-    def draw(self, ctx: cairo.Context, g: TileConfig):
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.width
         side_length = wh / (4 * math.cos(PI6))
         polygon_width = wh / 2
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(0))
+        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(index))
 
         # 2nd polygon (bottom)
         ctx.rel_move_to(polygon_width, polygon_width)
         ctx.rotate(PI)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(1))
+        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(index + 1))
 
         # 3rd polygon (right)
         ctx.rel_move_to(-polygon_width, -polygon_width)
         ctx.rotate(PI2)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(2))
+        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(index + 2))
 
         # 4th polygon (left)
         ctx.rotate(PI)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(3))
+        self.draw_pentagon(ctx, side_length, self.color_config.get_fg_color(index + 3))
 
         ctx.stroke()
         ctx.restore()
