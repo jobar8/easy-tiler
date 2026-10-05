@@ -169,44 +169,16 @@ def make_sequence_factory(
         rng = random.Random(f'{tile_type}-{tile_sequence}')
     else:
         rng = random.Random()
-    fg_sequence_colors = rng.choices(colors, k=sequence_length)
-    bg_sequence_colors = rng.choices(colors, k=sequence_length)
+    # fg_sequence_colors = rng.choices(colors, k=sequence_length)
+    fg_sequence_colors = colors
+    # bg_sequence_colors = rng.choices(colors, k=sequence_length)
+    bg_sequence_colors = colors
 
     def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
         rotation = tile_sequence[offset]
         random_seed = f'{tile_type}-{x}-{y}' if use_seed else None
-
-        if fg == 'sequence':
-            actual_fg = custom_palette.get(fg_sequence_colors[offset])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, sequence_idx)
-            actual_fg = custom_palette.get(sequence_colors[offset])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        elif isinstance(fg, list):
-            actual_fg = custom_palette.get(fg[x % len(fg)])
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence':
-            actual_bg = custom_palette.get(bg_sequence_colors[offset])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, sequence_idx)
-            actual_bg = custom_palette.get(sequence_colors[offset])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        elif bg == 'black':
-            actual_bg = custom_palette.get('black')
-        elif isinstance(bg, list):
-            actual_bg = custom_palette.get(bg[x % len(bg)])
-        else:
-            actual_bg = custom_palette.get(bg)
 
         tile_config = TileConfig(
             width=0,
@@ -221,11 +193,15 @@ def make_sequence_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
+            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
+            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
             outline_color=outline_color,
             palette=custom_palette,
             seed=random_seed,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=offset,
+            roll_index=sequence_idx,
         )
 
         return _make_tile(
@@ -295,30 +271,6 @@ def make_node_factory(
         offset = x_offset + y_offset * nc
         rotation = node_sequence[y_offset, x_offset]
 
-        if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_palette.get(fg_sequence_colors[offset])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, node_idx)
-            actual_fg = custom_palette.get(sequence_colors[offset])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_palette.get(bg_sequence_colors[offset])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, node_idx)
-            actual_bg = custom_palette.get(sequence_colors[offset])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        else:
-            actual_bg = custom_palette.get(bg)
-
         tile_config = TileConfig(
             width=0,
             rot=rotation,
@@ -332,11 +284,15 @@ def make_node_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
+            fg_color=fg,
+            bg_color=bg,
             outline_color=outline_color,
             palette=custom_palette,
-            seed=random_seed,
+            seed=f'{random_seed}-{x}-{y}' if random_seed is not None else None,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=offset,
+            roll_index=node_idx,
         )
 
         return _make_tile(
@@ -399,30 +355,6 @@ def make_form_factory(
         rotation = sequence_position % rot_mod  # Use offset to determine rotation for variety
         sequence_position = sequence_position % (color_mod)  # Ensure offset is within bounds of the color sequences
 
-        if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_palette.get(fg_sequence_colors[sequence_position])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, y)
-            actual_fg = custom_palette.get(sequence_colors[sequence_position])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_palette.get(bg_sequence_colors[sequence_position])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, y)
-            actual_bg = custom_palette.get(sequence_colors[sequence_position])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        else:
-            actual_bg = custom_palette.get(bg)
-
         tile_config = TileConfig(
             width=0,
             rot=rotation,
@@ -436,11 +368,15 @@ def make_form_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
+            fg_color=fg,
+            bg_color=bg,
             outline_color=outline_color,
             palette=custom_palette,
-            seed=random_seed,
+            seed=f'{random_seed}-{x}-{y}' if random_seed is not None else None,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=sequence_position,
+            roll_index=y,
         )
 
         return _make_tile(

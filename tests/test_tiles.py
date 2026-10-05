@@ -86,6 +86,31 @@ def test_color_config_resolves_color_lists_by_index():
     assert config.get_fg_color(2) == CustomPalette().get('red')
 
 
+def test_color_config_resolves_sequence_and_rolled_colors():
+    palette = CustomPalette('ColorsOfTheWind')
+    sequence = ['cyan', 'pink']
+    config = ColorConfig(
+        fg_color='sequence',
+        bg_color='roll',
+        fg_sequence_colors=sequence,
+        bg_sequence_colors=sequence,
+        color_index=0,
+        roll_index=1,
+        palette=palette,
+    )
+
+    assert config.get_fg_color() == palette.get('cyan')
+    assert config.get_bg_color() == palette.get('pink')
+
+
+@pytest.mark.parametrize('color', ['sequence', 'roll'])
+def test_color_config_requires_sequence_colors_for_sequence_modes(color):
+    config = ColorConfig(fg_color=color)
+
+    with pytest.raises(ValueError, match='requires sequence colors'):
+        config.get_fg_color()
+
+
 def test_color_config_random_colors_are_reproducible_from_seed():
     first = ColorConfig(fg_color='random', bg_color='random', seed=123)
     second = ColorConfig(fg_color='random', bg_color='random', seed=123)

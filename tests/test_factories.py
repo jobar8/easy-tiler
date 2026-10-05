@@ -58,6 +58,20 @@ def test_make_tile_factory_seed_makes_random_colors_reproducible():
     assert first.color_config.get_bg_color() == second.color_config.get_bg_color()
 
 
+def test_node_factory_random_colors_are_reproducible_and_vary_by_position():
+    factory = make_node_factory(
+        node_sequence=np.array([[0, 0]]),
+        palette='Standard',
+        use_seed=True,
+    )
+    first = factory(0, 0).color_config.get_fg_color()
+    second = factory(1, 0).color_config.get_fg_color()
+    repeated = factory(0, 0).color_config.get_fg_color()
+
+    assert first != second
+    assert first == repeated
+
+
 def test_make_tile_factory_uses_separate_tile_and_color_configs():
     tile = make_tile_factory(palette='Standard', use_seed=True)(0, 0)
 
@@ -99,6 +113,21 @@ def test_make_tile_factory_uses_palette_colors_sequentially():
     assert first_tile.color_config.get_bg_color() == palette.get('yellow')
     assert second_tile.color_config.get_bg_color() == palette.get('brown')
     assert repeated_tile.color_config.get_bg_color() == palette.get('yellow')
+
+
+def test_sequence_factory_resolves_rolled_colors_in_color_config():
+    factory = make_sequence_factory(
+        sequence_length=2,
+        tile_sequence=[0, 0],
+        fg='roll',
+        palette='ColorsOfTheWind',
+    )
+    first = factory(0, 0).color_config
+    second = factory(1, 0).color_config
+    rolled = factory(2, 0).color_config
+
+    assert first.fg_color == 'roll'
+    assert rolled.get_fg_color() == second.get_fg_color()
 
 
 def test_make_tile_factory_supports_local_palette_outline():
