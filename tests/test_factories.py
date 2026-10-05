@@ -93,12 +93,12 @@ def test_make_tile_factory_uses_palette_colors_sequentially():
     second_tile = factory(1, 0)
     repeated_tile = factory(2, 0)
 
-    assert first_tile.color_config.fg_color == palette.get('blue')
-    assert second_tile.color_config.fg_color == palette.get('green')
-    assert repeated_tile.color_config.fg_color == palette.get('blue')
-    assert first_tile.color_config.bg_color == palette.get('yellow')
-    assert second_tile.color_config.bg_color == palette.get('brown')
-    assert repeated_tile.color_config.bg_color == palette.get('yellow')
+    assert first_tile.color_config.get_fg_color() == palette.get('blue')
+    assert second_tile.color_config.get_fg_color() == palette.get('green')
+    assert repeated_tile.color_config.get_fg_color() == palette.get('blue')
+    assert first_tile.color_config.get_bg_color() == palette.get('yellow')
+    assert second_tile.color_config.get_bg_color() == palette.get('brown')
+    assert repeated_tile.color_config.get_bg_color() == palette.get('yellow')
 
 
 def test_make_tile_factory_supports_local_palette_outline():
@@ -113,8 +113,8 @@ def test_make_tile_factory_supports_local_palette_outline():
 
     tile = factory(0, 0)
 
-    assert tile.color_config.fg_color == palette.get('cyan')
-    assert tile.color_config.bg_color == palette.get('pink')
+    assert tile.color_config.get_fg_color() == palette.get('cyan')
+    assert tile.color_config.get_bg_color() == palette.get('pink')
     assert tile.color_config.outline_color == palette.get('purple')
 
 

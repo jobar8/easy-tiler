@@ -72,7 +72,7 @@ def make_tile_factory(
     palette: str | None = None,
     num_colors: int | None = None,
     **kwargs,
-):
+) -> Callable[..., TileBase]:
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
