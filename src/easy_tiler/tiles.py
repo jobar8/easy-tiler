@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 
 import cairo
 
-from easy_tiler.colors import ColorConfig, CustomPalette
+from easy_tiler.colors import ColorConfig
 
 # precompute some constants for efficiency and readability
 PI = math.pi
@@ -53,11 +53,6 @@ class TileConfig:
         self.flipped = bool(self.flipped)
         self.outline = bool(self.outline)
         self._rng = random.Random(self.seed)
-
-    @classmethod
-    def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
-        return CustomPalette(palette, num_colors).colors
-
 
 class TileBase(abc.ABC):
     """Base tile class.

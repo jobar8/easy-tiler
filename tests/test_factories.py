@@ -22,7 +22,7 @@ from easy_tiler.tiles import (
 
 
 def test_get_palette_resolves_local_palette_and_num_colors():
-    colors = TileConfig.get_palette('ColorsOfTheWind', num_colors=2)
+    colors = ColorConfig.get_palette('ColorsOfTheWind', num_colors=2)
 
     assert colors == ['#9cf1ff', '#ff9acd']
 
@@ -181,4 +181,4 @@ def test_factories_support_local_palette(factory_builder):
 
 def test_get_palette_rejects_unknown_palette():
     with pytest.raises((KeyError, ValueError)):
-        TileConfig.get_palette('not-a-palette')
+        ColorConfig.get_palette('not-a-palette')
