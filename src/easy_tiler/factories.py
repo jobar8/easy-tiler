@@ -69,15 +69,13 @@ def make_tile_factory(
     rot: str | float = 'random',
     fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
     bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    palette: str | None = None,
+    palette: str = 'Standard',
     num_colors: int | None = None,
     **kwargs,
 ) -> Callable[..., TileBase]:
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-    custom_palette = CustomPalette(palette or 'Standard', num_colors)
-
     # Get other keyword args
     inset = kwargs.get('inset', math.sqrt(2))
     flipped = kwargs.get('flipped', False)
@@ -89,12 +87,20 @@ def make_tile_factory(
     arrow_width = kwargs.get('width', 0.333)  # Default width for ArrowTile
     use_seed = kwargs.get('use_seed', True)
 
+    # Use parameters to seed randomness for this specific sequence
+    random_seed = f'{use_seed}-{num_colors}' if use_seed else None
+    rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.sample(colors, k=len(colors))
+    bg_sequence_colors = rng.sample(colors, k=len(colors))
+
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
-        random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
+        # random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
 
         if rot == 'random':
-            rng = random.Random(random_seed)
+            # rng = random.Random(random_seed)
             actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
         elif isinstance(rot, (int, float)):
             actual_rot = rot
@@ -117,6 +123,9 @@ def make_tile_factory(
             bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
             outline_color=outline_color,
             palette=custom_palette,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=x,
             seed=random_seed,
         )
 
@@ -138,18 +147,15 @@ def make_tile_factory(
 
 def make_sequence_factory(
     tile_type: str = 'polygon',
-    sequence_length: int = 4,
     tile_sequence: list[int] | None = None,
-    fg: tuple[float, float, float, float] | str = 'random',
-    bg: tuple[float, float, float, float] | str = 'random',
-    palette: str = 'glasbey_dark',
+    sequence_length: int = 4,
+    fg: tuple[float, float, float, float] | list[str] | str = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    palette: str = 'Standard',
     num_colors: int | None = None,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
-    custom_palette = CustomPalette(palette, num_colors)
-    colors = custom_palette.colors
-
     if tile_sequence is None:
         tile_sequence = [0] * sequence_length
     else:
@@ -165,20 +171,17 @@ def make_sequence_factory(
     use_seed = kwargs.get('use_seed', True)
 
     # Use parameters to seed randomness for this specific sequence
-    if use_seed:
-        rng = random.Random(f'{tile_type}-{tile_sequence}')
-    else:
-        rng = random.Random()
-    # fg_sequence_colors = rng.choices(colors, k=sequence_length)
-    fg_sequence_colors = colors
-    # bg_sequence_colors = rng.choices(colors, k=sequence_length)
-    bg_sequence_colors = colors
+    random_seed = f'{tile_type}-{tile_sequence}' if use_seed else None
+    rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.sample(colors, k=sequence_length)
+    bg_sequence_colors = rng.sample(colors, k=sequence_length)
 
     def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
         rotation = tile_sequence[offset]
-        random_seed = f'{tile_type}-{x}-{y}' if use_seed else None
 
         tile_config = TileConfig(
             width=0,
@@ -197,11 +200,11 @@ def make_sequence_factory(
             bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
             outline_color=outline_color,
             palette=custom_palette,
-            seed=random_seed,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
             color_index=offset,
             roll_index=sequence_idx,
+            seed=random_seed,
         )
 
         return _make_tile(
@@ -224,7 +227,7 @@ def make_node_factory(
     node_sequence: np.ndarray | None = None,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
-    palette: str = 'glasbey_dark',
+    palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
     **kwargs,
@@ -233,13 +236,10 @@ def make_node_factory(
     if node_sequence is None:
         if use_seed:
             # Use parameters to seed randomness
-            rng = np.random.default_rng(len(tile_type) * len(palette))
+            np_rng = np.random.default_rng(len(tile_type) * len(palette))
         else:
-            rng = np.random.default_rng()
-        node_sequence = rng.integers(low=0, high=10, size=(4, 4))
-
-    custom_palette = CustomPalette(palette, num_colors)
-    colors = custom_palette.colors
+            np_rng = np.random.default_rng()
+        node_sequence = np_rng.integers(low=0, high=10, size=(4, 4))
 
     # Get other keyword args
     inset = kwargs.get('inset', 0.85)
@@ -252,17 +252,12 @@ def make_node_factory(
 
     random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
     rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
 
     nr, nc = node_sequence.shape
-    if isinstance(fg, list):
-        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
-    else:
-        fg_sequence_colors = rng.choices(colors, k=nr * nc)
-
-    if isinstance(bg, list):
-        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
-    else:
-        bg_sequence_colors = rng.choices(colors, k=nr * nc)
+    fg_sequence_colors = rng.choices(colors, k=nr * nc)
+    bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
     def factory(x, y) -> TileBase:
         node_idx = x // nc
@@ -288,11 +283,11 @@ def make_node_factory(
             bg_color=bg,
             outline_color=outline_color,
             palette=custom_palette,
-            seed=f'{random_seed}-{x}-{y}' if random_seed is not None else None,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
             color_index=offset,
             roll_index=node_idx,
+            seed=random_seed,
         )
 
         return _make_tile(
@@ -319,14 +314,12 @@ def make_form_factory(
     color_mod: int = 16,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
-    palette: str = 'glasbey_dark',
+    palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
     **kwargs,
 ) -> Callable[..., TileBase]:
     """Factory for creating patterns based on mathematical functions."""
-    custom_palette = CustomPalette(palette, num_colors)
-    colors = custom_palette.colors
 
     # Get other keyword args
     inset = kwargs.get('inset', 0.85)
@@ -339,16 +332,12 @@ def make_form_factory(
 
     random_seed = f'{use_seed}-{rot_mod}-{color_mod}' if use_seed else None
     rng = random.Random(random_seed)
-
-    if isinstance(fg, list):
-        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (color_mod // len(fg) + 1)
-    else:
-        fg_sequence_colors = rng.choices(colors, k=color_mod)
-
-    if isinstance(bg, list):
-        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (color_mod // len(bg) + 1)
-    else:
-        bg_sequence_colors = rng.choices(colors, k=color_mod)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.choices(colors, k=color_mod) if not isinstance(fg, list) else None
+    bg_sequence_colors: list[str | tuple[float, float, float, float]] | None = (
+        rng.choices(colors, k=color_mod) if not isinstance(bg, list) else None
+    )
 
     def factory(x, y) -> TileBase:
         sequence_position = int(a * x + (b * y) + c)
@@ -372,11 +361,11 @@ def make_form_factory(
             bg_color=bg,
             outline_color=outline_color,
             palette=custom_palette,
-            seed=f'{random_seed}-{x}-{y}' if random_seed is not None else None,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
             color_index=sequence_position,
             roll_index=y,
+            seed=random_seed,
         )
 
         return _make_tile(

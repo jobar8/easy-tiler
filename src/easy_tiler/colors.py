@@ -99,23 +99,23 @@ class ColorConfig:
     outline_color: str | tuple | None = None
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
-    seed: float | str | bytes | bytearray | None = None
     fg_sequence_colors: list | None = None
     bg_sequence_colors: list | None = None
     color_index: int | None = None
     roll_index: int = 0
+    seed: float | str | bytes | bytearray | None = None
 
     _palette: CustomPalette = field(init=False)
-    _rng: random.Random = field(init=False)
+    rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
+        self.rng = random.Random(self.seed)
         self._palette = (
             self.palette
             if isinstance(self.palette, CustomPalette)
-            else CustomPalette(self.palette or 'Standard', self.num_colors)
+            else CustomPalette(self.palette or 'Standard', self.num_colors, self.rng)
         )
         self.outline_color = self._palette.get(self.outline_color)
-        self._rng = random.Random(self.seed)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
@@ -133,7 +133,7 @@ class ColorConfig:
 
         index = self.color_index if self.color_index is not None else index
 
-        if isinstance(val, str) and val in ('sequence', 'roll'):
+        if val in ('sequence', 'roll'):
             if not sequence_colors:
                 raise ValueError(f'{val!r} color requires sequence colors')
             if val == 'roll':
@@ -142,13 +142,6 @@ class ColorConfig:
 
         if isinstance(val, list):
             val = val[index % len(val)]
-
-        if val == 'random_rgb':
-            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
-        if val == 'random':
-            if self._palette.colors:
-                return self._palette.get(self._rng.choice(self._palette.colors))
-            return (self._rng.random(), self._rng.random(), self._rng.random(), 1.0)
 
         return self._palette.get(val)
 
@@ -162,7 +155,7 @@ class ColorConfig:
 class CustomPalette:
     """Load a palette and resolve its colors to RGBA values."""
 
-    def __init__(self, name: str = 'Standard', num_colors: int | None = None):
+    def __init__(self, name: str = 'Standard', num_colors: int | None = None, rng: random.Random | None = None) -> None:
         """
         Initialize the CustomPalette class.
 
@@ -172,6 +165,9 @@ class CustomPalette:
         """
         self.palette: dict[str, tuple[float, float, float, float]] = {}
         self.colors: list[str] | list[tuple[float, float, float, float]] = []
+        if rng is None:
+            rng = random.Random()
+        self.rng = rng
 
         if name == 'Standard':
             palette: dict[str, tuple[float, float, float, float]] = STANDARD_PALETTE
@@ -218,10 +214,10 @@ class CustomPalette:
         if isinstance(val, str):
             if val.startswith('#'):
                 return self._hex_to_rgba(val)
-            if val == 'random':
-                return (random.random(), random.random(), random.random(), 1)
-            if val == 'random_choice':
-                return self.get(random.choice(self.colors))
+            if val == 'random_rgb':
+                return (self.rng.random(), self.rng.random(), self.rng.random(), 1)
+            if val in ('random', 'random_choice'):
+                return self.get(self.rng.choice(self.colors))
             if val == 'transparent':
                 return (0, 0, 0, 0)
             try:
