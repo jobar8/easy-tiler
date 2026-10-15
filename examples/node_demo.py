@@ -1,10 +1,14 @@
 """Demo script for testing the node factory."""
 
+from pathlib import Path
+
 import numpy as np
 
 from easy_tiler.factories import make_node_factory
 from easy_tiler.grid import Grid
 from easy_tiler.io import save_png, save_svg
+
+cwd = Path(__file__).parent
 
 
 def run_node_demo():
@@ -23,10 +27,11 @@ def run_node_demo():
         outline=False,
         outline_color='black',
     )
-
-    save_png('node_demo.png', grid, factory, scale=1, background_col='white')
-    save_svg('node_demo.svg', grid, factory)
-    print('Wrote node_demo.png and node_demo.svg')
+    png_path = cwd / 'images' / 'node_demo.png'
+    svg_path = cwd / 'images' / 'node_demo.svg'
+    save_png(str(png_path), grid, factory, scale=1, background_col='white')
+    save_svg(str(svg_path), grid, factory)
+    print(f'Wrote {png_path} and {svg_path}')
 
 
 if __name__ == '__main__':
