@@ -43,6 +43,24 @@ _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
     'smith': ('radius',),
 }
 
+_DEFAULT_TILE_OPTIONS: dict[str, Any] = {
+    'inset': 0.85,
+    'flipped': False,
+    'outline': False,
+    'outline_color': None,
+    'radius': 1.0,
+    'sides': 4,
+    'side_length': 1.0,
+    'width': 0.333,
+}
+
+
+def _get_tile_options(
+    kwargs: dict[str, Any],
+    defaults: dict[str, Any] = _DEFAULT_TILE_OPTIONS,
+) -> dict[str, Any]:
+    return defaults | {name: value for name, value in kwargs.items() if name in defaults}
+
 
 def _make_tile(
     tile_type: str,
@@ -76,15 +94,10 @@ def make_tile_factory(
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-    # Get other keyword args
-    inset = kwargs.get('inset', math.sqrt(2))
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 3.0)
-    sides = kwargs.get('sides', 4)
-    side_length = kwargs.get('side_length', 1.0)  # Default side length for PentagonTile
-    arrow_width = kwargs.get('width', 0.333)  # Default width for ArrowTile
+    tile_options = _get_tile_options(
+        kwargs,
+        _DEFAULT_TILE_OPTIONS | {'inset': math.sqrt(2), 'radius': 3.0},
+    )
     use_seed = kwargs.get('use_seed', True)
 
     # Use parameters to seed randomness for this specific sequence
@@ -108,20 +121,20 @@ def make_tile_factory(
         tile_config = TileConfig(
             width=0,
             rot=actual_rot,
-            flipped=flipped,
-            outline=outline,
-            radius=radius,
-            sides=sides,
-            inset=inset,
-            side_length=side_length,
-            arrow_width=arrow_width,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
+            side_length=tile_options['side_length'],
+            arrow_width=tile_options['width'],
             seed=random_seed,
         )
 
         color_config = ColorConfig(
             fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
             bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
-            outline_color=outline_color,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
@@ -134,11 +147,11 @@ def make_tile_factory(
             config=tile_config,
             color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'side_length': side_length,
-                'width': arrow_width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
+                'side_length': tile_options['side_length'],
+                'width': tile_options['width'],
             },
         )
 
@@ -160,14 +173,7 @@ def make_sequence_factory(
         tile_sequence = [0] * sequence_length
     else:
         sequence_length = len(tile_sequence)
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
     use_seed = kwargs.get('use_seed', True)
 
     # Use parameters to seed randomness for this specific sequence
@@ -186,19 +192,19 @@ def make_sequence_factory(
         tile_config = TileConfig(
             width=0,
             rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            radius=radius,
-            sides=sides,
-            inset=inset,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
             side_length=1.0,
-            arrow_width=width,
+            arrow_width=tile_options['width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
             fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
             bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
-            outline_color=outline_color,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
@@ -212,10 +218,10 @@ def make_sequence_factory(
             config=tile_config,
             color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
+                'width': tile_options['width'],
             },
         )
 
@@ -241,14 +247,7 @@ def make_node_factory(
             np_rng = np.random.default_rng()
         node_sequence = np_rng.integers(low=0, high=10, size=(4, 4))
 
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
     random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
     rng = random.Random(random_seed)
@@ -269,19 +268,19 @@ def make_node_factory(
         tile_config = TileConfig(
             width=0,
             rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            radius=radius,
-            sides=sides,
-            inset=inset,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
             side_length=1.0,
-            arrow_width=width,
+            arrow_width=tile_options['width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
             fg_color=fg,
             bg_color=bg,
-            outline_color=outline_color,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
@@ -295,10 +294,10 @@ def make_node_factory(
             config=tile_config,
             color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
+                'width': tile_options['width'],
             },
         )
 
@@ -321,14 +320,7 @@ def make_form_factory(
 ) -> Callable[..., TileBase]:
     """Factory for creating patterns based on mathematical functions."""
 
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
     random_seed = f'{use_seed}-{rot_mod}-{color_mod}' if use_seed else None
     rng = random.Random(random_seed)
@@ -347,19 +339,19 @@ def make_form_factory(
         tile_config = TileConfig(
             width=0,
             rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            radius=radius,
-            sides=sides,
-            inset=inset,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
             side_length=1.0,
-            arrow_width=width,
+            arrow_width=tile_options['width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
             fg_color=fg,
             bg_color=bg,
-            outline_color=outline_color,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
             bg_sequence_colors=bg_sequence_colors,
@@ -373,10 +365,10 @@ def make_form_factory(
             config=tile_config,
             color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
+                'width': tile_options['width'],
             },
         )
 

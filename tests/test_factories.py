@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 
@@ -93,6 +95,26 @@ def test_factories_select_palette_config_for_resolved_colors():
     assert type(sequence_tile.color_config) is ColorConfig
     assert type(node_tile.color_config) is ColorConfig
     assert type(form_tile.color_config) is ColorConfig
+
+
+@pytest.mark.parametrize(
+    ('factory_builder', 'inset', 'radius'),
+    [
+        (make_tile_factory, math.sqrt(2), 3.0),
+        (make_sequence_factory, 0.85, 1.0),
+        (lambda: make_node_factory(node_sequence=np.array([[0]])), 0.85, 1.0),
+        (make_form_factory, 0.85, 1.0),
+    ],
+)
+def test_factories_preserve_tile_option_defaults(factory_builder, inset, radius):
+    config = factory_builder()(0, 0).config
+
+    assert config.inset == inset
+    assert config.radius == radius
+    assert config.flipped is False
+    assert config.outline is False
+    assert config.sides == 4
+    assert config.arrow_width == pytest.approx(0.333)
 
 
 def test_make_tile_factory_uses_palette_colors_sequentially():
