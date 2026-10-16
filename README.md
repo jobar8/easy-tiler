@@ -44,11 +44,11 @@ grid = Grid(12, 10, x_size=60, y_size=60)
 
 # Repeat four Riley tile rotations with palette-based colors
 factory = make_sequence_factory(
- tile_type='riley',
- tile_sequence=[2, 2, 3, 3, 1, 0],
- fg='sequence',
- bg='roll',
- palette='ColorsOfTheWind',
+    tile_type='riley',
+    tile_sequence=[2, 2, 3, 3, 1, 0],
+    fg='sequence',
+    bg='roll',
+    palette='ColorsOfTheWind',
 )
 
 save_png('sequence_demo.png', grid, factory)

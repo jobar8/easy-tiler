@@ -54,6 +54,7 @@ class TileConfig:
         self.outline = bool(self.outline)
         self._rng = random.Random(self.seed)
 
+
 class TileBase(abc.ABC):
     """Base tile class.
 
@@ -145,7 +146,9 @@ class RegularPolygonTile(TileBase):
         # stroke with slightly darker foreground
         ctx.fill_preserve()
         ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3])
+        ctx.set_source_rgba(
+            max(0.0, fg[0] - 0.2), max(0.0, fg[1] - 0.2), max(0.0, fg[2] - 0.2), fg[3]
+        )
         ctx.stroke()
         ctx.restore()
 

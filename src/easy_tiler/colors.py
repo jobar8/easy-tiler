@@ -155,7 +155,12 @@ class ColorConfig:
 class CustomPalette:
     """Load a palette and resolve its colors to RGBA values."""
 
-    def __init__(self, name: str = 'Standard', num_colors: int | None = None, rng: random.Random | None = None) -> None:
+    def __init__(
+        self,
+        name: str = 'Standard',
+        num_colors: int | None = None,
+        rng: random.Random | None = None,
+    ) -> None:
         """
         Initialize the CustomPalette class.
 
@@ -224,7 +229,9 @@ class CustomPalette:
                 return self.get(self.palette[val])
             except KeyError:
                 try:
-                    return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
+                    return STANDARD_PALETTE[
+                        val
+                    ]  # Fall back to standard colors if not found in palette
                 except KeyError:
                     print(TypeError(f'Unsupported color value: {val} - returning transparent'))
                     return (0, 0, 0, 0)  # transparent

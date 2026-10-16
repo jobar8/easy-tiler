@@ -74,7 +74,9 @@ def _make_tile(
     except KeyError as exc:
         raise ValueError(f'Invalid tile_type: {tile_type}') from exc
 
-    tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
+    tile_options = {
+        name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options
+    }
     return tile_class(
         config=config,
         color_config=color_config,
@@ -85,8 +87,16 @@ def _make_tile(
 def make_tile_factory(
     tile_type: str = 'polygon',
     rot: str | float = 'random',
-    fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
+    fg: tuple[float, float, float, float]
+    | list[str]
+    | str
+    | list[tuple[float, float, float, float]]
+    | None = 'random',
+    bg: tuple[float, float, float, float]
+    | list[str]
+    | str
+    | list[tuple[float, float, float, float]]
+    | None = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
     **kwargs,
@@ -333,7 +343,9 @@ def make_form_factory(
     def factory(x, y) -> TileBase:
         sequence_position = int(a * x + (b * y) + c)
         rotation = sequence_position % rot_mod  # Use offset to determine rotation for variety
-        sequence_position = sequence_position % (color_mod)  # Ensure offset is within bounds of the color sequences
+        sequence_position = sequence_position % (
+            color_mod
+        )  # Ensure offset is within bounds of the color sequences
 
         tile_config = TileConfig(
             tile_width=0,
