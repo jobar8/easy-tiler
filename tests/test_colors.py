@@ -1,5 +1,3 @@
-import random
-
 import pytest
 
 from easy_tiler import colors
@@ -7,9 +5,24 @@ from easy_tiler.colors import CustomPalette
 
 
 def test_custom_palette_uses_palette_values_for_named_colors():
-    assert CustomPalette('FridaKahlo').get('blue') == (0.12549019607843137, 0.23529411764705882, 0.6666666666666666, 1)
-    assert CustomPalette('ClaudeMonet').get('red') == (0.5215686274509804, 0.1411764705882353, 0.09803921568627451, 1)
-    assert CustomPalette('BlueRidgePkwy').get('green') == (0.5490196078431373, 0.615686274509804, 0.3411764705882353, 1)
+    assert CustomPalette('FridaKahlo').get('blue') == (
+        0.12549019607843137,
+        0.23529411764705882,
+        0.6666666666666666,
+        1,
+    )
+    assert CustomPalette('ClaudeMonet').get('red') == (
+        0.5215686274509804,
+        0.1411764705882353,
+        0.09803921568627451,
+        1,
+    )
+    assert CustomPalette('BlueRidgePkwy').get('green') == (
+        0.5490196078431373,
+        0.615686274509804,
+        0.3411764705882353,
+        1,
+    )
 
 
 def test_custom_palette_falls_back_to_standard_values_when_color_missing():
@@ -66,16 +79,19 @@ def test_custom_palette_get_converts_supported_values(value, expected):
 
 
 def test_custom_palette_get_random_uses_random_channels(monkeypatch):
-    values = iter((0.1, 0.2, 0.3))
-    monkeypatch.setattr(random, 'random', lambda: next(values))
+    palette = CustomPalette()
+    fixed_values = iter((0.1, 0.2, 0.3))
+    monkeypatch.setattr(palette.rng, 'random', lambda: next(fixed_values))
 
-    assert CustomPalette().get('random') == (0.1, 0.2, 0.3, 1)
+    assert palette.get('random_rgb') == (0.1, 0.2, 0.3, 1)
 
 
 def test_custom_palette_get_random_choice_resolves_selected_color(monkeypatch):
-    monkeypatch.setattr(random, 'choice', lambda values: '#010203')
+    palette = CustomPalette()
+    fixed_values = iter(('#010203',))
+    monkeypatch.setattr(palette.rng, 'choice', lambda values: next(fixed_values))
 
-    assert CustomPalette().get('random_choice') == (1 / 255, 2 / 255, 3 / 255, 1)
+    assert palette.get('random_choice') == (1 / 255, 2 / 255, 3 / 255, 1)
 
 
 def test_custom_palette_get_returns_transparent_for_unsupported_value(capsys):

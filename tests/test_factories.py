@@ -61,17 +61,22 @@ def test_make_tile_factory_seed_makes_random_colors_reproducible():
 
 
 def test_node_factory_random_colors_are_reproducible_and_vary_by_position():
-    factory = make_node_factory(
+    first = make_node_factory(
         node_sequence=np.array([[0, 0]]),
         palette='Standard',
         use_seed=True,
     )
-    first = factory(0, 0).color_config.get_fg_color()
-    second = factory(1, 0).color_config.get_fg_color()
-    repeated = factory(0, 0).color_config.get_fg_color()
+    second = make_node_factory(
+        node_sequence=np.array([[0, 0]]),
+        palette='Standard',
+        use_seed=True,
+    )
+    first_color = first(0, 0).color_config.get_fg_color()
+    second_color = second(0, 0).color_config.get_fg_color()
+    repeated_color = first(0, 1).color_config.get_fg_color()
 
-    assert first != second
-    assert first == repeated
+    assert first_color == second_color
+    assert first_color != repeated_color
 
 
 def test_make_tile_factory_uses_separate_tile_and_color_configs():

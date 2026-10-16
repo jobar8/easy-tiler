@@ -10,5 +10,10 @@
         "./.venv/bin/python": true,
         "uv": true
     },
-    "python.useEnvironmentsExtension": false
+    "python.useEnvironmentsExtension": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
