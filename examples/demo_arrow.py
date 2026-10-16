@@ -14,13 +14,12 @@ cwd = Path(__file__).parent
 
 def run_demo():
     grid = Grid(8, 6, x_size=80, y_size=80, x_shift=0)
-    # grid = Grid(28, 26, x_size=80, y_size=80, x_shift=40, y_shift=0, x_skew=PI / 12, y_skew=0)
 
     factory = make_tile_factory(
         tile_type='arrow',
         # rot=0,
         rot='random',
-        width=0.333,
+        arrow_width=0.2,
         # fg='random',
         fg=['blue', 'red', 'green', 'brown'],
         bg='beige',

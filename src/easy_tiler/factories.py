@@ -36,7 +36,6 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
 
 _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
     'polygon': ('sides', 'inset'),
-    'arrow': ('width',),
     'riley': ('radius',),
     'pentagon': ('side_length',),
     'circle': ('radius',),
@@ -51,7 +50,7 @@ _DEFAULT_TILE_OPTIONS: dict[str, Any] = {
     'radius': 1.0,
     'sides': 4,
     'side_length': 1.0,
-    'width': 0.333,
+    'arrow_width': 0.333,
 }
 
 
@@ -136,7 +135,7 @@ def make_tile_factory(
             sides=tile_options['sides'],
             inset=tile_options['inset'],
             side_length=tile_options['side_length'],
-            arrow_width=tile_options['width'],
+            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
         )
 
@@ -160,7 +159,6 @@ def make_tile_factory(
                 'inset': tile_options['inset'],
                 'radius': tile_options['radius'],
                 'side_length': tile_options['side_length'],
-                'width': tile_options['width'],
             },
         )
 
@@ -207,7 +205,7 @@ def make_sequence_factory(
             sides=tile_options['sides'],
             inset=tile_options['inset'],
             side_length=tile_options['side_length'],
-            arrow_width=tile_options['width'],
+            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
@@ -230,7 +228,6 @@ def make_sequence_factory(
                 'sides': tile_options['sides'],
                 'inset': tile_options['inset'],
                 'radius': tile_options['radius'],
-                'width': tile_options['width'],
             },
         )
 
@@ -283,7 +280,7 @@ def make_node_factory(
             sides=tile_options['sides'],
             inset=tile_options['inset'],
             side_length=tile_options['side_length'],
-            arrow_width=tile_options['width'],
+            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
@@ -306,7 +303,6 @@ def make_node_factory(
                 'sides': tile_options['sides'],
                 'inset': tile_options['inset'],
                 'radius': tile_options['radius'],
-                'width': tile_options['width'],
             },
         )
 
@@ -356,7 +352,7 @@ def make_form_factory(
             sides=tile_options['sides'],
             inset=tile_options['inset'],
             side_length=tile_options['side_length'],
-            arrow_width=tile_options['width'],
+            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
         )
         color_config = ColorConfig(
@@ -379,7 +375,6 @@ def make_form_factory(
                 'sides': tile_options['sides'],
                 'inset': tile_options['inset'],
                 'radius': tile_options['radius'],
-                'width': tile_options['width'],
             },
         )
 

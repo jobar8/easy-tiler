@@ -196,18 +196,19 @@ class TruchetTile(TileBase):
 class ArrowTile(TileBase):
     """Draw a Truchet tile with one more triangle."""
 
-    def __init__(self, width: float = 0.333, **kwargs):
+    def __init__(self, arrow_width: float | None = None, **kwargs):
         super().__init__(**kwargs)
-        if not (0.0 < width < 1.0):
-            raise ValueError('ArrowTile width must be between 0 and 1.')
-        self.width = width
+        if arrow_width is not None:
+            self.config.arrow_width = arrow_width
+        if not (0.0 < self.config.arrow_width < 1.0):
+            raise ValueError('ArrowTile arrow_width must be between 0 and 1.')
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         # position of the bottom of the branch
-        wa = (1 - self.width) / 2.0
+        wa = (1 - g.arrow_width) / 2.0
 
         # draw bottom-left corner
         ctx.set_source_rgba(*fg)

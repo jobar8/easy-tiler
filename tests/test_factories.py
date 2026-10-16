@@ -122,6 +122,22 @@ def test_factories_preserve_tile_option_defaults(factory_builder, inset, radius)
     assert config.arrow_width == pytest.approx(0.333)
 
 
+@pytest.mark.parametrize(
+    'factory_builder',
+    [
+        make_tile_factory,
+        make_sequence_factory,
+        make_node_factory,
+        make_form_factory,
+    ],
+)
+def test_factories_set_arrow_width_on_tile_config(factory_builder):
+    tile = factory_builder(tile_type='arrow', arrow_width=0.6)(0, 0)
+
+    assert isinstance(tile, ArrowTile)
+    assert tile.config.arrow_width == pytest.approx(0.6)
+
+
 def test_make_tile_factory_uses_palette_colors_sequentially():
     factory = make_tile_factory(
         fg=['blue', 'green'],
