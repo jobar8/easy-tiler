@@ -35,7 +35,7 @@ def test_tilebase_can_be_instantiated_with_a_draw_implementation():
 
 def test_tilebase_init_tile_applies_rotation_and_flip():
     tile = RecordingTile(config=TileConfig(rot=1, flipped=True))
-    tile.config.width = 20
+    tile.config.tile_width = 20
     ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 20))
 
     tile.init_tile(ctx)
@@ -47,13 +47,13 @@ def test_tilebase_init_tile_applies_rotation_and_flip():
     assert matrix.yy == pytest.approx(0)
 
 
-def test_tilebase_draw_tile_uses_config_width_and_delegates_to_draw():
-    tile = RecordingTile(config=TileConfig(width=16))
+def test_tilebase_draw_tile_uses_config_tile_width_and_delegates_to_draw():
+    tile = RecordingTile(config=TileConfig(tile_width=16))
     ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 16, 16))
 
     tile.draw_tile(ctx)
 
-    assert tile.config.width == 16
+    assert tile.config.tile_width == 16
     assert tile.draw_calls == [(ctx, tile.config)]
 
 

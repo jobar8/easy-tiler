@@ -33,7 +33,7 @@ def debug_print_ctx(ctx: cairo.Context) -> None:
 class TileConfig:
     """Geometry-focused configuration for a tile."""
 
-    width: int = 0
+    tile_width: int = 0  # Width of the tile in pixels, set by the renderer
     rotations: int = 4
     rot_angle: float = PI2
     rot: float = 0
@@ -72,7 +72,7 @@ class TileBase(abc.ABC):
         self.color_config = color_config or ColorConfig(seed=random_seed)
 
     def init_tile(self, ctx: cairo.Context):
-        wh = self.config.width
+        wh = self.config.tile_width
         wh2 = wh / 2.0
 
         # draw background
@@ -122,7 +122,7 @@ class RegularPolygonTile(TileBase):
         self.inset = float(inset)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         # polygon geometry
@@ -157,7 +157,7 @@ class PuckTile(TileBase):
         super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         # draw quarter circles based on variant
@@ -177,7 +177,7 @@ class TruchetTile(TileBase):
         super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         # draw bottom-left corner
@@ -200,7 +200,7 @@ class ArrowTile(TileBase):
         self.width = width
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         # position of the bottom of the branch
@@ -228,7 +228,7 @@ class RileyTile(TileBase):
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         self.radius = self.radius * wh
         fg = self.color_config.get_fg_color(index)
 
@@ -255,12 +255,12 @@ class CircleTile(TileBase):
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        radius = g._rng.uniform(0.5, 1.0) * g.width * self.radius
+        radius = g._rng.uniform(0.5, 1.0) * g.tile_width * self.radius
         fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
-        ctx.move_to(g.width / 4, g.width / 4)
-        ctx.arc(g.width / 4, g.width / 4, radius, 0, 2 * PI)
+        ctx.move_to(g.tile_width / 4, g.tile_width / 4)
+        ctx.arc(g.tile_width / 4, g.tile_width / 4, radius, 0, 2 * PI)
         ctx.fill()
         ctx.restore()
 
@@ -271,17 +271,17 @@ class SmithTile(TileBase):
         self.radius = radius
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        radius = self.radius * g.width
+        radius = self.radius * g.tile_width
         fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
-        ctx.arc(0, g.width, radius, -PI2, 0)
-        ctx.line_to(0, g.width)
+        ctx.arc(0, g.tile_width, radius, -PI2, 0)
+        ctx.line_to(0, g.tile_width)
         ctx.close_path()
         ctx.fill()
 
-        ctx.arc(g.width, 0, radius, PI2, PI)
-        ctx.line_to(g.width, 0)
+        ctx.arc(g.tile_width, 0, radius, PI2, PI)
+        ctx.line_to(g.tile_width, 0)
         ctx.close_path()
         ctx.fill()
         ctx.restore()
@@ -299,7 +299,7 @@ class PentagonTile(TileBase):
         self.config.rot = (self.config.rot - 1) % self.config.rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        side_length = g.width * self.side_length
+        side_length = g.tile_width * self.side_length
         fg = self.color_config.get_fg_color(index)
 
         ctx.set_source_rgba(*fg)
@@ -359,7 +359,7 @@ class CairoTile(TileBase):
         ctx.move_to(0, 0)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.width
+        wh = g.tile_width
         side_length = wh / (4 * math.cos(PI6))
         polygon_width = wh / 2
 

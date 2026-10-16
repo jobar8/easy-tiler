@@ -113,13 +113,12 @@ def make_tile_factory(
         # random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
 
         if rot == 'random':
-            # rng = random.Random(random_seed)
             actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
         elif isinstance(rot, (int, float)):
             actual_rot = rot
 
         tile_config = TileConfig(
-            width=0,
+            tile_width=0,
             rot=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
@@ -190,14 +189,14 @@ def make_sequence_factory(
         rotation = tile_sequence[offset]
 
         tile_config = TileConfig(
-            width=0,
+            tile_width=0,
             rot=rotation,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
             sides=tile_options['sides'],
             inset=tile_options['inset'],
-            side_length=1.0,
+            side_length=tile_options['side_length'],
             arrow_width=tile_options['width'],
             seed=random_seed,
         )
@@ -266,14 +265,14 @@ def make_node_factory(
         rotation = node_sequence[y_offset, x_offset]
 
         tile_config = TileConfig(
-            width=0,
+            tile_width=0,
             rot=rotation,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
             sides=tile_options['sides'],
             inset=tile_options['inset'],
-            side_length=1.0,
+            side_length=tile_options['side_length'],
             arrow_width=tile_options['width'],
             seed=random_seed,
         )
@@ -337,14 +336,14 @@ def make_form_factory(
         sequence_position = sequence_position % (color_mod)  # Ensure offset is within bounds of the color sequences
 
         tile_config = TileConfig(
-            width=0,
+            tile_width=0,
             rot=rotation,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
             sides=tile_options['sides'],
             inset=tile_options['inset'],
-            side_length=1.0,
+            side_length=tile_options['side_length'],
             arrow_width=tile_options['width'],
             seed=random_seed,
         )
