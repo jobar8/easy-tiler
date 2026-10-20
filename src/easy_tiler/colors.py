@@ -99,8 +99,8 @@ class ColorConfig:
     outline_color: str | tuple | None = None
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
-    fg_sequence_colors: list | None = None
-    bg_sequence_colors: list | None = None
+    primary_colors: list | None = None
+    secondary_colors: list | None = None
     color_index: int | None = None
     roll_index: int = 0
     seed: float | str | bytes | bytearray | None = None
@@ -146,10 +146,10 @@ class ColorConfig:
         return self._palette.get(val)
 
     def get_primary_color(self, index: int = 0) -> tuple:
-        return self._resolve_color(self.primary_color, index, self.fg_sequence_colors)
+        return self._resolve_color(self.primary_color, index, self.primary_colors)
 
     def get_secondary_color(self) -> tuple:
-        return self._resolve_color(self.secondary_color, sequence_colors=self.bg_sequence_colors)
+        return self._resolve_color(self.secondary_color, sequence_colors=self.secondary_colors)
 
 
 class CustomPalette:

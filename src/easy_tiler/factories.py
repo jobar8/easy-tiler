@@ -110,8 +110,8 @@ def make_tile_factory(
     rng = random.Random(random_seed)
     custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
-    fg_sequence_colors = rng.sample(colors, k=len(colors))
-    bg_sequence_colors = rng.sample(colors, k=len(colors))
+    primary_colors = rng.sample(colors, k=len(colors))
+    secondary_colors = rng.sample(colors, k=len(colors))
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
@@ -143,8 +143,8 @@ def make_tile_factory(
             else secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            fg_sequence_colors=fg_sequence_colors,
-            bg_sequence_colors=bg_sequence_colors,
+            primary_colors=primary_colors,
+            secondary_colors=secondary_colors,
             color_index=x,
             seed=random_seed,
         )
@@ -187,8 +187,8 @@ def make_sequence_factory(
     rng = random.Random(random_seed)
     custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
-    fg_sequence_colors = rng.sample(colors, k=sequence_length)
-    bg_sequence_colors = rng.sample(colors, k=sequence_length)
+    primary_colors = rng.sample(colors, k=sequence_length)
+    secondary_colors = rng.sample(colors, k=sequence_length)
 
     def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
@@ -216,8 +216,8 @@ def make_sequence_factory(
             else secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            fg_sequence_colors=fg_sequence_colors,
-            bg_sequence_colors=bg_sequence_colors,
+            primary_colors=primary_colors,
+            secondary_colors=secondary_colors,
             color_index=offset,
             roll_index=sequence_idx,
             seed=random_seed,
@@ -264,8 +264,8 @@ def make_node_factory(
     colors = custom_palette.colors
 
     nr, nc = node_sequence.shape
-    fg_sequence_colors = rng.choices(colors, k=nr * nc)
-    bg_sequence_colors = rng.choices(colors, k=nr * nc)
+    primary_colors = rng.choices(colors, k=nr * nc)
+    secondary_colors = rng.choices(colors, k=nr * nc)
 
     def factory(x, y) -> TileBase:
         node_idx = x // nc
@@ -291,8 +291,8 @@ def make_node_factory(
             secondary_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            fg_sequence_colors=fg_sequence_colors,
-            bg_sequence_colors=bg_sequence_colors,
+            primary_colors=primary_colors,
+            secondary_colors=secondary_colors,
             color_index=offset,
             roll_index=node_idx,
             seed=random_seed,
@@ -334,10 +334,10 @@ def make_form_factory(
     rng = random.Random(random_seed)
     custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
-    fg_sequence_colors = (
+    primary_colors = (
         rng.choices(colors, k=color_mod) if not isinstance(primary_color, list) else None
     )
-    bg_sequence_colors: list[str | tuple[float, float, float, float]] | None = (
+    secondary_colors: list[str | tuple[float, float, float, float]] | None = (
         rng.choices(colors, k=color_mod) if not isinstance(secondary_color, list) else None
     )
 
@@ -364,8 +364,8 @@ def make_form_factory(
             secondary_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            fg_sequence_colors=fg_sequence_colors,
-            bg_sequence_colors=bg_sequence_colors,
+            primary_colors=primary_colors,
+            secondary_colors=secondary_colors,
             color_index=sequence_position,
             roll_index=y,
             seed=random_seed,

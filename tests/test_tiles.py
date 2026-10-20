@@ -94,8 +94,8 @@ def test_color_config_resolves_sequence_and_rolled_colors():
     config = ColorConfig(
         primary_color='sequence',
         secondary_color='roll',
-        fg_sequence_colors=sequence,
-        bg_sequence_colors=sequence,
+        primary_colors=sequence,
+        secondary_colors=sequence,
         color_index=0,
         roll_index=1,
         palette=palette,
