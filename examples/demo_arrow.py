@@ -17,8 +17,8 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='arrow',
-        # rot=0,
-        rot='random',
+        # rotation_index=0,
+        rotation_index='random',
         arrow_width=0.2,
         # primary_color='random',
         primary_color=['blue', 'red', 'green', 'brown'],

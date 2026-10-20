@@ -17,8 +17,8 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='smith',
-        # rot='random',
-        rot=0,
+        # rotation_index='random',
+        rotation_index=0,
         radius=0.5,
         flipped=False,
         # primary_color='random',

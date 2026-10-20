@@ -14,7 +14,7 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='polygon',
-        rot='random',
+        rotation_index='random',
         inset=1.0,
         sides=7,
         # primary_color=['black', 'blue', 'green', 'red'],

@@ -25,7 +25,7 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='cairo',
-        rot=0,
+        rotation_index=0,
         # primary_color='random',
         # primary_color='red',
         primary_color=['red', 'blue', 'green', 'pink'],

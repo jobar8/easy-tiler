@@ -14,7 +14,7 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='puck',
-        rot='random',
+        rotation_index='random',
         primary_color=['black', 'blue', 'green', 'red'],
         secondary_color='white',
         outline=False,

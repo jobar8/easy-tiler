@@ -207,7 +207,7 @@ def test_make_tile_factory_supports_local_palette_outline():
 )
 def test_make_tile_factory_supports_registered_tile_types(tile_type, tile_class):
     factory = make_tile_factory(
-        tile_type=tile_type, rot=0, primary_color='blue', secondary_color='white'
+        tile_type=tile_type, rotation_index=0, primary_color='blue', secondary_color='white'
     )
 
     assert isinstance(factory(0, 0), tile_class)

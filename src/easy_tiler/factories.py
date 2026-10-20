@@ -84,7 +84,7 @@ def _make_tile(
 
 def make_tile_factory(
     tile_type: str = 'polygon',
-    rot: str | float = 'random',
+    rotation_index: str | float = 'random',
     primary_color: tuple[float, float, float, float]
     | list[str]
     | str
@@ -115,14 +115,15 @@ def make_tile_factory(
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
-        if rot == 'random':
-            actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
-        elif isinstance(rot, (int, float)):
-            actual_rot = rot
+        if rotation_index == 'random':
+            # Random rotation for 4-sided tiles (0, 1, 2, 3)
+            actual_rot = rng.randrange(4)
+        elif isinstance(rotation_index, (int, float)):
+            actual_rot = rotation_index
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=actual_rot,
+            rotation_index=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
@@ -196,7 +197,7 @@ def make_sequence_factory(
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=actual_rot,
+            rotation_index=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
@@ -275,7 +276,7 @@ def make_node_factory(
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=actual_rot,
+            rotation_index=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
@@ -348,7 +349,7 @@ def make_form_factory(
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=actual_rot,
+            rotation_index=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],

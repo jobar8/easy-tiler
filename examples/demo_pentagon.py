@@ -17,7 +17,7 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='pentagon',
-        rot=1,
+        rotation_index=1,
         primary_color='random',
         secondary_color='white',
         palette='glasbey_category10',

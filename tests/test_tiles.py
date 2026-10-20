@@ -21,20 +21,22 @@ def test_tilebase_is_abstract():
 
 def test_tilebase_can_be_instantiated_with_a_draw_implementation():
     tile = RecordingTile(
-        config=TileConfig(rotations=2, rot_angle=1.0, rot=1, flipped=True, outline=False)
+        config=TileConfig(
+            max_rotations=2, rotation_angle=1.0, rotation_index=1, flipped=True, outline=False
+        )
     )
 
-    assert tile.config.rotations == 2
-    assert tile.config.rot == 1
+    assert tile.config.max_rotations == 2
+    assert tile.config.rotation_index == 1
     assert tile.config.flipped is True
     assert tile.config.outline is False
-    assert not hasattr(tile, 'rot')
+    assert not hasattr(tile, 'rotation_index')
     assert not hasattr(tile, 'flipped')
     assert not hasattr(tile, 'outline')
 
 
 def test_tilebase_init_tile_applies_rotation_and_flip():
-    tile = RecordingTile(config=TileConfig(rot=1, flipped=True))
+    tile = RecordingTile(config=TileConfig(rotation_index=1, flipped=True))
     tile.config.tile_width = 20
     ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 20))
 

@@ -17,8 +17,8 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='truchet',
-        rot='random',
-        # rot=0,
+        rotation_index='random',
+        # rotation_index=0,
         flipped=False,
         primary_color='random',
         # primary_color=None,

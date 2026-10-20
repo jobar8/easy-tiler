@@ -34,9 +34,9 @@ class TileConfig:
     """Geometry-focused configuration for a tile."""
 
     tile_width: int = 0  # Width of the tile in pixels, set by the renderer
-    rotations: int = 4
-    rot_angle: float = PI2
-    rot: float = 0
+    max_rotations: int = 4
+    rotation_angle: float = PI2
+    rotation_index: float = 0
     flipped: bool = False
     outline: bool = False
     radius: float = 1.0
@@ -49,7 +49,7 @@ class TileConfig:
     _rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
-        self.rot = self.rot % self.rotations
+        self.rotation_index = self.rotation_index % self.max_rotations
         self.flipped = bool(self.flipped)
         self.outline = bool(self.outline)
         self._rng = random.Random(self.seed)
@@ -93,7 +93,7 @@ class TileBase(abc.ABC):
 
         # Apply rotation and flip transformations to the context before drawing the tile.
         ctx.translate(wh2, wh2)
-        ctx.rotate(self.config.rot_angle * self.config.rot)
+        ctx.rotate(self.config.rotation_angle * self.config.rotation_index)
         ctx.translate(-wh2, -wh2)
 
         if self.config.flipped:
@@ -147,7 +147,10 @@ class RegularPolygonTile(TileBase):
         ctx.fill_preserve()
         ctx.set_line_width(max(1.0, wh * 0.01))
         ctx.set_source_rgba(
-            max(0.0, primary_color[0] - 0.2), max(0.0, primary_color[1] - 0.2), max(0.0, primary_color[2] - 0.2), primary_color[3]
+            max(0.0, primary_color[0] - 0.2),
+            max(0.0, primary_color[1] - 0.2),
+            max(0.0, primary_color[2] - 0.2),
+            primary_color[3],
         )
         ctx.stroke()
         ctx.restore()
@@ -229,7 +232,7 @@ class RileyTile(TileBase):
     def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
-        self.config.rot = (self.config.rot - 1) % self.config.rotations
+        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
@@ -256,7 +259,7 @@ class CircleTile(TileBase):
     def __init__(self, radius: float = 0.25, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
-        self.config.rot = (self.config.rot - 1) % self.config.rotations
+        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         radius = g._rng.uniform(0.5, 1.0) * g.tile_width * self.radius
@@ -300,7 +303,7 @@ class PentagonTile(TileBase):
             self.side_length = 1.0 / (4 * math.cos(PI6))
         else:
             self.side_length = side_length
-        self.config.rot = (self.config.rot - 1) % self.config.rotations
+        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         side_length = g.tile_width * self.side_length
