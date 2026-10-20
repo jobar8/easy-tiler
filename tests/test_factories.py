@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 import pytest
 
@@ -87,10 +85,14 @@ def test_make_tile_factory_uses_separate_tile_and_color_configs():
 
 
 def test_factories_select_palette_config_for_resolved_colors():
-    direct_tile = make_tile_factory(fg='blue', bg='white')(0, 0)
-    sequence_tile = make_sequence_factory(fg='blue', bg='white', tile_sequence=[0])(0, 0)
-    node_tile = make_node_factory(node_sequence=np.array([[0]]), fg='blue', bg='white')(0, 0)
-    form_tile = make_form_factory(fg='blue', bg='white')(0, 0)
+    direct_tile = make_tile_factory(primary_color='blue', secondary_color='white')(0, 0)
+    sequence_tile = make_sequence_factory(
+        primary_color='blue', secondary_color='white', tile_sequence=[0]
+    )(0, 0)
+    node_tile = make_node_factory(
+        node_sequence=np.array([[0]]), primary_color='blue', secondary_color='white'
+    )(0, 0)
+    form_tile = make_form_factory(primary_color='blue', secondary_color='white')(0, 0)
 
     assert type(direct_tile.config) is TileConfig
     assert type(sequence_tile.config) is TileConfig
@@ -140,8 +142,8 @@ def test_factories_set_arrow_width_on_tile_config(factory_builder):
 
 def test_make_tile_factory_uses_palette_colors_sequentially():
     factory = make_tile_factory(
-        fg=['blue', 'green'],
-        bg=['yellow', 'brown'],
+        primary_color=['blue', 'green'],
+        secondary_color=['yellow', 'brown'],
         palette='FridaKahlo',
     )
     palette = CustomPalette('FridaKahlo')
@@ -162,7 +164,7 @@ def test_sequence_factory_resolves_rolled_colors_in_color_config():
     factory = make_sequence_factory(
         sequence_length=2,
         tile_sequence=[0, 0],
-        fg='roll',
+        primary_color='roll',
         palette='ColorsOfTheWind',
     )
     first = factory(0, 0).color_config
@@ -175,8 +177,8 @@ def test_sequence_factory_resolves_rolled_colors_in_color_config():
 
 def test_make_tile_factory_supports_local_palette_outline():
     factory = make_tile_factory(
-        fg='cyan',
-        bg='pink',
+        primary_color='cyan',
+        secondary_color='pink',
         outline=True,
         outline_color='purple',
         palette='ColorsOfTheWind',
@@ -204,14 +206,18 @@ def test_make_tile_factory_supports_local_palette_outline():
     ],
 )
 def test_make_tile_factory_supports_registered_tile_types(tile_type, tile_class):
-    factory = make_tile_factory(tile_type=tile_type, rot=0, fg='blue', bg='white')
+    factory = make_tile_factory(
+        tile_type=tile_type, rot=0, primary_color='blue', secondary_color='white'
+    )
 
     assert isinstance(factory(0, 0), tile_class)
 
 
 @pytest.mark.parametrize('tile_type', ['cairo', 'pentagon'])
 def test_make_sequence_factory_supports_tile_type(tile_type):
-    factory = make_sequence_factory(tile_type=tile_type, tile_sequence=[0], fg='blue', bg='white')
+    factory = make_sequence_factory(
+        tile_type=tile_type, tile_sequence=[0], primary_color='blue', secondary_color='white'
+    )
 
     assert isinstance(factory(0, 0), {'cairo': CairoTile, 'pentagon': PentagonTile}[tile_type])
 
@@ -221,8 +227,8 @@ def test_make_node_factory_supports_tile_type(tile_type):
     factory = make_node_factory(
         tile_type=tile_type,
         node_sequence=np.array([[0]]),
-        fg='blue',
-        bg='white',
+        primary_color='blue',
+        secondary_color='white',
     )
 
     assert isinstance(factory(0, 0), {'cairo': CairoTile, 'pentagon': PentagonTile}[tile_type])
@@ -232,13 +238,16 @@ def test_make_node_factory_supports_tile_type(tile_type):
     'factory_builder',
     [
         lambda: make_sequence_factory(
-            palette='ColorsOfTheWind', fg='sequence', bg='sequence', outline_color='purple'
+            palette='ColorsOfTheWind',
+            primary_color='sequence',
+            secondary_color='sequence',
+            outline_color='purple',
         ),
         lambda: make_node_factory(
             palette='ColorsOfTheWind',
             node_sequence=np.array([[0]]),
-            fg='sequence',
-            bg='sequence',
+            primary_color='sequence',
+            secondary_color='sequence',
             outline_color='purple',
         ),
     ],

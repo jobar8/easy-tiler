@@ -14,8 +14,8 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='polygon',
-        fg='random',
-        bg='white',
+        primary_color='random',
+        secondary_color='white',
         sides=4,
         outline=False,
         palette='glasbey_dark',

@@ -17,7 +17,7 @@ from easy_tiler.grid import Grid
 grid = Grid(8, 6, x_size=80, y_size=80)
 
 # Create a factory for polygon tiles (default is a square)
-factory = make_tile_factory(tile_type='polygon', bg='white', fg='random', sides=4, outline=False)
+factory = make_tile_factory(tile_type='polygon', secondary_color='white', primary_color='random', sides=4, outline=False)
 
 # Save as PNG and SVG
 save_png('output.png', grid, factory)
@@ -46,8 +46,8 @@ grid = Grid(12, 10, x_size=60, y_size=60)
 factory = make_sequence_factory(
     tile_type='riley',
     tile_sequence=[2, 2, 3, 3, 1, 0],
-    fg='sequence',
-    bg='roll',
+    primary_color='sequence',
+    secondary_color='roll',
     palette='ColorsOfTheWind',
 )
 
@@ -55,8 +55,8 @@ save_png('sequence_demo.png', grid, factory)
 save_svg('sequence_demo.svg', grid, factory)
 ```
 
-Here, `tile_sequence` controls the repeating rotation pattern, while `fg='sequence'` and
-`bg='roll'` vary the tile colors across the sequence. This would produce an images similar this
+Here, `tile_sequence` controls the repeating rotation pattern, while `primary_color='sequence'` and
+`secondary_color='roll'` vary the tile colors across the sequence. This would produce an images similar this
 one:
 
 ![Sequence Patterns](examples/sequence_demo.png)
@@ -104,7 +104,7 @@ from easy_tiler.grid import Grid
 grid = Grid(10, 10, x_size=80, y_size=80)
 
 # Create a factory for polygon tiles (default is a square)
-factory = make_tile_factory(tile_type='polygon', bg='white', fg='black', sides=4, outline=False)
+factory = make_tile_factory(tile_type='polygon', secondary_color='white', primary_color='black', sides=4, outline=False)
 
 # Save as PNG and SVG
 save_png('output.png', grid, factory)

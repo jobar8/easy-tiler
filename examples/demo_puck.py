@@ -15,8 +15,8 @@ def run_demo():
     factory = make_tile_factory(
         tile_type='puck',
         rot='random',
-        fg=['black', 'blue', 'green', 'red'],
-        bg='white',
+        primary_color=['black', 'blue', 'green', 'red'],
+        secondary_color='white',
         outline=False,
     )
     png_path = cwd / 'images' / 'puck_demo.png'

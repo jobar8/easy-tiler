@@ -85,12 +85,12 @@ def _make_tile(
 def make_tile_factory(
     tile_type: str = 'polygon',
     rot: str | float = 'random',
-    fg: tuple[float, float, float, float]
+    primary_color: tuple[float, float, float, float]
     | list[str]
     | str
     | list[tuple[float, float, float, float]]
     | None = 'random',
-    bg: tuple[float, float, float, float]
+    secondary_color: tuple[float, float, float, float]
     | list[str]
     | str
     | list[tuple[float, float, float, float]]
@@ -134,8 +134,12 @@ def make_tile_factory(
         )
 
         color_config = ColorConfig(
-            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
-            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
+            fg_color=primary_color[x % len(primary_color)]
+            if isinstance(primary_color, list)
+            else primary_color,
+            bg_color=secondary_color[x % len(secondary_color)]
+            if isinstance(secondary_color, list)
+            else secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
@@ -163,8 +167,8 @@ def make_sequence_factory(
     tile_type: str = 'polygon',
     tile_sequence: list[int] | None = None,
     sequence_length: int = 4,
-    fg: tuple[float, float, float, float] | list[str] | str = 'random',
-    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    primary_color: tuple[float, float, float, float] | list[str] | str = 'random',
+    secondary_color: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
@@ -203,8 +207,12 @@ def make_sequence_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
-            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
+            fg_color=primary_color[x % len(primary_color)]
+            if isinstance(primary_color, list)
+            else primary_color,
+            bg_color=secondary_color[x % len(secondary_color)]
+            if isinstance(secondary_color, list)
+            else secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
@@ -231,8 +239,8 @@ def make_sequence_factory(
 def make_node_factory(
     tile_type: str = 'polygon',
     node_sequence: np.ndarray | None = None,
-    fg: tuple[float, float, float, float] | list[str] | str = 'random',
-    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    primary_color: tuple[float, float, float, float] | list[str] | str = 'random',
+    secondary_color: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
@@ -278,8 +286,8 @@ def make_node_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=fg,
-            bg_color=bg,
+            fg_color=primary_color,
+            bg_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
@@ -310,8 +318,8 @@ def make_form_factory(
     c: float = 0.0,
     rot_mod: int = 4,
     color_mod: int = 16,
-    fg: tuple[float, float, float, float] | list[str] | str = 'random',
-    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    primary_color: tuple[float, float, float, float] | list[str] | str = 'random',
+    secondary_color: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
@@ -325,9 +333,11 @@ def make_form_factory(
     rng = random.Random(random_seed)
     custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
-    fg_sequence_colors = rng.choices(colors, k=color_mod) if not isinstance(fg, list) else None
+    fg_sequence_colors = (
+        rng.choices(colors, k=color_mod) if not isinstance(primary_color, list) else None
+    )
     bg_sequence_colors: list[str | tuple[float, float, float, float]] | None = (
-        rng.choices(colors, k=color_mod) if not isinstance(bg, list) else None
+        rng.choices(colors, k=color_mod) if not isinstance(secondary_color, list) else None
     )
 
     def factory(x, y) -> TileBase:
@@ -349,8 +359,8 @@ def make_form_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=fg,
-            bg_color=bg,
+            fg_color=primary_color,
+            bg_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,

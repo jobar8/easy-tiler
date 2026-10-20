@@ -18,8 +18,8 @@ def run_demo():
     factory = make_tile_factory(
         tile_type='pentagon',
         rot=1,
-        fg='random',
-        bg='white',
+        primary_color='random',
+        secondary_color='white',
         palette='glasbey_category10',
         num_colors=5,
         outline=False,
