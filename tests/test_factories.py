@@ -263,3 +263,24 @@ def test_factories_support_local_palette(factory_builder):
 def test_get_palette_rejects_unknown_palette():
     with pytest.raises((KeyError, ValueError)):
         ColorConfig.get_palette('not-a-palette')
+
+
+def test_make_form_factory_derives_rotation_and_color_index_from_formula():
+    factory = make_form_factory(
+        tile_type='polygon',
+        a=1.0,
+        b=1.0,
+        c=0.0,
+        rotation_mod=4,
+        color_mod=8,
+        primary_color='blue',
+        secondary_color='white',
+    )
+
+    tile = factory(2, 3)
+
+    assert isinstance(tile, RegularPolygonTile)
+    # sequence_position = int(1.0 * 2 + 1.0 * 3 + 0.0) = 5
+    assert tile.config.rotation_index == 5 % 4
+    assert tile.color_config.color_index == 5 % 8
+    assert tile.color_config.roll_index == 3

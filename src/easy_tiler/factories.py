@@ -317,7 +317,7 @@ def make_form_factory(
     a: float = 3.0,
     b: float = 1.0,
     c: float = 0.0,
-    rot_mod: int = 4,
+    rotation_mod: int = 4,
     color_mod: int = 16,
     primary_color: tuple[float, float, float, float] | list[str] | str = 'random',
     secondary_color: tuple[float, float, float, float] | list[str] | str = 'random',
@@ -330,7 +330,7 @@ def make_form_factory(
 
     tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
-    random_seed = f'{use_seed}-{rot_mod}-{color_mod}' if use_seed else None
+    random_seed = f'{use_seed}-{rotation_mod}-{color_mod}' if use_seed else None
     rng = random.Random(random_seed)
     custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
@@ -343,7 +343,7 @@ def make_form_factory(
 
     def factory(x, y) -> TileBase:
         sequence_position = int(a * x + (b * y) + c)
-        actual_rot = sequence_position % rot_mod  # Use offset to determine rotation for variety
+        actual_rot = sequence_position % rotation_mod
         # Ensure offset is within bounds of the color sequences
         sequence_position = sequence_position % (color_mod)
 

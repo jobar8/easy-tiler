@@ -16,7 +16,7 @@ def run_form_demo():
         a=1,
         b=1,
         c=0,
-        rot_mod=4,
+        rotation_mod=5,
         color_mod=4,
         primary_color='sequence',
         # primary_color='random_rgb',
