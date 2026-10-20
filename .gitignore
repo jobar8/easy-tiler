@@ -20,7 +20,6 @@ venv/
 uv.lock
 
 # IDEs
-.vscode/
 .idea/
 
 # Text editors

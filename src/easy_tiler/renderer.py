@@ -30,7 +30,6 @@ class Renderer:
 
     def _render_to_context(self, ctx: cairo.Context):
         """Render the grid to a Cairo context."""
-        width = self.grid.x_size
 
         # Apply transform to context to render skewing of the grid
         x_skew, y_skew = self.grid.skew_angles
@@ -46,13 +45,14 @@ class Renderer:
             ctx.save()
             ctx.translate(px, py)
             # ensure each tile draws in a wh x wh square starting at 0,0
-            tile.draw_tile(ctx, width)
+            tile.config.tile_width = self.grid.x_size
+            tile.draw_tile(ctx)
 
             if self.grid.double:
                 ctx.save()
                 ctx.translate(px + self.grid.x_size / 2, py + self.grid.y_size / 2)
                 # restore at the end brings it back to previous saved state
-                tile.draw_tile(ctx, width)
+                tile.draw_tile(ctx)
                 ctx.save()
                 ctx.restore()
 

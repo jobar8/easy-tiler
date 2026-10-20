@@ -1,13 +1,12 @@
+from .colors import ColorConfig
 from .grid import Grid
 from .renderer import Renderer
 from .tiles import (
     ArrowTile,
     CairoTile,
     CircleTile,
-    PaletteTileConfig,
     PentagonTile,
     PuckTile,
-    RandomColorTileConfig,
     RegularPolygonTile,
     RileyTile,
     SmithTile,
@@ -25,11 +24,10 @@ __all__ = [
     'ArrowTile',
     'CairoTile',
     'CircleTile',
+    'ColorConfig',
     'Grid',
-    'PaletteTileConfig',
     'PentagonTile',
     'PuckTile',
-    'RandomColorTileConfig',
     'RegularPolygonTile',
     'Renderer',
     'RileyTile',

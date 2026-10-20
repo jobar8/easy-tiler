@@ -2,13 +2,16 @@
 Custom palettes found on https://y-sunflower.github.io/pypalettes/
 """
 
+from __future__ import annotations
+
 import random
+from dataclasses import dataclass, field
 
 import colorcet as cc
 from numpy import ndarray
 from pypalettes import load_palette
 
-CUSTOM_PALETTES = {
+CUSTOM_PALETTES: dict[str, dict[str, str]] = {
     'FridaKahlo': {
         'black': '#121510FF',
         'blue': '#203caaFF',
@@ -69,7 +72,7 @@ CUSTOM_PALETTES = {
     },
 }
 
-STANDARD_PALETTE = {
+STANDARD_PALETTE: dict[str, tuple[float, float, float, float]] = {
     'black': (0, 0, 0, 1),
     'white': (1, 1, 1, 1),
     'red': (1, 0, 0, 1),
@@ -87,26 +90,106 @@ STANDARD_PALETTE = {
 }
 
 
+@dataclass
+class ColorConfig:
+    """Configure tile colors, including sequence/roll choices and color RNG."""
+
+    fg_color: str | tuple | list | None = None
+    bg_color: str | tuple | list | None = None
+    outline_color: str | tuple | None = None
+    palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
+    num_colors: int | None = None
+    fg_sequence_colors: list | None = None
+    bg_sequence_colors: list | None = None
+    color_index: int | None = None
+    roll_index: int = 0
+    seed: float | str | bytes | bytearray | None = None
+
+    _palette: CustomPalette = field(init=False)
+    rng: random.Random = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.rng = random.Random(self.seed)
+        self._palette = (
+            self.palette
+            if isinstance(self.palette, CustomPalette)
+            else CustomPalette(self.palette or 'Standard', self.num_colors, self.rng)
+        )
+        self.outline_color = self._palette.get(self.outline_color)
+
+    @classmethod
+    def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
+        return CustomPalette(palette, num_colors).colors
+
+    def _resolve_color(
+        self,
+        val,
+        index: int = 0,
+        sequence_colors: list | None = None,
+    ) -> tuple:
+        """Resolve a color value to an RGBA tuple."""
+        if val is None:
+            return (0, 0, 0, 0)
+
+        index = self.color_index if self.color_index is not None else index
+
+        if val in ('sequence', 'roll'):
+            if not sequence_colors:
+                raise ValueError(f'{val!r} color requires sequence colors')
+            if val == 'roll':
+                index -= self.roll_index
+            return self._palette.get(sequence_colors[index % len(sequence_colors)])
+
+        if isinstance(val, list):
+            val = val[index % len(val)]
+
+        return self._palette.get(val)
+
+    def get_fg_color(self, index: int = 0) -> tuple:
+        return self._resolve_color(self.fg_color, index, self.fg_sequence_colors)
+
+    def get_bg_color(self) -> tuple:
+        return self._resolve_color(self.bg_color, sequence_colors=self.bg_sequence_colors)
+
+
 class CustomPalette:
     """Load a palette and resolve its colors to RGBA values."""
 
-    def __init__(self, palette: str = 'Standard', num_colors: int | None = None):
-        if palette == 'Standard':
-            colors = STANDARD_PALETTE
-        elif palette in CUSTOM_PALETTES:
-            colors = CUSTOM_PALETTES[palette]
+    def __init__(
+        self,
+        name: str = 'Standard',
+        num_colors: int | None = None,
+        rng: random.Random | None = None,
+    ) -> None:
+        """
+        Initialize the CustomPalette class.
+
+            name: Name of the palette to load. Can be 'Standard', a custom palette name,
+            or a palette name from colorcet.
+            num_colors: Number of colors to include in the palette.
+        """
+        self.palette: dict[str, tuple[float, float, float, float]] = {}
+        self.colors: list[str] | list[tuple[float, float, float, float]] = []
+        if rng is None:
+            rng = random.Random()
+        self.rng = rng
+
+        if name == 'Standard':
+            palette: dict[str, tuple[float, float, float, float]] = STANDARD_PALETTE
+        elif name in CUSTOM_PALETTES:
+            palette: dict[str, str] = CUSTOM_PALETTES[name]
         else:
             try:
-                colors = cc.palette[palette]
+                palette: list[str] = cc.palette[name]
             except KeyError:
-                colors = load_palette(palette)
+                palette: list[str] = load_palette(name)
 
-        if isinstance(colors, dict):
-            self.palette = colors
-            self.colors = list(colors.values())
+        if isinstance(palette, dict):
+            self.palette = palette  # Dictionary of named colors  # ty: ignore[invalid-assignment]
+            self.colors = list(palette.values())  # List of hex color strings  # ty: ignore[invalid-assignment]
         else:
             self.palette = {}
-            self.colors = list(colors)
+            self.colors = list(palette)
 
         if num_colors is not None:
             self.colors = self.colors[:num_colors]
@@ -136,17 +219,19 @@ class CustomPalette:
         if isinstance(val, str):
             if val.startswith('#'):
                 return self._hex_to_rgba(val)
-            if val == 'random':
-                return (random.random(), random.random(), random.random(), 1)
-            if val == 'random_choice':
-                return self.get(random.choice(self.colors))
+            if val == 'random_rgb':
+                return (self.rng.random(), self.rng.random(), self.rng.random(), 1)
+            if val in ('random', 'random_choice'):
+                return self.get(self.rng.choice(self.colors))
             if val == 'transparent':
                 return (0, 0, 0, 0)
             try:
                 return self.get(self.palette[val])
             except KeyError:
                 try:
-                    return STANDARD_PALETTE[val]  # Fall back to standard colors if not found in palette
+                    return STANDARD_PALETTE[
+                        val
+                    ]  # Fall back to standard colors if not found in palette
                 except KeyError:
                     print(TypeError(f'Unsupported color value: {val} - returning transparent'))
                     return (0, 0, 0, 0)  # transparent

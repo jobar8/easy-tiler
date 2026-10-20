@@ -1,6 +1,5 @@
 """Simple demo to render a grid of regular polygon tiles."""
 
-import math
 import random
 from collections.abc import Callable
 from typing import Any
@@ -19,8 +18,8 @@ from easy_tiler import (
     TileBase,
     TruchetTile,
 )
-from easy_tiler.colors import CustomPalette
-from easy_tiler.tiles import PaletteTileConfig, RandomColorTileConfig, TileConfig
+from easy_tiler.colors import ColorConfig, CustomPalette
+from easy_tiler.tiles import TileConfig
 
 _TILE_CLASSES: dict[str, type[TileBase]] = {
     'polygon': RegularPolygonTile,
@@ -36,21 +35,36 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
 
 _TILE_OPTIONS: dict[str, tuple[str, ...]] = {
     'polygon': ('sides', 'inset'),
-    'arrow': ('width',),
     'riley': ('radius',),
     'pentagon': ('side_length',),
     'circle': ('radius',),
     'smith': ('radius',),
 }
 
+_DEFAULT_TILE_OPTIONS: dict[str, Any] = {
+    'inset': 0.85,
+    'flipped': False,
+    'outline': False,
+    'outline_color': None,
+    'radius': 1.0,
+    'sides': 4,
+    'side_length': 1.0,
+    'arrow_width': 0.333,
+}
+
+
+def _get_tile_options(
+    kwargs: dict[str, Any],
+    defaults: dict[str, Any] = _DEFAULT_TILE_OPTIONS,
+) -> dict[str, Any]:
+    return defaults | {name: value for name, value in kwargs.items() if name in defaults}
+
 
 def _make_tile(
     tile_type: str,
     *,
-    rot: Any,
-    flipped: bool,
-    outline: bool,
     config: TileConfig,
+    color_config: ColorConfig,
     options: dict[str, Any],
 ) -> TileBase:
     try:
@@ -58,94 +72,87 @@ def _make_tile(
     except KeyError as exc:
         raise ValueError(f'Invalid tile_type: {tile_type}') from exc
 
-    tile_options = {name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options}
-    return tile_class(rot=rot, flipped=flipped, outline=outline, config=config, **tile_options)
-
-
-def _make_config(
-    *,
-    fg_color,
-    bg_color,
-    outline_color,
-    palette: CustomPalette,
-    seed,
-    random_colors: bool = False,
-) -> TileConfig:
-    config_class = RandomColorTileConfig if random_colors else PaletteTileConfig
-    return config_class(
-        fg_color=fg_color,
-        bg_color=bg_color,
-        outline_color=outline_color,
-        palette=palette,
-        seed=seed,
+    tile_options = {
+        name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options
+    }
+    return tile_class(
+        config=config,
+        color_config=color_config,
+        **tile_options,
     )
 
 
 def make_tile_factory(
     tile_type: str = 'polygon',
-    rot: str | int = 'random',
-    fg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    bg: tuple[float, float, float, float] | list[str] | str | list[tuple[float, float, float, float]] | None = 'random',
-    palette: str | None = None,
+    rot: str | float = 'random',
+    fg: tuple[float, float, float, float]
+    | list[str]
+    | str
+    | list[tuple[float, float, float, float]]
+    | None = 'random',
+    bg: tuple[float, float, float, float]
+    | list[str]
+    | str
+    | list[tuple[float, float, float, float]]
+    | None = 'random',
+    palette: str = 'Standard',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
-):
+) -> Callable[..., TileBase]:
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-    custom_palette = CustomPalette(palette or 'Standard', num_colors)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
-    # Get other keyword args
-    inset = kwargs.get('inset', math.sqrt(2))
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 3.0)
-    sides = kwargs.get('sides', 4)
-    side_length = kwargs.get('side_length', 1.0)  # Default side length for PentagonTile
-    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
-    use_seed = kwargs.get('use_seed', True)
-
-    def resolve_color(value, index: int):
-        if isinstance(value, list):
-            value = value[index % len(value)]
-        if value == 'random' and use_seed:
-            return value
-        return custom_palette.get(value) if isinstance(value, (str, list, tuple)) else value
+    # Use parameters to seed randomness for this specific sequence
+    random_seed = f'{use_seed}-{num_colors}' if use_seed else None
+    rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.sample(colors, k=len(colors))
+    bg_sequence_colors = rng.sample(colors, k=len(colors))
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
-        random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
-
         if rot == 'random':
-            rng = random.Random(random_seed)
             actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
-        else:
+        elif isinstance(rot, (int, float)):
             actual_rot = rot
 
-        fg_color = resolve_color(fg, x)
-        bg_color = resolve_color(bg, x)
-        config = _make_config(
-            fg_color=fg_color,
-            bg_color=bg_color,
-            outline_color=custom_palette.get(outline_color),
-            palette=custom_palette,
+        tile_config = TileConfig(
+            tile_width=0,
+            rot=actual_rot,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
+            side_length=tile_options['side_length'],
+            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
-            random_colors=fg_color == 'random' or bg_color == 'random',
+        )
+
+        color_config = ColorConfig(
+            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
+            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
+            outline_color=tile_options['outline_color'],
+            palette=custom_palette,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=x,
+            seed=random_seed,
         )
 
         return _make_tile(
             tile_type,
-            rot=actual_rot,
-            flipped=flipped,
-            outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'side_length': side_length,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
+                'side_length': tile_options['side_length'],
             },
         )
 
@@ -154,94 +161,67 @@ def make_tile_factory(
 
 def make_sequence_factory(
     tile_type: str = 'polygon',
-    sequence_length: int = 4,
     tile_sequence: list[int] | None = None,
-    fg: tuple[float, float, float, float] | str = 'random',
-    bg: tuple[float, float, float, float] | str = 'random',
-    palette: str = 'glasbey_dark',
+    sequence_length: int = 4,
+    fg: tuple[float, float, float, float] | list[str] | str = 'random',
+    bg: tuple[float, float, float, float] | list[str] | str = 'random',
+    palette: str = 'Standard',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
-    custom_palette = CustomPalette(palette, num_colors)
-    colors = custom_palette.colors
-
     if tile_sequence is None:
         tile_sequence = [0] * sequence_length
     else:
         sequence_length = len(tile_sequence)
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)  # Default width for ArrowTile
-    use_seed = kwargs.get('use_seed', True)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
     # Use parameters to seed randomness for this specific sequence
-    if use_seed:
-        rng = random.Random(f'{tile_type}-{tile_sequence}')
-    else:
-        rng = random.Random()
-    fg_sequence_colors = rng.choices(colors, k=sequence_length)
-    bg_sequence_colors = rng.choices(colors, k=sequence_length)
+    random_seed = f'{tile_type}-{tile_sequence}' if use_seed else None
+    rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.sample(colors, k=sequence_length)
+    bg_sequence_colors = rng.sample(colors, k=sequence_length)
 
     def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
-        rotation = tile_sequence[offset]
+        actual_rot = tile_sequence[offset]
 
-        if fg == 'sequence':
-            actual_fg = custom_palette.get(fg_sequence_colors[offset])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, sequence_idx)
-            actual_fg = custom_palette.get(sequence_colors[offset])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        elif isinstance(fg, list):
-            actual_fg = custom_palette.get(fg[x % len(fg)])
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence':
-            actual_bg = custom_palette.get(bg_sequence_colors[offset])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, sequence_idx)
-            actual_bg = custom_palette.get(sequence_colors[offset])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        elif bg == 'black':
-            actual_bg = custom_palette.get('black')
-        elif isinstance(bg, list):
-            actual_bg = custom_palette.get(bg[x % len(bg)])
-        else:
-            actual_bg = custom_palette.get(bg)
-
-        config = _make_config(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
+        tile_config = TileConfig(
+            tile_width=0,
+            rot=actual_rot,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
+            side_length=tile_options['side_length'],
+            arrow_width=tile_options['arrow_width'],
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=fg[x % len(fg)] if isinstance(fg, list) else fg,
+            bg_color=bg[x % len(bg)] if isinstance(bg, list) else bg,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=offset,
+            roll_index=sequence_idx,
+            seed=random_seed,
         )
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
             },
         )
 
@@ -253,7 +233,7 @@ def make_node_factory(
     node_sequence: np.ndarray | None = None,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
-    palette: str = 'glasbey_dark',
+    palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
     **kwargs,
@@ -262,90 +242,61 @@ def make_node_factory(
     if node_sequence is None:
         if use_seed:
             # Use parameters to seed randomness
-            rng = np.random.default_rng(len(tile_type) * len(palette))
+            np_rng = np.random.default_rng(len(tile_type) * len(palette))
         else:
-            rng = np.random.default_rng()
-        node_sequence = rng.integers(low=0, high=10, size=(4, 4))
+            np_rng = np.random.default_rng()
+        node_sequence = np_rng.integers(low=0, high=10, size=(4, 4))
 
-    custom_palette = CustomPalette(palette, num_colors)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
+
+    random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
+    rng = random.Random(random_seed)
+    custom_palette = CustomPalette(palette, num_colors, rng)
     colors = custom_palette.colors
 
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)
-
-    if use_seed:
-        # Use parameters to seed randomness for this specific sequence
-        rng = random.Random(f'{tile_type}-{node_sequence}')
-    else:
-        rng = random.Random()
-
     nr, nc = node_sequence.shape
-    if isinstance(fg, list):
-        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (nr * nc // len(fg) + 1)
-    else:
-        fg_sequence_colors = rng.choices(colors, k=nr * nc)
-
-    if isinstance(bg, list):
-        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (nr * nc // len(bg) + 1)
-    else:
-        bg_sequence_colors = rng.choices(colors, k=nr * nc)
+    fg_sequence_colors = rng.choices(colors, k=nr * nc)
+    bg_sequence_colors = rng.choices(colors, k=nr * nc)
 
     def factory(x, y) -> TileBase:
         node_idx = x // nc
         x_offset = x % nc
         y_offset = y % nr
         offset = x_offset + y_offset * nc
-        rotation = node_sequence[y_offset, x_offset]
+        actual_rot = node_sequence[y_offset, x_offset]
 
-        if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_palette.get(fg_sequence_colors[offset])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, node_idx)
-            actual_fg = custom_palette.get(sequence_colors[offset])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_palette.get(bg_sequence_colors[offset])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, node_idx)
-            actual_bg = custom_palette.get(sequence_colors[offset])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        else:
-            actual_bg = custom_palette.get(bg)
-
-        config = _make_config(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
+        tile_config = TileConfig(
+            tile_width=0,
+            rot=actual_rot,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
+            side_length=tile_options['side_length'],
+            arrow_width=tile_options['arrow_width'],
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=fg,
+            bg_color=bg,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=offset,
+            roll_index=node_idx,
+            seed=random_seed,
         )
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
             },
         )
 
@@ -361,85 +312,62 @@ def make_form_factory(
     color_mod: int = 16,
     fg: tuple[float, float, float, float] | list[str] | str = 'random',
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
-    palette: str = 'glasbey_dark',
+    palette: str = 'Standard',
     num_colors: int | None = None,
     use_seed: bool = True,
     **kwargs,
 ) -> Callable[..., TileBase]:
     """Factory for creating patterns based on mathematical functions."""
-    custom_palette = CustomPalette(palette, num_colors)
-    colors = custom_palette.colors
 
-    # Get other keyword args
-    inset = kwargs.get('inset', 0.85)
-    flipped = kwargs.get('flipped', False)
-    outline = kwargs.get('outline', False)
-    outline_color = kwargs.get('outline_color', None)
-    radius = kwargs.get('radius', 1.0)
-    sides = kwargs.get('sides', 4)
-    width = kwargs.get('width', 0.333)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
     random_seed = f'{use_seed}-{rot_mod}-{color_mod}' if use_seed else None
     rng = random.Random(random_seed)
-
-    if isinstance(fg, list):
-        fg_sequence_colors = [custom_palette.get(f) for f in fg] * (color_mod // len(fg) + 1)
-    else:
-        fg_sequence_colors = rng.choices(colors, k=color_mod)
-
-    if isinstance(bg, list):
-        bg_sequence_colors = [custom_palette.get(f) for f in bg] * (color_mod // len(bg) + 1)
-    else:
-        bg_sequence_colors = rng.choices(colors, k=color_mod)
+    custom_palette = CustomPalette(palette, num_colors, rng)
+    colors = custom_palette.colors
+    fg_sequence_colors = rng.choices(colors, k=color_mod) if not isinstance(fg, list) else None
+    bg_sequence_colors: list[str | tuple[float, float, float, float]] | None = (
+        rng.choices(colors, k=color_mod) if not isinstance(bg, list) else None
+    )
 
     def factory(x, y) -> TileBase:
         sequence_position = int(a * x + (b * y) + c)
-        rotation = sequence_position % rot_mod  # Use offset to determine rotation for variety
-        sequence_position = sequence_position % (color_mod)  # Ensure offset is within bounds of the color sequences
+        actual_rot = sequence_position % rot_mod  # Use offset to determine rotation for variety
+        # Ensure offset is within bounds of the color sequences
+        sequence_position = sequence_position % (color_mod)
 
-        if fg == 'sequence' or isinstance(fg, list):
-            actual_fg = custom_palette.get(fg_sequence_colors[sequence_position])
-        elif fg == 'roll':
-            sequence_colors = np.roll(fg_sequence_colors, y)
-            actual_fg = custom_palette.get(sequence_colors[sequence_position])
-        elif fg == 'random':
-            actual_fg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif fg == 'black':
-            actual_fg = custom_palette.get('black')
-        else:
-            actual_fg = custom_palette.get(fg)
-
-        if bg == 'sequence' or isinstance(bg, list):
-            actual_bg = custom_palette.get(bg_sequence_colors[sequence_position])
-        elif bg == 'roll':
-            sequence_colors = np.roll(bg_sequence_colors, y)
-            actual_bg = custom_palette.get(sequence_colors[sequence_position])
-        elif bg == 'random':
-            actual_bg = (rng.random(), rng.random(), rng.random(), 1.0)
-        elif bg == 'white':
-            actual_bg = custom_palette.get('white')
-        else:
-            actual_bg = custom_palette.get(bg)
-
-        config = _make_config(
-            fg_color=actual_fg,
-            bg_color=actual_bg,
-            outline_color=custom_palette.get(outline_color),
+        tile_config = TileConfig(
+            tile_width=0,
+            rot=actual_rot,
+            flipped=tile_options['flipped'],
+            outline=tile_options['outline'],
+            radius=tile_options['radius'],
+            sides=tile_options['sides'],
+            inset=tile_options['inset'],
+            side_length=tile_options['side_length'],
+            arrow_width=tile_options['arrow_width'],
+            seed=random_seed,
+        )
+        color_config = ColorConfig(
+            fg_color=fg,
+            bg_color=bg,
+            outline_color=tile_options['outline_color'],
             palette=custom_palette,
-            seed=f'{tile_type}-{x}-{y}' if use_seed else None,
+            fg_sequence_colors=fg_sequence_colors,
+            bg_sequence_colors=bg_sequence_colors,
+            color_index=sequence_position,
+            roll_index=y,
+            seed=random_seed,
         )
 
         return _make_tile(
             tile_type,
-            rot=rotation,
-            flipped=flipped,
-            outline=outline,
-            config=config,
+            config=tile_config,
+            color_config=color_config,
             options={
-                'sides': sides,
-                'inset': inset,
-                'radius': radius,
-                'width': width,
+                'sides': tile_options['sides'],
+                'inset': tile_options['inset'],
+                'radius': tile_options['radius'],
             },
         )
 
