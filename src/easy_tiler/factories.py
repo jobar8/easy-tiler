@@ -135,10 +135,10 @@ def make_tile_factory(
         )
 
         color_config = ColorConfig(
-            fg_color=primary_color[x % len(primary_color)]
+            primary_color=primary_color[x % len(primary_color)]
             if isinstance(primary_color, list)
             else primary_color,
-            bg_color=secondary_color[x % len(secondary_color)]
+            secondary_color=secondary_color[x % len(secondary_color)]
             if isinstance(secondary_color, list)
             else secondary_color,
             outline_color=tile_options['outline_color'],
@@ -208,10 +208,10 @@ def make_sequence_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=primary_color[x % len(primary_color)]
+            primary_color=primary_color[x % len(primary_color)]
             if isinstance(primary_color, list)
             else primary_color,
-            bg_color=secondary_color[x % len(secondary_color)]
+            secondary_color=secondary_color[x % len(secondary_color)]
             if isinstance(secondary_color, list)
             else secondary_color,
             outline_color=tile_options['outline_color'],
@@ -287,8 +287,8 @@ def make_node_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=primary_color,
-            bg_color=secondary_color,
+            primary_color=primary_color,
+            secondary_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,
@@ -360,8 +360,8 @@ def make_form_factory(
             seed=random_seed,
         )
         color_config = ColorConfig(
-            fg_color=primary_color,
-            bg_color=secondary_color,
+            primary_color=primary_color,
+            secondary_color=secondary_color,
             outline_color=tile_options['outline_color'],
             palette=custom_palette,
             fg_sequence_colors=fg_sequence_colors,

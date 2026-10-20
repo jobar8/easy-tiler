@@ -62,38 +62,38 @@ def test_tilebase_draw_tile_uses_config_tile_width_and_delegates_to_draw():
 def test_color_config_defaults_to_transparent_colors():
     config = ColorConfig()
 
-    assert config.get_fg_color() == (0, 0, 0, 0)
-    assert config.get_bg_color() == (0, 0, 0, 0)
+    assert config.get_primary_color() == (0, 0, 0, 0)
+    assert config.get_secondary_color() == (0, 0, 0, 0)
 
 
 def test_color_config_resolves_named_colors():
     config = ColorConfig(
-        fg_color='cyan',
-        bg_color='pink',
+        primary_color='cyan',
+        secondary_color='pink',
         outline_color='purple',
         palette='ColorsOfTheWind',
     )
     palette = CustomPalette('ColorsOfTheWind')
 
-    assert config.get_fg_color() == palette.get('cyan')
-    assert config.get_bg_color() == palette.get('pink')
+    assert config.get_primary_color() == palette.get('cyan')
+    assert config.get_secondary_color() == palette.get('pink')
     assert config.outline_color == palette.get('purple')
 
 
 def test_color_config_resolves_color_lists_by_index():
-    config = ColorConfig(fg_color=['red', 'blue'])
+    config = ColorConfig(primary_color=['red', 'blue'])
 
-    assert config.get_fg_color(0) == CustomPalette().get('red')
-    assert config.get_fg_color(1) == CustomPalette().get('blue')
-    assert config.get_fg_color(2) == CustomPalette().get('red')
+    assert config.get_primary_color(0) == CustomPalette().get('red')
+    assert config.get_primary_color(1) == CustomPalette().get('blue')
+    assert config.get_primary_color(2) == CustomPalette().get('red')
 
 
 def test_color_config_resolves_sequence_and_rolled_colors():
     palette = CustomPalette('ColorsOfTheWind')
     sequence = ['cyan', 'pink']
     config = ColorConfig(
-        fg_color='sequence',
-        bg_color='roll',
+        primary_color='sequence',
+        secondary_color='roll',
         fg_sequence_colors=sequence,
         bg_sequence_colors=sequence,
         color_index=0,
@@ -101,29 +101,32 @@ def test_color_config_resolves_sequence_and_rolled_colors():
         palette=palette,
     )
 
-    assert config.get_fg_color() == palette.get('cyan')
-    assert config.get_bg_color() == palette.get('pink')
+    assert config.get_primary_color() == palette.get('cyan')
+    assert config.get_secondary_color() == palette.get('pink')
 
 
 @pytest.mark.parametrize('color', ['sequence', 'roll'])
 def test_color_config_requires_sequence_colors_for_sequence_modes(color):
-    config = ColorConfig(fg_color=color)
+    config = ColorConfig(primary_color=color)
 
     with pytest.raises(ValueError, match='requires sequence colors'):
-        config.get_fg_color()
+        config.get_primary_color()
 
 
 def test_color_config_random_colors_are_reproducible_from_seed():
-    first = ColorConfig(fg_color='random', bg_color='random', seed=123)
-    second = ColorConfig(fg_color='random', bg_color='random', seed=123)
+    first = ColorConfig(primary_color='random', secondary_color='random', seed=123)
+    second = ColorConfig(primary_color='random', secondary_color='random', seed=123)
 
-    assert first.get_fg_color() == second.get_fg_color()
-    assert first.get_bg_color() == second.get_bg_color()
+    assert first.get_primary_color() == second.get_primary_color()
+    assert first.get_secondary_color() == second.get_secondary_color()
 
 
 def test_color_config_random_chooses_from_palette():
-    config = ColorConfig(fg_color='random', palette='ColorsOfTheWind', seed=123)
+    config = ColorConfig(
+        primary_color='random', secondary_color='random', palette='ColorsOfTheWind', seed=123
+    )
     palette = CustomPalette('ColorsOfTheWind')
     palette_colors = {palette.get(color) for color in palette.colors}
 
-    assert config.get_fg_color() in palette_colors
+    assert config.get_primary_color() in palette_colors
+    assert config.get_secondary_color() in palette_colors

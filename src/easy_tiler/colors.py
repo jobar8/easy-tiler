@@ -94,8 +94,8 @@ STANDARD_PALETTE: dict[str, tuple[float, float, float, float]] = {
 class ColorConfig:
     """Configure tile colors, including sequence/roll choices and color RNG."""
 
-    fg_color: str | tuple | list | None = None
-    bg_color: str | tuple | list | None = None
+    primary_color: str | tuple | list | None = None
+    secondary_color: str | tuple | list | None = None
     outline_color: str | tuple | None = None
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
@@ -145,11 +145,11 @@ class ColorConfig:
 
         return self._palette.get(val)
 
-    def get_fg_color(self, index: int = 0) -> tuple:
-        return self._resolve_color(self.fg_color, index, self.fg_sequence_colors)
+    def get_primary_color(self, index: int = 0) -> tuple:
+        return self._resolve_color(self.primary_color, index, self.fg_sequence_colors)
 
-    def get_bg_color(self) -> tuple:
-        return self._resolve_color(self.bg_color, sequence_colors=self.bg_sequence_colors)
+    def get_secondary_color(self) -> tuple:
+        return self._resolve_color(self.secondary_color, sequence_colors=self.bg_sequence_colors)
 
 
 class CustomPalette:
