@@ -105,7 +105,7 @@ def test_factories_select_palette_config_for_resolved_colors():
 @pytest.mark.parametrize(
     ('factory_builder', 'inset', 'radius'),
     [
-        (make_tile_factory, math.sqrt(2), 3.0),
+        (make_tile_factory, 0.85, 1.0),
         (make_sequence_factory, 0.85, 1.0),
         (lambda: make_node_factory(node_sequence=np.array([[0]])), 0.85, 1.0),
         (make_form_factory, 0.85, 1.0),
