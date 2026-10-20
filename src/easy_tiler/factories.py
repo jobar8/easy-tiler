@@ -1,6 +1,5 @@
 """Simple demo to render a grid of regular polygon tiles."""
 
-import math
 import random
 from collections.abc import Callable
 from typing import Any
@@ -98,16 +97,13 @@ def make_tile_factory(
     | None = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
 ) -> Callable[..., TileBase]:
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-    tile_options = _get_tile_options(
-        kwargs,
-        _DEFAULT_TILE_OPTIONS | {'inset': math.sqrt(2), 'radius': 3.0},
-    )
-    use_seed = kwargs.get('use_seed', True)
+    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
 
     # Use parameters to seed randomness for this specific sequence
     random_seed = f'{use_seed}-{num_colors}' if use_seed else None
@@ -119,8 +115,6 @@ def make_tile_factory(
 
     def factory(x: int, y: int) -> TileBase:  # Return type can be any of the tile classes
         """Factory function to create a tile at position (x, y)."""
-        # random_seed = f'{use_seed}-{x}-{y}' if use_seed else None
-
         if rot == 'random':
             actual_rot = rng.randrange(4)  # Random rotation for 4-sided tiles (0, 1, 2, 3)
         elif isinstance(rot, (int, float)):
@@ -173,6 +167,7 @@ def make_sequence_factory(
     bg: tuple[float, float, float, float] | list[str] | str = 'random',
     palette: str = 'Standard',
     num_colors: int | None = None,
+    use_seed: bool = True,
     **kwargs,
 ):
     """Factory for creating horizontal sequences of tiles."""
@@ -181,7 +176,6 @@ def make_sequence_factory(
     else:
         sequence_length = len(tile_sequence)
     tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
-    use_seed = kwargs.get('use_seed', True)
 
     # Use parameters to seed randomness for this specific sequence
     random_seed = f'{tile_type}-{tile_sequence}' if use_seed else None
@@ -194,11 +188,11 @@ def make_sequence_factory(
     def factory(x, y) -> TileBase:
         sequence_idx = x // sequence_length
         offset = x % sequence_length
-        rotation = tile_sequence[offset]
+        actual_rot = tile_sequence[offset]
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=rotation,
+            rot=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
@@ -269,11 +263,11 @@ def make_node_factory(
         x_offset = x % nc
         y_offset = y % nr
         offset = x_offset + y_offset * nc
-        rotation = node_sequence[y_offset, x_offset]
+        actual_rot = node_sequence[y_offset, x_offset]
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=rotation,
+            rot=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
@@ -338,14 +332,13 @@ def make_form_factory(
 
     def factory(x, y) -> TileBase:
         sequence_position = int(a * x + (b * y) + c)
-        rotation = sequence_position % rot_mod  # Use offset to determine rotation for variety
-        sequence_position = sequence_position % (
-            color_mod
-        )  # Ensure offset is within bounds of the color sequences
+        actual_rot = sequence_position % rot_mod  # Use offset to determine rotation for variety
+        # Ensure offset is within bounds of the color sequences
+        sequence_position = sequence_position % (color_mod)
 
         tile_config = TileConfig(
             tile_width=0,
-            rot=rotation,
+            rot=actual_rot,
             flipped=tile_options['flipped'],
             outline=tile_options['outline'],
             radius=tile_options['radius'],
