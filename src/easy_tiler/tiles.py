@@ -22,7 +22,7 @@ PI6 = math.pi / 6
 def debug_print_ctx(ctx: cairo.Context) -> None:
     """Print the current point and matrix of the Cairo context for debugging."""
     x, y = ctx.get_current_point()
-    mtrx = ctx.get_matrix()
+    mtrx: cairo.Matrix = ctx.get_matrix()
     print(
         f'x={x:.2f} y={y:.2f} xx={mtrx.xx:.2f} xy={mtrx.xy:.2f} yx={mtrx.yx:.2f}',
         f'yy={mtrx.yy:.2f} x0={mtrx.x0:.2f} y0={mtrx.y0:.2f}',
@@ -68,13 +68,13 @@ class TileBase(abc.ABC):
         config: TileConfig | None = None,
         color_config: ColorConfig | None = None,
         random_seed: float | str | bytes | bytearray | None = None,
-    ):
+    ) -> None:
         self.config = config or TileConfig(seed=random_seed)
         self.color_config = color_config or ColorConfig(seed=random_seed)
 
-    def init_tile(self, ctx: cairo.Context):
-        wh = self.config.tile_width
-        wh2 = wh / 2.0
+    def init_tile(self, ctx: cairo.Context) -> None:
+        wh: int = self.config.tile_width
+        wh2: float = wh / 2.0
 
         # draw background
         bg_col = self.color_config.get_secondary_color()
@@ -117,7 +117,7 @@ class RegularPolygonTile(TileBase):
     - inset: fraction of half-width to use as radius (0..1)
     """
 
-    def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs):
+    def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs) -> None:
         super().__init__(**kwargs)
         self.sides = max(3, int(sides))
         self.inset = float(inset)
@@ -159,7 +159,7 @@ class RegularPolygonTile(TileBase):
 class PuckTile(TileBase):
     """Draw a simple tile that looks like a hockey puck: a filled circle with an outline."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
@@ -179,7 +179,7 @@ class PuckTile(TileBase):
 class TruchetTile(TileBase):
     """Draw a simple Truchet tile with one triangle in one corner."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
@@ -199,7 +199,7 @@ class TruchetTile(TileBase):
 class ArrowTile(TileBase):
     """Draw a Truchet tile with one more triangle."""
 
-    def __init__(self, arrow_width: float | None = None, **kwargs):
+    def __init__(self, arrow_width: float | None = None, **kwargs) -> None:
         super().__init__(**kwargs)
         if arrow_width is not None:
             self.config.arrow_width = arrow_width
@@ -229,13 +229,13 @@ class ArrowTile(TileBase):
 class RileyTile(TileBase):
     """Draw a Riley tile with one corner and one round side."""
 
-    def __init__(self, radius: float = 1.0, **kwargs):
+    def __init__(self, radius: float = 1.0, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.radius = radius
+        self.radius: float = radius
         self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        wh = g.tile_width
+        wh: int = g.tile_width
         self.radius = self.radius * wh
         primary_color = self.color_config.get_primary_color(index)
 
@@ -256,7 +256,7 @@ class RileyTile(TileBase):
 class CircleTile(TileBase):
     """Draw a circle tile that can be used in Cairo tiling."""
 
-    def __init__(self, radius: float = 0.25, **kwargs):
+    def __init__(self, radius: float = 0.25, **kwargs) -> None:
         super().__init__(**kwargs)
         self.radius = radius
         self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
@@ -273,7 +273,7 @@ class CircleTile(TileBase):
 
 
 class SmithTile(TileBase):
-    def __init__(self, radius: float = 0.5, **kwargs):
+    def __init__(self, radius: float = 0.5, **kwargs) -> None:
         super().__init__(**kwargs)
         self.radius = radius
 
@@ -297,7 +297,7 @@ class SmithTile(TileBase):
 class PentagonTile(TileBase):
     """Draw a pentagon tile that can be used in Cairo tiling."""
 
-    def __init__(self, side_length: float | None = None, **kwargs):
+    def __init__(self, side_length: float | None = None, **kwargs) -> None:
         super().__init__(**kwargs)
         if side_length is None:
             self.side_length = 1.0 / (4 * math.cos(PI6))
@@ -334,11 +334,11 @@ class PentagonTile(TileBase):
 class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @staticmethod
-    def draw_pentagon(ctx, side_length, primary_color):
+    def draw_pentagon(ctx, side_length: float, primary_color) -> None:
         ctx.set_source_rgba(*primary_color)
         ctx.rotate(-PI6)
         ctx.rel_line_to(side_length, 0)

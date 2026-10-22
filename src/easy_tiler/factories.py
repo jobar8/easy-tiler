@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+from numpy.random._generator import Generator
 
 from easy_tiler import (
     ArrowTile,
@@ -251,9 +252,9 @@ def make_node_factory(
     if node_sequence is None:
         if use_seed:
             # Use parameters to seed randomness
-            np_rng = np.random.default_rng(len(tile_type) * len(palette))
+            np_rng: Generator = np.random.default_rng(len(tile_type) * len(palette))
         else:
-            np_rng = np.random.default_rng()
+            np_rng: Generator = np.random.default_rng()
         node_sequence = np_rng.integers(low=0, high=10, size=(4, 4))
 
     tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
