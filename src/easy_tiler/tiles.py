@@ -6,7 +6,8 @@ Defines a TileBase abstract class and other simple tile implementations.
 import abc
 import math
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from typing import Any, ClassVar
 
 import cairo
 
@@ -31,19 +32,32 @@ def debug_print_ctx(ctx: cairo.Context) -> None:
 
 @dataclass
 class TileConfig:
-    """Geometry-focused configuration for a tile."""
+    """The single configuration object used by every tile type.
 
+    All tile parameters live here: the rotation/flip/outline settings and the
+    shape specific values (``sides``, ``inset``, ``radius``, ``side_length``
+    and ``arrow_width``).
+
+    The shape specific values default to ``None``, meaning *not set*. When a
+    tile is created it fills in the values it needs from its own ``defaults``
+    mapping, so a single config can describe any tile without carrying
+    meaningless values around.
+    """
+
+    # rendering
     tile_width: int = 0  # Width of the tile in pixels, set by the renderer
+    # rotation and orientation
     max_rotations: int = 4
     rotation_angle: float = PI2
     rotation_index: float = 0
     flipped: bool = False
     outline: bool = False
-    radius: float = 1.0
-    sides: int = 4
-    inset: float = 0.85
-    side_length: float = 1.0
-    arrow_width: float = 0.333
+    # shape specific parameters, None means "use the tile class default"
+    sides: int | None = None
+    inset: float | None = None
+    radius: float | None = None
+    side_length: float | None = None
+    arrow_width: float | None = None
     seed: float | str | bytes | bytearray | None = None
 
     _rng: random.Random = field(init=False)
@@ -60,7 +74,17 @@ class TileBase(abc.ABC):
 
     Subclasses should implement `draw(self, ctx, g)` which performs drawing
     on the provided cairo `Context` using the small graphics config `g`.
+
+    Subclasses may declare:
+
+    - ``defaults``: mapping of config field name to default value, used for
+      every parameter the caller did not set explicitly.
+    - ``rotation_offset``: shift applied to the rotation index, for tiles that
+      are drawn in a rotated frame.
     """
+
+    defaults: ClassVar[dict[str, Any]] = {}
+    rotation_offset: ClassVar[int] = 0
 
     def __init__(
         self,
@@ -68,9 +92,32 @@ class TileBase(abc.ABC):
         config: TileConfig | None = None,
         color_config: ColorConfig | None = None,
         random_seed: float | str | bytes | bytearray | None = None,
+        **overrides: Any,
     ) -> None:
-        self.config = config or TileConfig(seed=random_seed)
+        base = config if config is not None else TileConfig(seed=random_seed)
+        # Work on a copy so a config can be shared safely between tiles and a
+        # tile never mutates a config owned by the caller.
+        self.config = replace(base)
         self.color_config = color_config or ColorConfig(seed=random_seed)
+
+        # Explicit keyword arguments always win over the config.
+        for name, value in overrides.items():
+            setattr(self.config, name, value)
+
+        # Fill in anything still unset from the tile class defaults.
+        for name, value in self.defaults.items():
+            if getattr(self.config, name, None) is None:
+                setattr(self.config, name, value)
+
+        if self.rotation_offset:
+            self.config.rotation_index = (
+                self.config.rotation_index + self.rotation_offset
+            ) % self.config.max_rotations
+
+    def _value(self, g: TileConfig, name: str) -> Any:
+        """Return the effective value of a config parameter."""
+        value = getattr(g, name, None)
+        return self.defaults.get(name) if value is None else value
 
     def init_tile(self, ctx: cairo.Context) -> None:
         wh: int = self.config.tile_width
@@ -117,21 +164,20 @@ class RegularPolygonTile(TileBase):
     - inset: fraction of half-width to use as radius (0..1)
     """
 
-    def __init__(self, sides: float = 4, inset: float = 0.85, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.sides = max(3, int(sides))
-        self.inset = float(inset)
+    defaults: ClassVar[dict[str, Any]] = {'sides': 4, 'inset': 0.85}
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
+        sides = max(3, int(self._value(g, 'sides')))
+        inset = float(self._value(g, 'inset'))
         primary_color = self.color_config.get_primary_color(index)
 
         # polygon geometry
         cx = cy = wh / 2.0
-        r = (wh / 2.0) * self.inset
+        r = (wh / 2.0) * inset
         pts = []
-        for i in range(self.sides):
-            theta = 2.0 * PI * i / self.sides
+        for i in range(sides):
+            theta = 2.0 * PI * i / sides
             x = cx + r * math.cos(theta)
             y = cy + r * math.sin(theta)
             pts.append((x, y))
@@ -159,9 +205,6 @@ class RegularPolygonTile(TileBase):
 class PuckTile(TileBase):
     """Draw a simple tile that looks like a hockey puck: a filled circle with an outline."""
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
         primary_color = self.color_config.get_primary_color(index)
@@ -178,9 +221,6 @@ class PuckTile(TileBase):
 
 class TruchetTile(TileBase):
     """Draw a simple Truchet tile with one triangle in one corner."""
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
@@ -199,19 +239,20 @@ class TruchetTile(TileBase):
 class ArrowTile(TileBase):
     """Draw a Truchet tile with one more triangle."""
 
-    def __init__(self, arrow_width: float | None = None, **kwargs) -> None:
+    defaults: ClassVar[dict[str, Any]] = {'arrow_width': 0.333}
+
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if arrow_width is not None:
-            self.config.arrow_width = arrow_width
-        if not (0.0 < self.config.arrow_width < 1.0):
+        if not (0.0 < float(self.config.arrow_width) < 1.0):  # type: ignore[operator]
             raise ValueError('ArrowTile arrow_width must be between 0 and 1.')
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
+        arrow_width = float(self._value(g, 'arrow_width'))
         primary_color = self.color_config.get_primary_color(index)
 
         # position of the bottom of the branch
-        wa = (1 - g.arrow_width) / 2.0
+        wa = (1 - arrow_width) / 2.0
 
         # draw bottom-left corner
         ctx.set_source_rgba(*primary_color)
@@ -229,24 +270,22 @@ class ArrowTile(TileBase):
 class RileyTile(TileBase):
     """Draw a Riley tile with one corner and one round side."""
 
-    def __init__(self, radius: float = 1.0, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.radius: float = radius
-        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
+    defaults: ClassVar[dict[str, Any]] = {'radius': 1.0}
+    rotation_offset: ClassVar[int] = -1
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh: int = g.tile_width
-        self.radius = self.radius * wh
+        radius = float(self._value(g, 'radius')) * wh
         primary_color = self.color_config.get_primary_color(index)
 
         # draw corner and round side
         ctx.set_source_rgba(*primary_color)
-        a = (-wh + math.sqrt(2 * self.radius * self.radius - wh * wh)) / 2
+        a = (-wh + math.sqrt(2 * radius * radius - wh * wh)) / 2
         xc = yc = -a
-        angle1 = math.acos((wh + a) / self.radius)
+        angle1 = math.acos((wh + a) / radius)
         angle2 = 0.5 * PI - angle1
 
-        ctx.arc(xc, yc, self.radius, angle1, angle2)  # top-left
+        ctx.arc(xc, yc, radius, angle1, angle2)  # top-left
         ctx.line_to(0, 0)
         ctx.line_to(wh, 0)
         ctx.fill()
@@ -256,13 +295,11 @@ class RileyTile(TileBase):
 class CircleTile(TileBase):
     """Draw a circle tile that can be used in Cairo tiling."""
 
-    def __init__(self, radius: float = 0.25, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.radius = radius
-        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
+    defaults: ClassVar[dict[str, Any]] = {'radius': 0.25}
+    rotation_offset: ClassVar[int] = -1
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        radius = g._rng.uniform(0.5, 1.0) * g.tile_width * self.radius
+        radius = g._rng.uniform(0.5, 1.0) * g.tile_width * float(self._value(g, 'radius'))
         primary_color = self.color_config.get_primary_color(index)
 
         ctx.set_source_rgba(*primary_color)
@@ -273,12 +310,12 @@ class CircleTile(TileBase):
 
 
 class SmithTile(TileBase):
-    def __init__(self, radius: float = 0.5, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.radius = radius
+    """Draw a Smith tile with two quarter circles."""
+
+    defaults: ClassVar[dict[str, Any]] = {'radius': 0.5}
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        radius = self.radius * g.tile_width
+        radius = float(self._value(g, 'radius')) * g.tile_width
         primary_color = self.color_config.get_primary_color(index)
 
         ctx.set_source_rgba(*primary_color)
@@ -297,16 +334,11 @@ class SmithTile(TileBase):
 class PentagonTile(TileBase):
     """Draw a pentagon tile that can be used in Cairo tiling."""
 
-    def __init__(self, side_length: float | None = None, **kwargs) -> None:
-        super().__init__(**kwargs)
-        if side_length is None:
-            self.side_length = 1.0 / (4 * math.cos(PI6))
-        else:
-            self.side_length = side_length
-        self.config.rotation_index = (self.config.rotation_index - 1) % self.config.max_rotations
+    defaults: ClassVar[dict[str, Any]] = {'side_length': 1.0 / (4 * math.cos(PI6))}
+    rotation_offset: ClassVar[int] = -1
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
-        side_length = g.tile_width * self.side_length
+        side_length = g.tile_width * float(self._value(g, 'side_length'))
         primary_color = self.color_config.get_primary_color(index)
 
         ctx.set_source_rgba(*primary_color)
@@ -326,16 +358,13 @@ class PentagonTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*self.color_config._palette.get(self.color_config.outline_color))
+        ctx.set_source_rgba(*self.color_config.outline_color)
         ctx.stroke()
         ctx.restore()
 
 
 class CairoTile(TileBase):
     """Draw a Cairo tile."""
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
 
     @staticmethod
     def draw_pentagon(ctx, side_length: float, primary_color) -> None:

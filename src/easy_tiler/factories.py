@@ -1,7 +1,8 @@
-"""Simple demo to render a grid of regular polygon tiles."""
+"""Factories building tiles for the different tiling patterns."""
 
 import random
 from collections.abc import Callable
+from dataclasses import fields
 from typing import Any
 
 import numpy as np
@@ -34,31 +35,26 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'smith': SmithTile,
 }
 
-_TILE_OPTIONS: dict[str, tuple[str, ...]] = {
-    'polygon': ('sides', 'inset'),
-    'riley': ('radius',),
-    'pentagon': ('side_length',),
-    'circle': ('radius',),
-    'smith': ('radius',),
-}
+# Names that can be passed straight through to a TileConfig.
+_TILE_CONFIG_FIELDS = frozenset(f.name for f in fields(TileConfig) if f.init)
 
-_DEFAULT_TILE_OPTIONS: dict[str, Any] = {
-    'inset': 0.85,
-    'flipped': False,
-    'outline': False,
-    'outline_color': None,
-    'radius': 1.0,
-    'sides': 4,
-    'side_length': 1.0,
-    'arrow_width': 0.333,
-}
+# Names handled by ColorConfig rather than TileConfig.
+_COLOR_OPTION_NAMES = frozenset({'outline_color'})
 
 
-def _get_tile_options(
-    kwargs: dict[str, Any],
-    defaults: dict[str, Any] = _DEFAULT_TILE_OPTIONS,
-) -> dict[str, Any]:
-    return defaults | {name: value for name, value in kwargs.items() if name in defaults}
+def _split_options(kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Split keyword arguments into tile config options and color options.
+
+    Unknown names are ignored so callers can pass extra options safely.
+    """
+    tile_options: dict[str, Any] = {}
+    color_options: dict[str, Any] = {}
+    for name, value in kwargs.items():
+        if name in _TILE_CONFIG_FIELDS:
+            tile_options[name] = value
+        elif name in _COLOR_OPTION_NAMES:
+            color_options[name] = value
+    return tile_options, color_options
 
 
 def _make_tile(
@@ -66,20 +62,16 @@ def _make_tile(
     *,
     config: TileConfig,
     color_config: ColorConfig,
-    options: dict[str, Any],
 ) -> TileBase:
     try:
         tile_class = _TILE_CLASSES[tile_type]
     except KeyError as exc:
         raise ValueError(f'Invalid tile_type: {tile_type}') from exc
 
-    tile_options = {
-        name: options[name] for name in _TILE_OPTIONS.get(tile_type, ()) if name in options
-    }
+    # The tile class fills in any parameter the config left unset.
     return tile_class(
         config=config,
         color_config=color_config,
-        **tile_options,
     )
 
 
@@ -104,7 +96,7 @@ def make_tile_factory(
     """
     Make a factory for creating tiles of a specific type with a given configuration.
     """
-    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
+    tile_options, color_options = _split_options(kwargs)
 
     # Use parameters to seed randomness for this specific sequence
     random_seed = f'{use_seed}-{num_colors}' if use_seed else None
@@ -125,14 +117,8 @@ def make_tile_factory(
         tile_config = TileConfig(
             tile_width=0,
             rotation_index=actual_rot,
-            flipped=tile_options['flipped'],
-            outline=tile_options['outline'],
-            radius=tile_options['radius'],
-            sides=tile_options['sides'],
-            inset=tile_options['inset'],
-            side_length=tile_options['side_length'],
-            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
+            **tile_options,
         )
 
         color_config = ColorConfig(
@@ -142,24 +128,18 @@ def make_tile_factory(
             secondary_color=secondary_color[x % len(secondary_color)]
             if isinstance(secondary_color, list)
             else secondary_color,
-            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             primary_colors=primary_colors,
             secondary_colors=secondary_colors,
             color_index=x,
             seed=random_seed,
+            **color_options,
         )
 
         return _make_tile(
             tile_type,
             config=tile_config,
             color_config=color_config,
-            options={
-                'sides': tile_options['sides'],
-                'inset': tile_options['inset'],
-                'radius': tile_options['radius'],
-                'side_length': tile_options['side_length'],
-            },
         )
 
     return factory
@@ -181,7 +161,7 @@ def make_sequence_factory(
         tile_sequence = [0] * sequence_length
     else:
         sequence_length = len(tile_sequence)
-    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
+    tile_options, color_options = _split_options(kwargs)
 
     # Use parameters to seed randomness for this specific sequence
     random_seed = f'{tile_type}-{tile_sequence}' if use_seed else None
@@ -199,14 +179,8 @@ def make_sequence_factory(
         tile_config = TileConfig(
             tile_width=0,
             rotation_index=actual_rot,
-            flipped=tile_options['flipped'],
-            outline=tile_options['outline'],
-            radius=tile_options['radius'],
-            sides=tile_options['sides'],
-            inset=tile_options['inset'],
-            side_length=tile_options['side_length'],
-            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
+            **tile_options,
         )
         color_config = ColorConfig(
             primary_color=primary_color[x % len(primary_color)]
@@ -215,24 +189,19 @@ def make_sequence_factory(
             secondary_color=secondary_color[x % len(secondary_color)]
             if isinstance(secondary_color, list)
             else secondary_color,
-            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             primary_colors=primary_colors,
             secondary_colors=secondary_colors,
             color_index=offset,
             roll_index=sequence_idx,
             seed=random_seed,
+            **color_options,
         )
 
         return _make_tile(
             tile_type,
             config=tile_config,
             color_config=color_config,
-            options={
-                'sides': tile_options['sides'],
-                'inset': tile_options['inset'],
-                'radius': tile_options['radius'],
-            },
         )
 
     return factory
@@ -257,7 +226,7 @@ def make_node_factory(
             np_rng: Generator = np.random.default_rng()
         node_sequence = np_rng.integers(low=0, high=10, size=(4, 4))
 
-    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
+    tile_options, color_options = _split_options(kwargs)
 
     random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
     rng = random.Random(random_seed)
@@ -278,36 +247,25 @@ def make_node_factory(
         tile_config = TileConfig(
             tile_width=0,
             rotation_index=actual_rot,
-            flipped=tile_options['flipped'],
-            outline=tile_options['outline'],
-            radius=tile_options['radius'],
-            sides=tile_options['sides'],
-            inset=tile_options['inset'],
-            side_length=tile_options['side_length'],
-            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
+            **tile_options,
         )
         color_config = ColorConfig(
             primary_color=primary_color,
             secondary_color=secondary_color,
-            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             primary_colors=primary_colors,
             secondary_colors=secondary_colors,
             color_index=offset,
             roll_index=node_idx,
             seed=random_seed,
+            **color_options,
         )
 
         return _make_tile(
             tile_type,
             config=tile_config,
             color_config=color_config,
-            options={
-                'sides': tile_options['sides'],
-                'inset': tile_options['inset'],
-                'radius': tile_options['radius'],
-            },
         )
 
     return factory
@@ -329,7 +287,7 @@ def make_form_factory(
 ) -> Callable[..., TileBase]:
     """Factory for creating patterns based on mathematical functions."""
 
-    tile_options = _get_tile_options(kwargs, _DEFAULT_TILE_OPTIONS)
+    tile_options, color_options = _split_options(kwargs)
 
     random_seed = f'{use_seed}-{rotation_mod}-{color_mod}' if use_seed else None
     rng = random.Random(random_seed)
@@ -351,36 +309,25 @@ def make_form_factory(
         tile_config = TileConfig(
             tile_width=0,
             rotation_index=actual_rot,
-            flipped=tile_options['flipped'],
-            outline=tile_options['outline'],
-            radius=tile_options['radius'],
-            sides=tile_options['sides'],
-            inset=tile_options['inset'],
-            side_length=tile_options['side_length'],
-            arrow_width=tile_options['arrow_width'],
             seed=random_seed,
+            **tile_options,
         )
         color_config = ColorConfig(
             primary_color=primary_color,
             secondary_color=secondary_color,
-            outline_color=tile_options['outline_color'],
             palette=custom_palette,
             primary_colors=primary_colors,
             secondary_colors=secondary_colors,
             color_index=sequence_position,
             roll_index=y,
             seed=random_seed,
+            **color_options,
         )
 
         return _make_tile(
             tile_type,
             config=tile_config,
             color_config=color_config,
-            options={
-                'sides': tile_options['sides'],
-                'inset': tile_options['inset'],
-                'radius': tile_options['radius'],
-            },
         )
 
     return factory

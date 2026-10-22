@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 
@@ -109,23 +111,66 @@ def test_factories_select_palette_config_for_resolved_colors():
 
 
 @pytest.mark.parametrize(
-    ('factory_builder', 'inset', 'radius'),
+    'factory_builder',
     [
-        (make_tile_factory, 0.85, 1.0),
-        (make_sequence_factory, 0.85, 1.0),
-        (lambda: make_node_factory(node_sequence=np.array([[0]])), 0.85, 1.0),
-        (make_form_factory, 0.85, 1.0),
+        make_tile_factory,
+        make_sequence_factory,
+        lambda **kwargs: make_node_factory(node_sequence=np.array([[0]]), **kwargs),
+        make_form_factory,
     ],
 )
-def test_factories_preserve_tile_option_defaults(factory_builder, inset, radius):
-    config = factory_builder()(0, 0).config
+def test_factories_leave_unset_shape_options_as_none(factory_builder):
+    """Options that do not belong to the tile type stay unset in the config.
 
-    assert config.inset == inset
-    assert config.radius == radius
+    The tile class supplies the defaults for the values it actually needs, so
+    one config can describe any tile type without carrying meaningless values.
+    """
+    config = factory_builder(tile_type='truchet')(0, 0).config
+
     assert config.flipped is False
     assert config.outline is False
-    assert config.sides == 4
-    assert config.arrow_width == pytest.approx(0.333)
+    assert config.sides is None
+    assert config.inset is None
+    assert config.radius is None
+    assert config.side_length is None
+    assert config.arrow_width is None
+
+
+@pytest.mark.parametrize(
+    ('tile_type', 'option', 'value'),
+    [
+        ('polygon', 'sides', 7),
+        ('polygon', 'inset', 1.0),
+        ('riley', 'radius', 1.2),
+        ('circle', 'radius', 0.3),
+        ('smith', 'radius', 0.4),
+        ('pentagon', 'side_length', 0.8),
+        ('arrow', 'arrow_width', 0.6),
+    ],
+)
+def test_factories_pass_shape_options_to_the_tile_config(tile_type, option, value):
+    tile = make_tile_factory(tile_type=tile_type, **{option: value})(0, 0)
+
+    assert getattr(tile.config, option) == value
+
+
+@pytest.mark.parametrize(
+    ('tile_type', 'expected'),
+    [
+        ('polygon', {'sides': 4, 'inset': 0.85}),
+        ('riley', {'radius': 1.0}),
+        ('circle', {'radius': 0.25}),
+        ('smith', {'radius': 0.5}),
+        ('pentagon', {'side_length': 1.0 / (4 * math.cos(math.pi / 6))}),
+        ('arrow', {'arrow_width': pytest.approx(0.333)}),
+    ],
+)
+def test_tile_classes_supply_their_own_defaults(tile_type, expected):
+    """A tile fills in the parameters it needs from its class defaults."""
+    tile = make_tile_factory(tile_type=tile_type)(0, 0)
+
+    for name, value in expected.items():
+        assert getattr(tile.config, name) == value
 
 
 @pytest.mark.parametrize(

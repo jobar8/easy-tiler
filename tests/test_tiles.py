@@ -2,7 +2,13 @@ import cairo
 import pytest
 
 from easy_tiler.colors import ColorConfig, CustomPalette
-from easy_tiler.tiles import TileBase, TileConfig
+from easy_tiler.tiles import (
+    ArrowTile,
+    RegularPolygonTile,
+    RileyTile,
+    TileBase,
+    TileConfig,
+)
 
 
 class RecordingTile(TileBase):
@@ -130,3 +136,101 @@ def test_color_config_random_chooses_from_palette():
 
     assert config.get_primary_color() in palette_colors
     assert config.get_secondary_color() in palette_colors
+
+
+def test_tile_config_holds_every_shape_parameter():
+    """A single config can carry the parameters of any tile type."""
+    config = TileConfig(
+        sides=7,
+        inset=0.9,
+        radius=1.2,
+        side_length=0.8,
+        arrow_width=0.4,
+        rotation_index=1,
+        flipped=True,
+        outline=True,
+    )
+
+    assert config.sides == 7
+    assert config.inset == pytest.approx(0.9)
+    assert config.radius == pytest.approx(1.2)
+    assert config.side_length == pytest.approx(0.8)
+    assert config.arrow_width == pytest.approx(0.4)
+    assert config.rotation_index == 1
+    assert config.flipped is True
+    assert config.outline is True
+
+
+def test_tile_config_shape_parameters_default_to_unset():
+    config = TileConfig()
+
+    assert config.sides is None
+    assert config.inset is None
+    assert config.radius is None
+    assert config.side_length is None
+    assert config.arrow_width is None
+
+
+def test_tile_fills_unset_parameters_from_class_defaults():
+    tile = RegularPolygonTile(config=TileConfig(sides=5))
+
+    assert tile.config.sides == 5
+    assert tile.config.inset == pytest.approx(0.85)
+
+
+def test_tile_does_not_mutate_the_config_it_was_given():
+    config = TileConfig(sides=5)
+
+    tile = RegularPolygonTile(config=config)
+
+    assert tile.config is not config
+    assert config.inset is None
+    assert tile.config.inset == pytest.approx(0.85)
+
+
+def test_tile_keyword_overrides_take_precedence_over_the_config():
+    tile = RegularPolygonTile(config=TileConfig(sides=5), sides=6)
+
+    assert tile.config.sides == 6
+
+
+def test_tile_uses_the_config_it_is_handed_when_drawing():
+    """The config passed to draw() is what determines the drawn geometry."""
+    tile = RegularPolygonTile(config=TileConfig(tile_width=40, sides=3))
+    ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 40, 40))
+
+    # Tiles call ctx.restore() when they are done, so a save is required.
+    ctx.save()
+    tile.init_tile(ctx)
+    tile.draw(ctx, tile.config)
+
+    assert tile.config.sides == 3
+
+
+def test_riley_tile_rotation_offset_is_applied_to_the_config():
+    tile = RileyTile(config=TileConfig(rotation_index=0))
+
+    assert tile.config.rotation_index == 3
+
+
+def test_riley_tile_does_not_scale_its_radius_between_draws():
+    """Drawing a tile twice must produce the same geometry."""
+    tile = RileyTile(config=TileConfig(tile_width=40, radius=1.0))
+    ctx = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 40, 40))
+
+    ctx.save()
+    tile.draw_tile(ctx)
+    first_radius = tile.config.radius
+
+    ctx.save()
+    tile.draw_tile(ctx)
+
+    assert tile.config.radius == first_radius
+
+
+def test_arrow_tile_rejects_an_out_of_range_arrow_width():
+    with pytest.raises(ValueError, match='between 0 and 1'):
+        ArrowTile(config=TileConfig(arrow_width=1.5))
+
+    with pytest.raises(ValueError, match='between 0 and 1'):
+        ArrowTile(config=TileConfig(arrow_width=0.0))
