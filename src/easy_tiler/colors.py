@@ -115,7 +115,12 @@ class ColorConfig:
             if isinstance(self.palette, CustomPalette)
             else CustomPalette(self.palette or 'Standard', self.num_colors, self.rng)
         )
-        self.outline_color = self._palette.get(self.outline_color)
+        if self.outline_color == 'darker':
+            self.outline_color = self.get_darker_color()
+        elif self.outline_color == 'brighter':
+            self.outline_color = self.get_brighter_color()
+        else:
+            self.outline_color = self._palette.get(self.outline_color)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
@@ -150,6 +155,24 @@ class ColorConfig:
 
     def get_secondary_color(self) -> tuple:
         return self._resolve_color(self.secondary_color, sequence_colors=self.secondary_colors)
+
+    def get_darker_color(self, change: float = 0.2) -> tuple:
+        primary_color = self.get_primary_color()
+        return (
+            max(0.0, primary_color[0] - change),
+            max(0.0, primary_color[1] - change),
+            max(0.0, primary_color[2] - change),
+            primary_color[3],
+        )
+
+    def get_brighter_color(self, change: float = 0.2) -> tuple:
+        primary_color = self.get_primary_color()
+        return (
+            min(1.0, primary_color[0] + change),
+            min(1.0, primary_color[1] + change),
+            min(1.0, primary_color[2] + change),
+            primary_color[3],
+        )
 
 
 class CustomPalette:

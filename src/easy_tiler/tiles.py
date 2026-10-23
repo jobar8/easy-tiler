@@ -293,7 +293,7 @@ class RileyTile(TileBase):
 
 
 class CircleTile(TileBase):
-    """Draw a circle tile that can be used in Cairo tiling."""
+    """Draw a circle tile with a random radius."""
 
     defaults: ClassVar[dict[str, Any]] = {'radius': 0.25}
     rotation_offset: ClassVar[int] = -1
@@ -367,7 +367,7 @@ class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
     @staticmethod
-    def draw_pentagon(ctx, side_length: float, primary_color) -> None:
+    def draw_pentagon(ctx, side_length: float, primary_color, outline_color) -> None:
         ctx.set_source_rgba(*primary_color)
         ctx.rotate(-PI6)
         ctx.rel_line_to(side_length, 0)
@@ -384,13 +384,8 @@ class CairoTile(TileBase):
         ctx.rotate(2 * PI3)
         ctx.fill_preserve()
 
-        # stroke with slightly darker foreground
-        # ctx.set_line_width(max(1.0, wh * 0.01))
-        # ctx.set_source_rgba(
-        #     max(0.0, primary_color[0] - 0.2), max(0.0, primary_color[1] - 0.2), max(0.0, primary_color[2] - 0.2), primary_color[3]
-        # )
-        ctx.set_source_rgba(0, 0, 0, 1)
-
+        # draw outline of the pentagon
+        ctx.set_source_rgba(*outline_color)
         ctx.stroke()
         ctx.move_to(0, 0)
 
@@ -401,21 +396,41 @@ class CairoTile(TileBase):
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_primary_color(index))
+        self.draw_pentagon(
+            ctx,
+            side_length,
+            self.color_config.get_primary_color(index),
+            self.color_config.outline_color,
+        )
 
         # 2nd polygon (bottom)
         ctx.rel_move_to(polygon_width, polygon_width)
         ctx.rotate(PI)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_primary_color(index + 1))
+        self.draw_pentagon(
+            ctx,
+            side_length,
+            self.color_config.get_primary_color(index + 1),
+            self.color_config.outline_color,
+        )
 
         # 3rd polygon (right)
         ctx.rel_move_to(-polygon_width, -polygon_width)
         ctx.rotate(PI2)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_primary_color(index + 2))
+        self.draw_pentagon(
+            ctx,
+            side_length,
+            self.color_config.get_primary_color(index + 2),
+            self.color_config.outline_color,
+        )
 
         # 4th polygon (left)
         ctx.rotate(PI)
-        self.draw_pentagon(ctx, side_length, self.color_config.get_primary_color(index + 3))
+        self.draw_pentagon(
+            ctx,
+            side_length,
+            self.color_config.get_primary_color(index + 3),
+            self.color_config.outline_color,
+        )
 
         ctx.stroke()
         ctx.restore()

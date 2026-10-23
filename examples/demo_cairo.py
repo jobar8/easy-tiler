@@ -35,7 +35,7 @@ def run_demo():
         palette='ColorsOfTheWind',
         num_colors=5,
         outline=True,
-        outline_color='black',
+        outline_color='darker',
     )
     png_path = cwd / 'images' / 'cairo_demo.png'
     svg_path = cwd / 'images' / 'cairo_demo.svg'
