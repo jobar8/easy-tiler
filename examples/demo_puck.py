@@ -18,6 +18,9 @@ def run_demo():
         primary_color=['black', 'blue', 'green', 'red'],
         secondary_color='white',
         gridlines=False,
+        gridlines_color='black',
+        stroke=False,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'puck_demo.png'
     svg_path = cwd / 'images' / 'puck_demo.svg'

@@ -25,17 +25,17 @@ def run_demo():
         # primary_color=['blue', 'red', 'green', 'brown'],
         # secondary_color='beige',
         secondary_color=None,
-        radius=1,
+        radius=0.8,
         # palette='glasbey_category10',
         # palette='ColorsOfTheWind',
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        gridlines=True,
+        gridlines=False,
         gridlines_color='black',
-        use_seed=False,
         stroke=True,
         stroke_color='black',
+        use_seed=False,
     )
     png_path = cwd / 'images' / 'riley_demo.png'
     svg_path = cwd / 'images' / 'riley_demo.svg'

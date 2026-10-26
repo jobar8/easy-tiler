@@ -18,13 +18,15 @@ def run_demo():
     factory = make_tile_factory(
         tile_type='pentagon',
         rotation_index=1,
+        side_length=0.6,
         primary_color='random',
         secondary_color='white',
         palette='glasbey_category10',
         num_colors=5,
-        gridlines=False,
+        gridlines=True,
         gridlines_color='black',
-        side_length=0.8,
+        stroke=False,
+        stroke_color='black',
         use_seed=False,
     )
     png_path = cwd / 'images' / 'pentagon_demo.png'

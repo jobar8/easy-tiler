@@ -30,6 +30,8 @@ def run_demo():
         num_colors=5,
         gridlines=True,
         gridlines_color='darker',
+        stroke=True,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'circle_demo.png'
     svg_path = cwd / 'images' / 'circle_demo.svg'

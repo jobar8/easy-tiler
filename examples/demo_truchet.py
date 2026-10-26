@@ -32,6 +32,8 @@ def run_demo():
         num_colors=5,
         gridlines=False,
         gridlines_color='black',
+        stroke=True,
+        stroke_color='black',
         use_seed=True,
     )
     png_path = cwd / 'images' / 'truchet_demo.png'

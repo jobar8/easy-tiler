@@ -30,8 +30,10 @@ def run_demo():
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        gridlines=True,
+        gridlines=False,
         gridlines_color='black',
+        stroke=True,
+        stroke_color='black',
         use_seed=True,
     )
     png_path = cwd / 'images' / 'smith_demo.png'

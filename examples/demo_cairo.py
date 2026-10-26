@@ -36,6 +36,8 @@ def run_demo():
         num_colors=5,
         gridlines=True,
         gridlines_color='darker',
+        stroke=True,
+        stroke_color='darker',
     )
     png_path = cwd / 'images' / 'cairo_demo.png'
     svg_path = cwd / 'images' / 'cairo_demo.svg'

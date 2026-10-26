@@ -30,6 +30,8 @@ def run_demo():
         num_colors=5,
         gridlines=True,
         gridlines_color='yellow',
+        stroke=True,
+        stroke_color='black',
         use_seed=True,
     )
     png_path = cwd / 'images' / 'arrow_demo.png'

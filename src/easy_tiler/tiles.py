@@ -168,6 +168,7 @@ class TileBase(abc.ABC):
             ctx.fill()
         ctx.restore()
 
+
 class RegularPolygonTile(TileBase):
     """Draw a regular polygon centered in the tile.
 
