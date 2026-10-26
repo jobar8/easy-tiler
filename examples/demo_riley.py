@@ -34,6 +34,8 @@ def run_demo():
         gridlines=True,
         gridlines_color='black',
         use_seed=False,
+        stroke=True,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'riley_demo.png'
     svg_path = cwd / 'images' / 'riley_demo.svg'

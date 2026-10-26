@@ -39,7 +39,7 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
 _TILE_CONFIG_FIELDS = frozenset(f.name for f in fields(TileConfig) if f.init)
 
 # Names handled by ColorConfig rather than TileConfig.
-_COLOR_OPTION_NAMES = frozenset({'gridlines_color'})
+_COLOR_OPTION_NAMES = frozenset({'gridlines_color', 'stroke', 'stroke_color'})
 
 
 def _split_options(kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:

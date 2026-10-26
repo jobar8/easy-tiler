@@ -119,6 +119,12 @@ class TileBase(abc.ABC):
         value = getattr(g, name, None)
         return self.defaults.get(name) if value is None else value
 
+    def _stroke_shape(self, ctx: cairo.Context, wh: int) -> None:
+        """Stroke the current path with the configured stroke color if enabled."""
+        ctx.set_line_width(max(1.0, wh * 0.01))
+        ctx.set_source_rgba(*self.color_config.stroke_color)
+        ctx.stroke()
+
     def init_tile(self, ctx: cairo.Context) -> None:
         wh: int = self.config.tile_width
         wh2: float = wh / 2.0
@@ -189,16 +195,13 @@ class RegularPolygonTile(TileBase):
         for x, y in pts[1:]:
             ctx.line_to(x, y)
         ctx.close_path()
-        # stroke with slightly darker foreground
-        ctx.fill_preserve()
-        ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(
-            max(0.0, primary_color[0] - 0.2),
-            max(0.0, primary_color[1] - 0.2),
-            max(0.0, primary_color[2] - 0.2),
-            primary_color[3],
-        )
-        ctx.stroke()
+
+        # Fill the polygon and stroke the outline if stroke is enabled.
+        if self.color_config.stroke:
+            ctx.fill_preserve()
+            self._stroke_shape(ctx, wh)
+        else:
+            ctx.fill()
         ctx.restore()
 
 
@@ -215,7 +218,8 @@ class PuckTile(TileBase):
         # top-left and bottom-right corners
         ctx.arc(r, r, r, PI, 1.5 * PI)  # top-left
         ctx.arc(r, r, r, 0.0, 0.5 * PI)  # bottom-right
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, wh)
         ctx.restore()
 
 
@@ -232,7 +236,8 @@ class TruchetTile(TileBase):
         ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, wh)
         ctx.restore()
 
 
@@ -263,7 +268,8 @@ class ArrowTile(TileBase):
         ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, wh)
         ctx.restore()
 
 
@@ -289,6 +295,8 @@ class RileyTile(TileBase):
         ctx.line_to(0, 0)
         ctx.line_to(wh, 0)
         ctx.fill()
+        # ctx.fill_preserve()
+        self._stroke_shape(ctx, wh)
         ctx.restore()
 
 
@@ -305,7 +313,8 @@ class CircleTile(TileBase):
         ctx.set_source_rgba(*primary_color)
         ctx.move_to(g.tile_width / 4, g.tile_width / 4)
         ctx.arc(g.tile_width / 4, g.tile_width / 4, radius, 0, 2 * PI)
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, g.tile_width)
         ctx.restore()
 
 
@@ -322,12 +331,14 @@ class SmithTile(TileBase):
         ctx.arc(0, g.tile_width, radius, -PI2, 0)
         ctx.line_to(0, g.tile_width)
         ctx.close_path()
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, g.tile_width)
 
         ctx.arc(g.tile_width, 0, radius, PI2, PI)
         ctx.line_to(g.tile_width, 0)
         ctx.close_path()
-        ctx.fill()
+        ctx.fill_preserve()
+        self._stroke_shape(ctx, g.tile_width)
         ctx.restore()
 
 
@@ -358,8 +369,7 @@ class PentagonTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*self.color_config.gridlines_color)
-        ctx.stroke()
+        self._stroke_shape(ctx, g.tile_width)
         ctx.restore()
 
 
@@ -367,7 +377,7 @@ class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
     @staticmethod
-    def draw_pentagon(ctx, side_length: float, primary_color, gridlines_color) -> None:
+    def draw_pentagon(ctx, side_length: float, primary_color, stroke_color) -> None:
         ctx.set_source_rgba(*primary_color)
         ctx.rotate(-PI6)
         ctx.rel_line_to(side_length, 0)
@@ -385,14 +395,17 @@ class CairoTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*gridlines_color)
-        ctx.stroke()
+        if stroke_color is not None:
+            ctx.set_source_rgba(*stroke_color)
+            ctx.set_line_width(max(1.0, ctx.get_target().get_width() * 0.01))
+            ctx.stroke()
         ctx.move_to(0, 0)
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
         wh = g.tile_width
         side_length = wh / (4 * math.cos(PI6))
         polygon_width = wh / 2
+        stroke_color = self.color_config.stroke_color if self.color_config.stroke else None
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
@@ -400,7 +413,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index),
-            self.color_config.gridlines_color,
+            stroke_color,
         )
 
         # 2nd polygon (bottom)
@@ -410,7 +423,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 1),
-            self.color_config.gridlines_color,
+            stroke_color,
         )
 
         # 3rd polygon (right)
@@ -420,7 +433,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 2),
-            self.color_config.gridlines_color,
+            stroke_color,
         )
 
         # 4th polygon (left)
@@ -429,8 +442,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 3),
-            self.color_config.gridlines_color,
+            stroke_color,
         )
 
-        ctx.stroke()
         ctx.restore()
