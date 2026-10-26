@@ -17,19 +17,21 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='arrow',
-        # rot=0,
-        rot='random',
+        # rotation_index=0,
+        rotation_index='random',
         arrow_width=0.2,
-        # fg='random',
-        fg=['blue', 'red', 'green', 'brown'],
-        bg='beige',
+        # primary_color='random',
+        primary_color=['blue', 'red', 'green', 'brown'],
+        secondary_color='beige',
         # palette='glasbey_category10',
         # palette='ColorsOfTheWind',
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        outline=False,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='yellow',
+        stroke=True,
+        stroke_color='black',
         use_seed=True,
     )
     png_path = cwd / 'images' / 'arrow_demo.png'

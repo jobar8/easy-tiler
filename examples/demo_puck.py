@@ -14,10 +14,13 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='puck',
-        rot='random',
-        fg=['black', 'blue', 'green', 'red'],
-        bg='white',
-        outline=False,
+        rotation_index='random',
+        primary_color=['black', 'blue', 'green', 'red'],
+        secondary_color='white',
+        gridlines=False,
+        gridlines_color='black',
+        stroke=False,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'puck_demo.png'
     svg_path = cwd / 'images' / 'puck_demo.svg'

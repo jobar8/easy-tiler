@@ -14,15 +14,17 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='polygon',
-        rot='random',
+        rotation_index='random',
         inset=1.0,
         sides=7,
-        # fg=['black', 'blue', 'green', 'red'],
-        fg='random_choice',
-        bg='white',
+        # primary_color=['black', 'blue', 'green', 'red'],
+        primary_color='random_choice',
+        secondary_color='white',
         palette='C_M_Coolidge',
-        outline=True,
-        outline_color='black',
+        gridlines=False,
+        gridlines_color='black',
+        stroke=True,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'polygon_demo.png'
     svg_path = cwd / 'images' / 'polygon_demo.svg'

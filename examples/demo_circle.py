@@ -17,19 +17,21 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='circle',
-        rot='random',
-        # rot=0,
+        rotation_index='random',
+        # rotation_index=0,
         radius=0.25,
-        # fg='random',
-        fg=['blue', 'red', 'green', 'brown'],
-        bg='beige',
+        # primary_color='random',
+        primary_color=['blue', 'red', 'green', 'brown'],
+        secondary_color='beige',
         # palette='glasbey_category10',
         # palette='ColorsOfTheWind',
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        outline=False,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='darker',
+        stroke=True,
+        stroke_color='black',
     )
     png_path = cwd / 'images' / 'circle_demo.png'
     svg_path = cwd / 'images' / 'circle_demo.svg'

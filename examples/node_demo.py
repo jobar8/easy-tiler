@@ -16,16 +16,16 @@ def run_node_demo():
     factory = make_node_factory(
         tile_type='truchet',
         node_sequence=np.array([[1, 1, 2], [0, 0, 0], [1, 2, 3]]),
-        fg='roll',
-        # fg=['beige', 'green', 'brown', 'red', 'yellow'],
-        bg=['orange', 'white', 'black'],
-        # bg='white',
+        primary_color='roll',
+        # primary_color=['beige', 'green', 'brown', 'red', 'yellow'],
+        secondary_color=['orange', 'white', 'black'],
+        # secondary_color='white',
         # palette='glasbey_light',
         # palette='BlueRidgePkwy',
         palette='CrazyLaceAgate',
         num_colors=48,
-        outline=False,
-        outline_color='black',
+        gridlines=False,
+        gridlines_color='black',
     )
     png_path = cwd / 'images' / 'node_demo.png'
     svg_path = cwd / 'images' / 'node_demo.svg'

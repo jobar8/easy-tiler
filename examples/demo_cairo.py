@@ -25,17 +25,19 @@ def run_demo():
 
     factory = make_tile_factory(
         tile_type='cairo',
-        rot=0,
-        # fg='random',
-        # fg='red',
-        fg=['red', 'blue', 'green', 'pink'],
-        bg=None,
+        rotation_index=0,
+        # primary_color='random',
+        # primary_color='red',
+        primary_color=['red', 'blue', 'green', 'pink'],
+        secondary_color=None,
         # palette='glasbey_category10',
         # palette='glasbey_dark',
         palette='ColorsOfTheWind',
         num_colors=5,
-        outline=True,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='darker',
+        stroke=True,
+        stroke_color='darker',
     )
     png_path = cwd / 'images' / 'cairo_demo.png'
     svg_path = cwd / 'images' / 'cairo_demo.svg'

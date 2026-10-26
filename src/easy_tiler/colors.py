@@ -94,13 +94,15 @@ STANDARD_PALETTE: dict[str, tuple[float, float, float, float]] = {
 class ColorConfig:
     """Configure tile colors, including sequence/roll choices and color RNG."""
 
-    fg_color: str | tuple | list | None = None
-    bg_color: str | tuple | list | None = None
-    outline_color: str | tuple | None = None
+    primary_color: str | tuple | list | None = None
+    secondary_color: str | tuple | list | None = None
+    gridlines_color: str | tuple | None = None
+    stroke_color: str | tuple | None = None
+    stroke: bool = False
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
-    fg_sequence_colors: list | None = None
-    bg_sequence_colors: list | None = None
+    primary_colors: list | None = None
+    secondary_colors: list | None = None
     color_index: int | None = None
     roll_index: int = 0
     seed: float | str | bytes | bytearray | None = None
@@ -115,7 +117,18 @@ class ColorConfig:
             if isinstance(self.palette, CustomPalette)
             else CustomPalette(self.palette or 'Standard', self.num_colors, self.rng)
         )
-        self.outline_color = self._palette.get(self.outline_color)
+        if self.gridlines_color == 'darker':
+            self.gridlines_color = self.get_darker_color()
+        elif self.gridlines_color == 'brighter':
+            self.gridlines_color = self.get_brighter_color()
+        else:
+            self.gridlines_color = self._palette.get(self.gridlines_color)
+        if self.stroke_color == 'darker':
+            self.stroke_color = self.get_darker_color()
+        elif self.stroke_color == 'brighter':
+            self.stroke_color = self.get_brighter_color()
+        else:
+            self.stroke_color = self._palette.get(self.stroke_color)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:
@@ -145,11 +158,29 @@ class ColorConfig:
 
         return self._palette.get(val)
 
-    def get_fg_color(self, index: int = 0) -> tuple:
-        return self._resolve_color(self.fg_color, index, self.fg_sequence_colors)
+    def get_primary_color(self, index: int = 0) -> tuple:
+        return self._resolve_color(self.primary_color, index, self.primary_colors)
 
-    def get_bg_color(self) -> tuple:
-        return self._resolve_color(self.bg_color, sequence_colors=self.bg_sequence_colors)
+    def get_secondary_color(self) -> tuple:
+        return self._resolve_color(self.secondary_color, sequence_colors=self.secondary_colors)
+
+    def get_darker_color(self, change: float = 0.2) -> tuple:
+        primary_color = self.get_primary_color()
+        return (
+            max(0.0, primary_color[0] - change),
+            max(0.0, primary_color[1] - change),
+            max(0.0, primary_color[2] - change),
+            primary_color[3],
+        )
+
+    def get_brighter_color(self, change: float = 0.2) -> tuple:
+        primary_color = self.get_primary_color()
+        return (
+            min(1.0, primary_color[0] + change),
+            min(1.0, primary_color[1] + change),
+            min(1.0, primary_color[2] + change),
+            primary_color[3],
+        )
 
 
 class CustomPalette:
