@@ -18,6 +18,7 @@ class RecordingTile(TileBase):
 
     def draw(self, ctx, g, index=0):
         self.draw_calls.append((ctx, g))
+        ctx.save()
 
 
 def test_tilebase_is_abstract():

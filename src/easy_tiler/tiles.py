@@ -160,7 +160,13 @@ class TileBase(abc.ABC):
     def draw_tile(self, ctx: cairo.Context) -> None:
         self.init_tile(ctx)
         self.draw(ctx, self.config)
-
+        # Fill the polygon and stroke the outline if stroke is enabled.
+        if self.color_config.stroke:
+            ctx.fill_preserve()
+            self._stroke_shape(ctx, self.config.tile_width)
+        else:
+            ctx.fill()
+        ctx.restore()
 
 class RegularPolygonTile(TileBase):
     """Draw a regular polygon centered in the tile.
@@ -196,14 +202,6 @@ class RegularPolygonTile(TileBase):
             ctx.line_to(x, y)
         ctx.close_path()
 
-        # Fill the polygon and stroke the outline if stroke is enabled.
-        if self.color_config.stroke:
-            ctx.fill_preserve()
-            self._stroke_shape(ctx, wh)
-        else:
-            ctx.fill()
-        ctx.restore()
-
 
 class PuckTile(TileBase):
     """Draw a simple tile that looks like a hockey puck: a filled circle with an outline."""
@@ -218,9 +216,6 @@ class PuckTile(TileBase):
         # top-left and bottom-right corners
         ctx.arc(r, r, r, PI, 1.5 * PI)  # top-left
         ctx.arc(r, r, r, 0.0, 0.5 * PI)  # bottom-right
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, wh)
-        ctx.restore()
 
 
 class TruchetTile(TileBase):
@@ -236,9 +231,6 @@ class TruchetTile(TileBase):
         ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, wh)
-        ctx.restore()
 
 
 class ArrowTile(TileBase):
@@ -268,9 +260,6 @@ class ArrowTile(TileBase):
         ctx.line_to(wh, wh)
         ctx.line_to(0, wh)
         ctx.line_to(0, 0)
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, wh)
-        ctx.restore()
 
 
 class RileyTile(TileBase):
@@ -294,10 +283,6 @@ class RileyTile(TileBase):
         ctx.arc(xc, yc, radius, angle1, angle2)  # top-left
         ctx.line_to(0, 0)
         ctx.line_to(wh, 0)
-        ctx.fill()
-        # ctx.fill_preserve()
-        self._stroke_shape(ctx, wh)
-        ctx.restore()
 
 
 class CircleTile(TileBase):
@@ -313,9 +298,6 @@ class CircleTile(TileBase):
         ctx.set_source_rgba(*primary_color)
         ctx.move_to(g.tile_width / 4, g.tile_width / 4)
         ctx.arc(g.tile_width / 4, g.tile_width / 4, radius, 0, 2 * PI)
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, g.tile_width)
-        ctx.restore()
 
 
 class SmithTile(TileBase):
@@ -331,15 +313,17 @@ class SmithTile(TileBase):
         ctx.arc(0, g.tile_width, radius, -PI2, 0)
         ctx.line_to(0, g.tile_width)
         ctx.close_path()
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, g.tile_width)
+        if self.color_config.stroke:
+            ctx.fill_preserve()
+            self._stroke_shape(ctx, g.tile_width)
+        else:
+            ctx.fill()
 
+        ctx.new_path()
+        ctx.set_source_rgba(*primary_color)
         ctx.arc(g.tile_width, 0, radius, PI2, PI)
         ctx.line_to(g.tile_width, 0)
         ctx.close_path()
-        ctx.fill_preserve()
-        self._stroke_shape(ctx, g.tile_width)
-        ctx.restore()
 
 
 class PentagonTile(TileBase):
@@ -366,11 +350,6 @@ class PentagonTile(TileBase):
         ctx.rotate(PI3)
         ctx.rel_line_to(side_length, 0)
         ctx.rotate(2 * PI3)
-        ctx.fill_preserve()
-
-        # draw outline of the pentagon
-        self._stroke_shape(ctx, g.tile_width)
-        ctx.restore()
 
 
 class CairoTile(TileBase):
@@ -397,7 +376,6 @@ class CairoTile(TileBase):
         # draw outline of the pentagon
         if stroke_color is not None:
             ctx.set_source_rgba(*stroke_color)
-            ctx.set_line_width(max(1.0, ctx.get_target().get_width() * 0.01))
             ctx.stroke()
         ctx.move_to(0, 0)
 
@@ -444,5 +422,3 @@ class CairoTile(TileBase):
             self.color_config.get_primary_color(index + 3),
             stroke_color,
         )
-
-        ctx.restore()
