@@ -2,9 +2,11 @@ from .colors import ColorConfig
 from .grid import Grid
 from .renderer import Renderer
 from .tiles import (
+    ArcTile,
     ArrowTile,
     CairoTile,
     CircleTile,
+    DoughnutTile,
     PentagonTile,
     PuckTile,
     RegularPolygonTile,
@@ -22,10 +24,12 @@ def main() -> None:
 
 
 __all__ = [
+    'ArcTile',
     'ArrowTile',
     'CairoTile',
     'CircleTile',
     'ColorConfig',
+    'DoughnutTile',
     'Grid',
     'PentagonTile',
     'PuckTile',

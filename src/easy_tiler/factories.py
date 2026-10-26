@@ -9,9 +9,11 @@ import numpy as np
 from numpy.random._generator import Generator
 
 from easy_tiler import (
+    ArcTile,
     ArrowTile,
     CairoTile,
     CircleTile,
+    DoughnutTile,
     PentagonTile,
     PuckTile,
     RegularPolygonTile,
@@ -35,6 +37,8 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'circle': CircleTile,
     'smith': SmithTile,
     'square': SquareTile,
+    'doughnut': DoughnutTile,
+    'arc': ArcTile,
 }
 
 # Names that can be passed straight through to a TileConfig.

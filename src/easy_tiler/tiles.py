@@ -56,6 +56,7 @@ class TileConfig:
     sides: int | None = None
     inset: float | None = None
     radius: float | None = None
+    inner_radius: float | None = None
     side_length: float | None = None
     arrow_width: float | None = None
     seed: float | str | bytes | bytearray | None = None
@@ -313,6 +314,45 @@ class CircleTile(TileBase):
         ctx.set_source_rgba(*primary_color)
         ctx.move_to(g.tile_width / 4, g.tile_width / 4)
         ctx.arc(g.tile_width / 4, g.tile_width / 4, radius, 0, 2 * PI)
+
+
+class DoughnutTile(TileBase):
+    """Draw a Doughnut centered on the tile."""
+
+    defaults: ClassVar[dict[str, Any]] = {'radius': 0.75, 'inner_radius': 0.25}
+    rotation_offset: ClassVar[int] = -1
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        wh: int = g.tile_width
+        radius = float(self._value(g, 'radius')) * g.tile_width
+        inner_radius = float(self._value(g, 'inner_radius')) * g.tile_width
+        primary_color = self.color_config.get_primary_color(index)
+
+        ctx.set_source_rgba(*primary_color)
+        ctx.move_to(wh / 2, wh / 2)
+        ctx.arc(wh / 2, wh / 2, radius, 0, 2 * PI)
+        ctx.arc_negative(wh / 2, wh / 2, inner_radius, 2 * PI, 0)
+        ctx.close_path()
+
+
+class ArcTile(TileBase):
+    """Draw an arc tile with inner ring."""
+
+    defaults: ClassVar[dict[str, Any]] = {'radius': 0.75, 'inner_radius': 0.25}
+    rotation_offset: ClassVar[int] = -1
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        radius = float(self._value(g, 'radius')) * g.tile_width
+        inner_radius = float(self._value(g, 'inner_radius')) * g.tile_width
+        primary_color = self.color_config.get_primary_color(index)
+
+        ctx.set_source_rgba(*primary_color)
+        ctx.move_to(inner_radius, 0)
+        ctx.line_to(radius, 0)
+        ctx.arc(0, 0, radius, 0, PI2)
+        ctx.line_to(0, inner_radius)
+        ctx.arc_negative(0, 0, inner_radius, PI2, 0)
+        ctx.close_path()
 
 
 class SmithTile(TileBase):
