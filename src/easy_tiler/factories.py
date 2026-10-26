@@ -17,6 +17,7 @@ from easy_tiler import (
     RegularPolygonTile,
     RileyTile,
     SmithTile,
+    SquareTile,
     TileBase,
     TruchetTile,
 )
@@ -33,6 +34,7 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'pentagon': PentagonTile,
     'circle': CircleTile,
     'smith': SmithTile,
+    'square': SquareTile,
 }
 
 # Names that can be passed straight through to a TileConfig.

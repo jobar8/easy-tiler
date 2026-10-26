@@ -286,6 +286,20 @@ class RileyTile(TileBase):
         ctx.line_to(wh, 0)
 
 
+class SquareTile(TileBase):
+    """Draw a square tile."""
+
+    defaults: ClassVar[dict[str, Any]] = {'side_length': 1.0}
+    rotation_offset: ClassVar[int] = -1
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        side_length = float(self._value(g, 'side_length')) * g.tile_width
+        primary_color = self.color_config.get_primary_color(index)
+
+        ctx.set_source_rgba(*primary_color)
+        ctx.rectangle(0, 0, side_length, side_length)
+
+
 class CircleTile(TileBase):
     """Draw a circle tile with a random radius."""
 
