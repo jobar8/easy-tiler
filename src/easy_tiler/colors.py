@@ -96,7 +96,7 @@ class ColorConfig:
 
     primary_color: str | tuple | list | None = None
     secondary_color: str | tuple | list | None = None
-    outline_color: str | tuple | None = None
+    gridlines_color: str | tuple | None = None
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
     primary_colors: list | None = None
@@ -115,12 +115,12 @@ class ColorConfig:
             if isinstance(self.palette, CustomPalette)
             else CustomPalette(self.palette or 'Standard', self.num_colors, self.rng)
         )
-        if self.outline_color == 'darker':
-            self.outline_color = self.get_darker_color()
-        elif self.outline_color == 'brighter':
-            self.outline_color = self.get_brighter_color()
+        if self.gridlines_color == 'darker':
+            self.gridlines_color = self.get_darker_color()
+        elif self.gridlines_color == 'brighter':
+            self.gridlines_color = self.get_brighter_color()
         else:
-            self.outline_color = self._palette.get(self.outline_color)
+            self.gridlines_color = self._palette.get(self.gridlines_color)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:

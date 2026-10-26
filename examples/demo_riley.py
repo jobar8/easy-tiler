@@ -31,8 +31,8 @@ def run_demo():
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        outline=True,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='black',
         use_seed=False,
     )
     png_path = cwd / 'images' / 'riley_demo.png'

@@ -31,7 +31,7 @@ def run_sequence_demo():
         # palette='Standard',
         num_colors=16,
         radius=0.25,
-        outline=False,
+        gridlines=False,
         use_seed=True,
     )
     png_path = cwd / 'images' / 'sequence_demo.png'

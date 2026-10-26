@@ -28,17 +28,17 @@ def test_tilebase_is_abstract():
 def test_tilebase_can_be_instantiated_with_a_draw_implementation():
     tile = RecordingTile(
         config=TileConfig(
-            max_rotations=2, rotation_angle=1.0, rotation_index=1, flipped=True, outline=False
+            max_rotations=2, rotation_angle=1.0, rotation_index=1, flipped=True, gridlines=False
         )
     )
 
     assert tile.config.max_rotations == 2
     assert tile.config.rotation_index == 1
     assert tile.config.flipped is True
-    assert tile.config.outline is False
+    assert tile.config.gridlines is False
     assert not hasattr(tile, 'rotation_index')
     assert not hasattr(tile, 'flipped')
-    assert not hasattr(tile, 'outline')
+    assert not hasattr(tile, 'gridlines')
 
 
 def test_tilebase_init_tile_applies_rotation_and_flip():
@@ -76,14 +76,14 @@ def test_color_config_resolves_named_colors():
     config = ColorConfig(
         primary_color='cyan',
         secondary_color='pink',
-        outline_color='purple',
+        gridlines_color='purple',
         palette='ColorsOfTheWind',
     )
     palette = CustomPalette('ColorsOfTheWind')
 
     assert config.get_primary_color() == palette.get('cyan')
     assert config.get_secondary_color() == palette.get('pink')
-    assert config.outline_color == palette.get('purple')
+    assert config.gridlines_color == palette.get('purple')
 
 
 def test_color_config_resolves_color_lists_by_index():
@@ -148,7 +148,7 @@ def test_tile_config_holds_every_shape_parameter():
         arrow_width=0.4,
         rotation_index=1,
         flipped=True,
-        outline=True,
+        gridlines=True,
     )
 
     assert config.sides == 7
@@ -158,7 +158,7 @@ def test_tile_config_holds_every_shape_parameter():
     assert config.arrow_width == pytest.approx(0.4)
     assert config.rotation_index == 1
     assert config.flipped is True
-    assert config.outline is True
+    assert config.gridlines is True
 
 
 def test_tile_config_shape_parameters_default_to_unset():

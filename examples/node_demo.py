@@ -24,8 +24,8 @@ def run_node_demo():
         # palette='BlueRidgePkwy',
         palette='CrazyLaceAgate',
         num_colors=48,
-        outline=False,
-        outline_color='black',
+        gridlines=False,
+        gridlines_color='black',
     )
     png_path = cwd / 'images' / 'node_demo.png'
     svg_path = cwd / 'images' / 'node_demo.svg'

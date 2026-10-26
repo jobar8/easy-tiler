@@ -17,7 +17,7 @@ def run_demo():
         rotation_index='random',
         primary_color=['black', 'blue', 'green', 'red'],
         secondary_color='white',
-        outline=False,
+        gridlines=False,
     )
     png_path = cwd / 'images' / 'puck_demo.png'
     svg_path = cwd / 'images' / 'puck_demo.svg'

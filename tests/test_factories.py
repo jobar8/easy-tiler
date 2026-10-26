@@ -33,13 +33,13 @@ def test_color_config_resolves_local_palette_colors():
     config = ColorConfig(
         primary_color='cyan',
         secondary_color='pink',
-        outline_color='purple',
+        gridlines_color='purple',
         palette='ColorsOfTheWind',
     )
 
     assert config.get_primary_color() == CustomPalette('ColorsOfTheWind').get('cyan')
     assert config.get_secondary_color() == CustomPalette('ColorsOfTheWind').get('pink')
-    assert config.outline_color == CustomPalette('ColorsOfTheWind').get('purple')
+    assert config.gridlines_color == CustomPalette('ColorsOfTheWind').get('purple')
 
 
 def test_color_config_seed_makes_random_colors_reproducible():
@@ -128,7 +128,7 @@ def test_factories_leave_unset_shape_options_as_none(factory_builder):
     config = factory_builder(tile_type='truchet')(0, 0).config
 
     assert config.flipped is False
-    assert config.outline is False
+    assert config.gridlines is False
     assert config.sides is None
     assert config.inset is None
     assert config.radius is None
@@ -228,8 +228,8 @@ def test_make_tile_factory_supports_local_palette_outline():
     factory = make_tile_factory(
         primary_color='cyan',
         secondary_color='pink',
-        outline=True,
-        outline_color='purple',
+        gridlines=True,
+        gridlines_color='purple',
         palette='ColorsOfTheWind',
     )
     palette = CustomPalette('ColorsOfTheWind')
@@ -238,7 +238,7 @@ def test_make_tile_factory_supports_local_palette_outline():
 
     assert tile.color_config.get_primary_color() == palette.get('cyan')
     assert tile.color_config.get_secondary_color() == palette.get('pink')
-    assert tile.color_config.outline_color == palette.get('purple')
+    assert tile.color_config.gridlines_color == palette.get('purple')
 
 
 @pytest.mark.parametrize(
@@ -290,14 +290,14 @@ def test_make_node_factory_supports_tile_type(tile_type):
             palette='ColorsOfTheWind',
             primary_color='sequence',
             secondary_color='sequence',
-            outline_color='purple',
+            gridlines_color='purple',
         ),
         lambda: make_node_factory(
             palette='ColorsOfTheWind',
             node_sequence=np.array([[0]]),
             primary_color='sequence',
             secondary_color='sequence',
-            outline_color='purple',
+            gridlines_color='purple',
         ),
     ],
 )
@@ -306,7 +306,7 @@ def test_factories_support_local_palette(factory_builder):
 
     assert tile.color_config.primary_color != (0, 0, 0, 0)
     assert tile.color_config.secondary_color != (0, 0, 0, 0)
-    assert tile.color_config.outline_color == CustomPalette('ColorsOfTheWind').get('purple')
+    assert tile.color_config.gridlines_color == CustomPalette('ColorsOfTheWind').get('purple')
 
 
 def test_get_palette_rejects_unknown_palette():

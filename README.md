@@ -18,7 +18,7 @@ grid = Grid(8, 6, x_size=80, y_size=80)
 
 # Create a factory for polygon tiles (default is a square)
 factory = make_tile_factory(
-    tile_type='polygon', secondary_color='white', primary_color='random', sides=4, outline=False
+    tile_type='polygon', secondary_color='white', primary_color='random', sides=4, gridlines=False
 )
 
 # Save as PNG and SVG
@@ -107,7 +107,7 @@ grid = Grid(10, 10, x_size=80, y_size=80)
 
 # Create a factory for polygon tiles (default is a square)
 factory = make_tile_factory(
-    tile_type='polygon', secondary_color='white', primary_color='black', sides=4, outline=False
+    tile_type='polygon', secondary_color='white', primary_color='black', sides=4, gridlines=False
 )
 
 # Save as PNG and SVG

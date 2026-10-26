@@ -21,8 +21,8 @@ def run_demo():
         primary_color='random_choice',
         secondary_color='white',
         palette='C_M_Coolidge',
-        outline=True,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='black',
     )
     png_path = cwd / 'images' / 'polygon_demo.png'
     svg_path = cwd / 'images' / 'polygon_demo.svg'

@@ -34,7 +34,7 @@ def debug_print_ctx(ctx: cairo.Context) -> None:
 class TileConfig:
     """The single configuration object used by every tile type.
 
-    All tile parameters live here: the rotation/flip/outline settings and the
+    All tile parameters live here: the rotation/flip/grid-line settings and the
     shape specific values (``sides``, ``inset``, ``radius``, ``side_length``
     and ``arrow_width``).
 
@@ -51,7 +51,7 @@ class TileConfig:
     rotation_angle: float = PI2
     rotation_index: float = 0
     flipped: bool = False
-    outline: bool = False
+    gridlines: bool = False
     # shape specific parameters, None means "use the tile class default"
     sides: int | None = None
     inset: float | None = None
@@ -65,7 +65,7 @@ class TileConfig:
     def __post_init__(self) -> None:
         self.rotation_index = self.rotation_index % self.max_rotations
         self.flipped = bool(self.flipped)
-        self.outline = bool(self.outline)
+        self.gridlines = bool(self.gridlines)
         self._rng = random.Random(self.seed)
 
 
@@ -129,10 +129,10 @@ class TileBase(abc.ABC):
             ctx.set_source_rgba(*bg_col)
             ctx.rectangle(0, 0, wh, wh)
 
-        # Draw outline of tile
-        if self.config.outline:
+        # Draw tile gridlines
+        if self.config.gridlines:
             ctx.fill_preserve()
-            ctx.set_source_rgba(*self.color_config.outline_color)  # type: ignore
+            ctx.set_source_rgba(*self.color_config.gridlines_color)  # type: ignore
             ctx.set_line_width(max(1.0, wh * 0.01))
             ctx.stroke()
         else:
@@ -358,7 +358,7 @@ class PentagonTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*self.color_config.outline_color)
+        ctx.set_source_rgba(*self.color_config.gridlines_color)
         ctx.stroke()
         ctx.restore()
 
@@ -367,7 +367,7 @@ class CairoTile(TileBase):
     """Draw a Cairo tile."""
 
     @staticmethod
-    def draw_pentagon(ctx, side_length: float, primary_color, outline_color) -> None:
+    def draw_pentagon(ctx, side_length: float, primary_color, gridlines_color) -> None:
         ctx.set_source_rgba(*primary_color)
         ctx.rotate(-PI6)
         ctx.rel_line_to(side_length, 0)
@@ -385,7 +385,7 @@ class CairoTile(TileBase):
         ctx.fill_preserve()
 
         # draw outline of the pentagon
-        ctx.set_source_rgba(*outline_color)
+        ctx.set_source_rgba(*gridlines_color)
         ctx.stroke()
         ctx.move_to(0, 0)
 
@@ -400,7 +400,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index),
-            self.color_config.outline_color,
+            self.color_config.gridlines_color,
         )
 
         # 2nd polygon (bottom)
@@ -410,7 +410,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 1),
-            self.color_config.outline_color,
+            self.color_config.gridlines_color,
         )
 
         # 3rd polygon (right)
@@ -420,7 +420,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 2),
-            self.color_config.outline_color,
+            self.color_config.gridlines_color,
         )
 
         # 4th polygon (left)
@@ -429,7 +429,7 @@ class CairoTile(TileBase):
             ctx,
             side_length,
             self.color_config.get_primary_color(index + 3),
-            self.color_config.outline_color,
+            self.color_config.gridlines_color,
         )
 
         ctx.stroke()

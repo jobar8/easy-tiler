@@ -28,8 +28,8 @@ def run_demo():
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        outline=False,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='darker',
     )
     png_path = cwd / 'images' / 'circle_demo.png'
     svg_path = cwd / 'images' / 'circle_demo.svg'

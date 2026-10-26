@@ -34,8 +34,8 @@ def run_demo():
         # palette='glasbey_dark',
         palette='ColorsOfTheWind',
         num_colors=5,
-        outline=True,
-        outline_color='darker',
+        gridlines=True,
+        gridlines_color='darker',
     )
     png_path = cwd / 'images' / 'cairo_demo.png'
     svg_path = cwd / 'images' / 'cairo_demo.svg'

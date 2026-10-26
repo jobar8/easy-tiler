@@ -28,8 +28,8 @@ def run_demo():
         # palette='harrypotter',
         palette='FridaKahlo',
         num_colors=5,
-        outline=False,
-        outline_color='black',
+        gridlines=True,
+        gridlines_color='yellow',
         use_seed=True,
     )
     png_path = cwd / 'images' / 'arrow_demo.png'

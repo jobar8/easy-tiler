@@ -22,8 +22,8 @@ def run_demo():
         secondary_color='white',
         palette='glasbey_category10',
         num_colors=5,
-        outline=False,
-        outline_color='black',
+        gridlines=False,
+        gridlines_color='black',
         side_length=0.8,
         use_seed=False,
     )
