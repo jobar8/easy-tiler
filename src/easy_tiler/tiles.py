@@ -303,6 +303,23 @@ class RileyTile(TileBase):
         ctx.line_to(wh, 0)
 
 
+class BumpTile(TileBase):
+    """Draw a tile with two bumps."""
+
+    defaults: ClassVar[dict[str, Any]] = {'radius': 1.0}
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        wh: int = g.tile_width
+        primary_color = self.color_config.get_primary_color(index)
+
+        ctx.set_source_rgba(*primary_color)
+        ctx.move_to(0, 0)
+        ctx.arc(0, wh / 2, wh / 2, -PI2, 0)
+        ctx.arc(wh / 2, wh, wh / 2, -PI2, 0)
+        ctx.line_to(0, wh)
+        ctx.close_path()
+
+
 class SquareTile(TileBase):
     """Draw a square tile."""
 

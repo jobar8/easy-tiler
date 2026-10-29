@@ -4,6 +4,7 @@ from .renderer import Renderer
 from .tiles import (
     ArcTile,
     ArrowTile,
+    BumpTile,
     CairoTile,
     CircleTile,
     CornerTile,
@@ -29,6 +30,7 @@ def main() -> None:
 __all__ = [
     'ArcTile',
     'ArrowTile',
+    'BumpTile',
     'CairoTile',
     'CircleTile',
     'ColorConfig',

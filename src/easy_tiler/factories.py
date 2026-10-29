@@ -11,6 +11,7 @@ from numpy.random._generator import Generator
 from easy_tiler import (
     ArcTile,
     ArrowTile,
+    BumpTile,
     CairoTile,
     CircleTile,
     CornerTile,
@@ -45,6 +46,7 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'rectangle': RectangleTile,
     'triangle': TriangleTile,
     'corner': CornerTile,
+    'bump': BumpTile,
 }
 
 # Names that can be passed straight through to a TileConfig.
