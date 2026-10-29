@@ -315,6 +315,22 @@ class RectangleTile(TileBase):
         ctx.rectangle(0, 0, side_length, g.tile_width)
 
 
+class TriangleTile(TileBase):
+    """Draw a triangle tile."""
+
+    defaults: ClassVar[dict[str, Any]] = {'side_length': 1.0}
+    rotation_offset: ClassVar[int] = -1
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        primary_color = self.color_config.get_primary_color(index)
+
+        ctx.set_source_rgba(*primary_color)
+        ctx.move_to(0, 0)
+        ctx.line_to(g.tile_width / 2, g.tile_width / 2)
+        ctx.line_to(0, g.tile_width)
+        ctx.close_path()
+
+
 class CircleTile(TileBase):
     """Draw a circle tile with a random radius."""
 

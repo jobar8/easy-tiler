@@ -16,6 +16,7 @@ from .tiles import (
     SquareTile,
     TileBase,
     TileConfig,
+    TriangleTile,
     TruchetTile,
 )
 
@@ -42,5 +43,6 @@ __all__ = [
     'SquareTile',
     'TileBase',
     'TileConfig',
+    'TriangleTile',
     'TruchetTile',
 ]
