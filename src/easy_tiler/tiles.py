@@ -235,6 +235,22 @@ class TruchetTile(TileBase):
         ctx.line_to(0, 0)
 
 
+class CornerTile(TileBase):
+    """Draw one triangle in one corner."""
+
+    def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
+        wh = g.tile_width
+        side_length = float(self._value(g, 'side_length')) * wh
+        primary_color = self.color_config.get_primary_color(index)
+
+        # draw bottom-left corner
+        ctx.set_source_rgba(*primary_color)
+        ctx.move_to(0, wh - side_length)
+        ctx.line_to(side_length, wh)
+        ctx.line_to(0, wh)
+        ctx.close_path()
+
+
 class ArrowTile(TileBase):
     """Draw a Truchet tile with one more triangle."""
 
