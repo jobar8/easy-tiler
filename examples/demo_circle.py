@@ -18,11 +18,10 @@ def run_demo():
     factory = make_tile_factory(
         tile_type='circle',
         rotation_index='random',
-        # rotation_index=0,
         radius=0.25,
         # primary_color='random',
         primary_color=['blue', 'red', 'green', 'brown'],
-        secondary_color='beige',
+        secondary_color=['lightorange', 'lightmagenta', 'lightred', 'pink'],
         # palette='glasbey_category10',
         # palette='ColorsOfTheWind',
         # palette='harrypotter',
