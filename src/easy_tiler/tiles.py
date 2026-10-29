@@ -312,7 +312,7 @@ class CircleTile(TileBase):
         primary_color = self.color_config.get_primary_color(index)
 
         ctx.set_source_rgba(*primary_color)
-        ctx.move_to(g.tile_width / 4, g.tile_width / 4)
+        ctx.move_to(g.tile_width / 4 + radius, g.tile_width / 4)
         ctx.arc(g.tile_width / 4, g.tile_width / 4, radius, 0, 2 * PI)
 
 
