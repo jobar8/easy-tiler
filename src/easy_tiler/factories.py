@@ -9,15 +9,22 @@ import numpy as np
 from numpy.random._generator import Generator
 
 from easy_tiler import (
+    ArcTile,
     ArrowTile,
+    BumpTile,
     CairoTile,
     CircleTile,
+    CornerTile,
+    DoughnutTile,
     PentagonTile,
     PuckTile,
+    RectangleTile,
     RegularPolygonTile,
     RileyTile,
     SmithTile,
+    SquareTile,
     TileBase,
+    TriangleTile,
     TruchetTile,
 )
 from easy_tiler.colors import ColorConfig, CustomPalette
@@ -33,6 +40,13 @@ _TILE_CLASSES: dict[str, type[TileBase]] = {
     'pentagon': PentagonTile,
     'circle': CircleTile,
     'smith': SmithTile,
+    'square': SquareTile,
+    'doughnut': DoughnutTile,
+    'arc': ArcTile,
+    'rectangle': RectangleTile,
+    'triangle': TriangleTile,
+    'corner': CornerTile,
+    'bump': BumpTile,
 }
 
 # Names that can be passed straight through to a TileConfig.
@@ -230,12 +244,12 @@ def make_node_factory(
 
     random_seed = f'{use_seed}-{tile_type}-{node_sequence}' if use_seed else None
     rng = random.Random(random_seed)
-    custom_palette = CustomPalette(palette, num_colors, rng)
+    custom_palette = CustomPalette(palette, None, rng)
     colors = custom_palette.colors
 
     nr, nc = node_sequence.shape
-    primary_colors = rng.choices(colors, k=nr * nc)
-    secondary_colors = rng.choices(colors, k=nr * nc)
+    primary_colors = rng.choices(colors, k=nr * nc)[:num_colors]
+    secondary_colors = rng.choices(colors, k=nr * nc)[:num_colors]
 
     def factory(x, y) -> TileBase:
         node_idx = x // nc
