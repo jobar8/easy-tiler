@@ -24,7 +24,10 @@ from .tiles import (
 
 
 def main() -> None:
-    print('easy-tiler: run examples/demo.py to generate sample images')
+    """Run the easy-tiler command."""
+    from .cli import main as cli_main
+
+    cli_main()
 
 
 __all__ = [
@@ -49,4 +52,5 @@ __all__ = [
     'TileConfig',
     'TriangleTile',
     'TruchetTile',
+    'main',
 ]

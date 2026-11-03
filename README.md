@@ -69,7 +69,7 @@ one:
 - **Configurable Grids**: Define grid size, cell size, and origin.
 - **Advanced Geometry**: Apply skew angles (shear) and shifts to create dynamic and complex tiling patterns.
 - **Pycairo Backend**: High-performance rendering with support for transparency and vector/raster export.
-- **CLI Tool**: Early-stage CLI for quick experimentation.
+- **CLI Tool**: Render configured PNG and SVG patterns from YAML.
 
 ## Installation
 
@@ -117,17 +117,52 @@ save_svg('output.svg', grid, factory)
 
 ### CLI Usage
 
-You can run the CLI entry point directly:
+Create a YAML file with grid, factory, and output settings:
 
-```bash
-python -m easy_tiler
+```yaml
+grid:
+  width: 8
+  height: 6
+  x_size: 80
+  y_size: 80
+
+factory:
+  type: tile # tile, sequence, node, or form
+  tile_type: circle
+  primary_color: [blue, red, green, brown]
+  secondary_color: white
+  radius: 0.3
+  stroke: true
+  stroke_color: black
+  palette: FridaKahlo
+  num_colors: 5
+
+output:
+  path: images/circle-pattern # output basename, relative to this YAML file
+  formats: [png, svg] # either, or both
+  scale: 1
+  background_col: white
 ```
 
-Or, if installed:
+Run the installed command with the config path:
 
 ```bash
-easy-tiler
+easy-tiler pattern.yaml
 ```
+
+The output section's `formats` defaults to `[png, svg]`. The selected formats are
+written with matching extensions; `output.path` is a basename, and its parent
+directory is created if needed. Paths that are not absolute are resolved relative
+to the YAML file. Output settings also accept `scale` and `background_col`.
+
+The `factory.type` setting selects `make_tile_factory`, `make_sequence_factory`,
+`make_node_factory`, or `make_form_factory`. Their remaining options are passed
+to the corresponding factory; factory-specific options include `tile_sequence`,
+`node_sequence`, `a`, `b`, `c`, `rotation_mod`, and `color_mod`. Tile shape
+options such as `radius`, `side_length`, `sides`, and `arrow_width`, along with
+color options such as `primary_color`, `secondary_color`, `palette`, `stroke`,
+and `stroke_color`, can be configured as shown above. A node sequence is written
+as a 2D YAML list.
 
 ## Development
 
