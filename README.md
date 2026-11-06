@@ -28,7 +28,7 @@ save_svg('output.svg', grid, factory)
 
 This would produce an image of 8x6 squares with random colors, similar to the image below.
 
-![Polygon Tiles](examples/example_v1.png)
+![Polygon Tiles](examples/images/example_v1.png)
 
 ### Sequence of Tiles
 
@@ -61,7 +61,7 @@ Here, `tile_sequence` controls the repeating rotation pattern, while `primary_co
 `secondary_color='roll'` vary the tile colors across the sequence. This would produce an images similar this
 one:
 
-![Sequence Patterns](examples/sequence_demo.png)
+![Sequence Patterns](examples/images/sequence_demo.png)
 
 ## Key Features
 
