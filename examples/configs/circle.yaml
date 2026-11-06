@@ -1,0 +1,23 @@
+grid:
+  width: 18
+  height: 18
+  x_size: 500
+  y_size: 500
+
+factory:
+  type: tile # tile, sequence, node, or form
+  tile_type: circle
+  primary_color: random
+  secondary_color: transparent
+  radius: 0.2
+  stroke: false
+  stroke_color: black
+  palette: FridaKahlo
+  num_colors: 5
+  use_seed: false
+
+output:
+  path: images/circle-pattern # output basename, relative to this YAML file
+  formats: [png, svg] # either, or both
+  scale: 1
+  background_col: pink

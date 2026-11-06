@@ -9,7 +9,7 @@ from easy_tiler.io import save_png, save_svg
 
 PI = math.pi
 
-cwd = Path(__file__).parent
+cwd = Path(__file__).parents[1]
 
 
 def run_demo():

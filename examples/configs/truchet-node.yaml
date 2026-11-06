@@ -1,0 +1,24 @@
+grid:
+  width: 18
+  height: 18
+  x_size: 100
+  y_size: 100
+
+factory:
+  type: node # tile, sequence, node, or form
+  tile_type: truchet
+  node_sequence: [[1, 1, 2], [0, 0, 0], [1, 2, 3]]
+  primary_color: random
+  secondary_color: transparent
+  radius: 0.2
+  stroke: false
+  stroke_color: black
+  palette: Acanthurus_leucosternon
+  num_colors: 5
+  use_seed: false
+
+output:
+  path: ../images/truchet-node # output basename, relative to this YAML file
+  formats: [png, svg] # either, or both
+  scale: 1
+  background_col: black

@@ -13,11 +13,12 @@ def run_sequence_demo():
     grid = Grid(12, 12, x_size=60, y_size=60)
 
     factory = make_sequence_factory(
-        tile_type='truchet',
+        tile_type='bump',
+        side_length=0.8,
         # tile_sequence=[1, 0, 2, 3],
         # tile_sequence=[0, 1],
         tile_sequence=[2, 2, 3, 3, 1, 0],
-        # tile_sequence=[1, 2],
+        # tile_sequence=[0, 1, 2],
         sequence_length=4,
         # primary_color='blue',
         # primary_color='roll',
@@ -30,10 +31,11 @@ def run_sequence_demo():
         palette='glasbey_light',
         # palette='Standard',
         num_colors=16,
-        radius=0.25,
-        gridlines=True,
+        radius=0.5,
+        inner_radius=0.15,
+        gridlines=False,
         gridlines_color='black',
-        stroke=True,
+        stroke=False,
         stroke_color='black',
         use_seed=True,
     )
