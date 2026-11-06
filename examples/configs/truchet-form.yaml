@@ -1,0 +1,28 @@
+grid:
+  width: 18
+  height: 18
+  x_size: 100
+  y_size: 100
+
+factory:
+  type: form # tile, sequence, node, or form
+  tile_type: truchet
+  a: 1
+  b: 1
+  c: 0
+  rotation_mod: 4
+  color_mod: 5
+  primary_color: sequence
+  secondary_color: transparent
+  radius: 0.2
+  stroke: false
+  stroke_color: black
+  palette: FridaKahlo
+  num_colors: 5
+  use_seed: false
+
+output:
+  path: ../images/truchet-form # output basename, relative to this YAML file
+  formats: [png, svg] # either, or both
+  scale: 1
+  background_col: black
