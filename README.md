@@ -83,14 +83,6 @@ If you use [uv](https://github.com/astral-sh/uv), you can install the dependenci
 uv sync
 ```
 
-### Manual Installation
-
-You can install the dependencies manually using pip:
-
-```bash
-pip install pycairo pillow numpy
-```
-
 ## Quick Start
 
 ### Python API
