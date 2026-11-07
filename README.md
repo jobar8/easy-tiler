@@ -178,4 +178,4 @@ pytest
 
 ## License
 
-This project is authored by Joseph Barraud. See `pyproject.toml` for metadata.
+This project is authored by Joseph Barraud and is licensed under the GNU General Public License v3.0. See [LICENSE.txt](LICENSE.txt) for the full license text.
