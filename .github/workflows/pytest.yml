@@ -9,11 +9,17 @@ permissions:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.13"
+          - "3.14"
+          - "3.15"
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
           enable-cache: true
       - run: uv sync --locked
       - run: uv run pytest
