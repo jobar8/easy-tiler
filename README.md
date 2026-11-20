@@ -83,14 +83,6 @@ If you use [uv](https://github.com/astral-sh/uv), you can install the dependenci
 uv sync
 ```
 
-### Manual Installation
-
-You can install the dependencies manually using pip:
-
-```bash
-pip install pycairo pillow numpy
-```
-
 ## Quick Start
 
 ### Python API
@@ -178,4 +170,4 @@ pytest
 
 ## License
 
-This project is authored by Joseph Barraud. See `pyproject.toml` for metadata.
+This project is authored by Joseph Barraud and is licensed under the Apache License, Version 2.0. See [LICENSE.txt](LICENSE.txt) for the full license text.
