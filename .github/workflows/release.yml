@@ -45,7 +45,7 @@ jobs:
       run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoke_test.py
 
     - name: Upload distributions as artifacts
-      uses: actions/upload-artifact@0v7
+      uses: actions/upload-artifact@v7
       with:
         name: dist
         path: dist/
