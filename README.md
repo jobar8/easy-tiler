@@ -79,11 +79,27 @@ one:
 
 `easy-tiler` requires Python 3.13 or higher.
 
-### Using `uv` (Recommended)
+### From PyPI
 
-If you use [uv](https://github.com/astral-sh/uv), you can install the dependencies and the tool directly:
+Install the released package from PyPI with [uv](https://github.com/astral-sh/uv):
 
 ```bash
+uv tool install easy-tiler
+```
+
+Or use pip:
+
+```bash
+pip install easy-tiler
+```
+
+### From a cloned repository
+
+To install `easy-tiler` with `uv sync`, first clone the repository and run the command from the repository root:
+
+```bash
+git clone https://github.com/jobar8/easy-tiler.git
+cd easy-tiler
 uv sync
 ```
 
