@@ -22,5 +22,9 @@ jobs:
           version: "latest"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
+      - name: Install sys tools/deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcairo2-dev python3-cairo-dev pkg-config python3-dev
       - run: uv sync
       - run: uv run pytest
