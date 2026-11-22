@@ -1,5 +1,9 @@
 # easy-tiler
 
+[![Ruff](https://github.com/jobar8/easy-tiler/actions/workflows/ruff.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/ruff.yml)
+[![Pytest](https://github.com/jobar8/easy-tiler/actions/workflows/pytest.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/pytest.yml)
+[![Publish to PyPI](https://github.com/jobar8/easy-tiler/actions/workflows/release.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/release.yml)
+
 **easy-tiler** is a Python library for creating images of patterns made of tiles on a grid. It leverages [Pycairo](https://pycairo.readthedocs.io/) to produce high-quality PNG and SVG outputs.
 
 Whether you're looking to generate geometric art, architectural patterns, or simple tiling textures, `easy-tiler` provides a flexible API and CLI to configure tile shapes, colors, and grid geometry.
