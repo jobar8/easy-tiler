@@ -9,7 +9,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES_DIR = REPO_ROOT / 'examples'
 
-DEMO_FILES = sorted(EXAMPLES_DIR.glob('demo_*.py'))
+DEMO_FILES = sorted(EXAMPLES_DIR.glob('scripts/demo_*.py'))
 
 OUTPUT_REPORT = re.compile(r'Wrote (?P<png>.+) and (?P<svg>.+)')
 

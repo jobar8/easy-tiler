@@ -1,0 +1,30 @@
+name: Pytest
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.13"
+          - "3.14"
+          - "3.15"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install sys tools/deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcairo2-dev python3-cairo-dev pkg-config python3-dev
+      - run: uv sync
+      - run: uv run pytest

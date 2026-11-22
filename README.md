@@ -1,5 +1,9 @@
 # easy-tiler
 
+[![Ruff](https://github.com/jobar8/easy-tiler/actions/workflows/ruff.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/ruff.yml)
+[![Pytest](https://github.com/jobar8/easy-tiler/actions/workflows/pytest.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/pytest.yml)
+[![Publish to PyPI](https://github.com/jobar8/easy-tiler/actions/workflows/release.yml/badge.svg)](https://github.com/jobar8/easy-tiler/actions/workflows/release.yml)
+
 **easy-tiler** is a Python library for creating images of patterns made of tiles on a grid. It leverages [Pycairo](https://pycairo.readthedocs.io/) to produce high-quality PNG and SVG outputs.
 
 Whether you're looking to generate geometric art, architectural patterns, or simple tiling textures, `easy-tiler` provides a flexible API and CLI to configure tile shapes, colors, and grid geometry.
@@ -81,14 +85,6 @@ If you use [uv](https://github.com/astral-sh/uv), you can install the dependenci
 
 ```bash
 uv sync
-```
-
-### Manual Installation
-
-You can install the dependencies manually using pip:
-
-```bash
-pip install pycairo pillow numpy
 ```
 
 ## Quick Start
@@ -178,4 +174,4 @@ pytest
 
 ## License
 
-This project is authored by Joseph Barraud. See `pyproject.toml` for metadata.
+This project is authored by Joseph Barraud and is licensed under the Apache License, Version 2.0. See [LICENSE.txt](LICENSE.txt) for the full license text.
