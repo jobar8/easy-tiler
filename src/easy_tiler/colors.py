@@ -108,6 +108,7 @@ class ColorConfig:
     secondary_color: str | tuple | list | None = None
     gridlines_color: str | tuple | None = None
     stroke_color: str | tuple | None = None
+    stroke_color_rgba: tuple[float, float, float, float] = (0, 0, 0, 1)
     stroke: bool = False
     palette: str | CustomPalette = field(default_factory=lambda: 'Standard')
     num_colors: int | None = None
@@ -134,11 +135,11 @@ class ColorConfig:
         else:
             self.gridlines_color = self._palette.get(self.gridlines_color)
         if self.stroke_color == 'darker':
-            self.stroke_color = self.get_darker_color()
+            self.stroke_color_rgba = self.get_darker_color()
         elif self.stroke_color == 'brighter':
-            self.stroke_color = self.get_brighter_color()
+            self.stroke_color_rgba = self.get_brighter_color()
         else:
-            self.stroke_color = self._palette.get(self.stroke_color)
+            self.stroke_color_rgba = self._palette.get(self.stroke_color)
 
     @classmethod
     def get_palette(cls, palette: str, num_colors: int | None = None) -> list:

@@ -111,9 +111,7 @@ class TileBase(abc.ABC):
                 setattr(self.config, name, value)
 
         if self.rotation_offset:
-            self.config.rotation_index = (
-                self.config.rotation_index + self.rotation_offset
-            ) % self.config.max_rotations
+            self.config.rotation_index = (self.config.rotation_index + self.rotation_offset) % self.config.max_rotations
 
     def _value(self, g: TileConfig, name: str) -> Any:
         """Return the effective value of a config parameter."""
@@ -123,7 +121,7 @@ class TileBase(abc.ABC):
     def _stroke_shape(self, ctx: cairo.Context, wh: int) -> None:
         """Stroke the current path with the configured stroke color if enabled."""
         ctx.set_line_width(max(1.0, wh * 0.01))
-        ctx.set_source_rgba(*self.color_config.stroke_color)
+        ctx.set_source_rgba(*self.color_config.stroke_color_rgba)
         ctx.stroke()
 
     def init_tile(self, ctx: cairo.Context) -> None:
@@ -258,7 +256,7 @@ class ArrowTile(TileBase):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not (0.0 < float(self.config.arrow_width) < 1.0):  # type: ignore[operator]
+        if not (0.0 < float(self.config.arrow_width) < 1.0):  # ty: ignore[invalid-argument-type]
             raise ValueError('ArrowTile arrow_width must be between 0 and 1.')
 
     def draw(self, ctx: cairo.Context, g: TileConfig, index: int = 0) -> None:
@@ -501,7 +499,7 @@ class CairoTile(TileBase):
         wh = g.tile_width
         side_length = wh / (4 * math.cos(PI6))
         polygon_width = wh / 2
-        stroke_color = self.color_config.stroke_color if self.color_config.stroke else None
+        stroke_color = self.color_config.stroke_color_rgba if self.color_config.stroke else None
 
         # 1st polygon (top)
         ctx.move_to(0, 0)
